@@ -47,7 +47,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource Qserv
-	err = c.Watch(&source.Kind{Type: &dmv1alpha1.Qserv{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &qservv1alpha1.Qserv{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for changes to secondary resource Pods and requeue the owner Qserv
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &dmv1alpha1.Qserv{},
+		OwnerType:    &qservv1alpha1.Qserv{},
 	})
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	reqLogger.Info("Reconciling Qserv")
 
 	// Fetch the Qserv instance
-	instance := &dmv1alpha1.Qserv{}
+	instance := &qservv1alpha1.Qserv{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -131,7 +131,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 }
 
 // newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *dmv1alpha1.Qserv) *corev1.Pod {
+func newPodForCR(cr *qservv1alpha1.Qserv) *corev1.Pod {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
@@ -153,7 +153,7 @@ func newPodForCR(cr *dmv1alpha1.Qserv) *corev1.Pod {
 	}
 }
 
-func GenerateWorkerStatefulSet(cr *dmv1alpha1.Qserv) *appsv1beta2.StatefulSet {
+func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet {
 	name := cr.Name + "-qserv"
 	namespace := cr.Namespace
 
