@@ -1,0 +1,7 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: example-qserv
+spec:
+  # Add fields here
+  size: 3
