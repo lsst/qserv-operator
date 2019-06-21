@@ -109,6 +109,8 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
+	qserv.setDefaults()
+
 	// Check if this Pod already exists
 	found := &appsv1beta2.StatefulSet{}
 	err = r.client.Get(context.TODO(), types.NamespacedName{Name: workerStatefulSet.Name, Namespace: workerStatefulSet.Namespace}, found)
@@ -194,7 +196,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet
 					Containers: []corev1.Container{
 						{
 							Name:            "cmsd",
-							Image:           image,
+							Image:           "toto",
 							ImagePullPolicy: "Always",
 							Ports: []corev1.ContainerPort{
 								{
