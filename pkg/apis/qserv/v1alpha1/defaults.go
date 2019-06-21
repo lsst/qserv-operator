@@ -19,11 +19,11 @@ func (r *Qserv) SetDefaults() {
 		r.Spec.Worker.Replicas = defaultWorkerNumber
 	}
 
-	if len(r.Spec.Qserv.Image) == 0 {
-		r.Spec.Qserv.Image = defaultQservImage
+	if len(r.Spec.Worker.Image) == 0 {
+		r.Spec.Worker.Image = defaultQservImage
 	}
 
-	if len(r.Spec.Xrootd.Config) == 0 {
-		r.Spec.Xrootd.CustomConfig = defaultXrootdCustomConfig
+	if len(r.Spec.Xrootd.CustomConfig) == 0 {
+		r.Spec.Xrootd.CustomConfig = defaultXrootdConfig
 	}
 }

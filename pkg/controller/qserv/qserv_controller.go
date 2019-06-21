@@ -88,8 +88,8 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	reqLogger.Info("Reconciling Qserv")
 
 	// Fetch the Qserv instance
-	instance := &qservv1alpha1.Qserv{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	qserv := &qservv1alpha1.Qserv{}
+	err := r.client.Get(context.TODO(), request.NamespacedName, qserv)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -102,14 +102,14 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	// Define a new Pod object
-	workerStatefulSet := GenerateWorkerStatefulSet(instance)
+	workerStatefulSet := GenerateWorkerStatefulSet(qserv)
 
 	// Set Qserv instance as the owner and controller
-	if err := controllerutil.SetControllerReference(instance, workerStatefulSet, r.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(qserv, workerStatefulSet, r.scheme); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	qserv.setDefaults()
+	qserv.SetDefaults()
 
 	// Check if this Pod already exists
 	found := &appsv1beta2.StatefulSet{}
@@ -159,6 +159,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet
 	name := cr.Name + "-qserv"
 	namespace := cr.Namespace
 
+	spec := cr.Spec
+
 	labels := map[string]string{
 		"app":  name,
 		"tier": "worker",
@@ -166,8 +168,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet
 
 	var replicas int32 = 2
 
-	// spec := cr.Spec
-	image := "qserv/qserv:latest"
 	command := []string{
 		"sh",
 		"/config-start/start.sh",
@@ -196,7 +196,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet
 					Containers: []corev1.Container{
 						{
 							Name:            "cmsd",
-							Image:           "toto",
+							Image:           spec.Worker.Image,
 							ImagePullPolicy: "Always",
 							Ports: []corev1.ContainerPort{
 								{

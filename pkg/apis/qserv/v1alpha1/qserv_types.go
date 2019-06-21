@@ -19,28 +19,33 @@ type QservSpec struct {
 
 	// Worker defines the settings for worker cluster
 	Worker WorkerSettings `json:"worker,omitempty"`
+
+	// Worker defines the settings for worker cluster
+	Xrootd XrootdSettings `json:"xrootd,omitempty"`
 }
 
-
-// CzarSettings defines the specification of the redis cluster
+// CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
-	Image             string                     `json:"image,omitempty"`
-	ImagePullPolicy   corev1.PullPolicy          `json:"imagePullPolicy,omitempty"`
-	Replicas          int32                      `json:"replicas,omitempty"`
-	Resources         RedisResources             `json:"resources,omitempty"`
-	CustomConfig      []string                   `json:"customConfig,omitempty"`
-	Command           []string                   `json:"command,omitempty"`
-	ShutdownConfigMap string                     `json:"shutdownConfigMap,omitempty"`
-	Storage           RedisStorage               `json:"storage,omitempty"`
-	Exporter          RedisExporter              `json:"exporter,omitempty"`
+	Image        string   `json:"image,omitempty"`
+	Replicas     int32    `json:"replicas,omitempty"`
+	CustomConfig []string `json:"customConfig,omitempty"`
+	Command      []string `json:"command,omitempty"`
 }
 
-// WorkerSettings defines the specification of the sentinel cluster
+// WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
-	Image           string                     `json:"image,omitempty"`
-	Replicas        int32                      `json:"replicas,omitempty"`
-	CustomConfig    []string                   `json:"customConfig,omitempty"`
-	Command         []string                   `json:"command,omitempty"`
+	Image        string   `json:"image,omitempty"`
+	Replicas     int32    `json:"replicas,omitempty"`
+	CustomConfig []string `json:"customConfig,omitempty"`
+	Command      []string `json:"command,omitempty"`
+}
+
+// WorkerSettings defines the specification of the worker cluster
+type XrootdSettings struct {
+	Image        string   `json:"image,omitempty"`
+	Replicas     int32    `json:"replicas,omitempty"`
+	CustomConfig []string `json:"customConfig,omitempty"`
+	Command      []string `json:"command,omitempty"`
 }
 
 // QservStatus defines the observed state of Qserv
