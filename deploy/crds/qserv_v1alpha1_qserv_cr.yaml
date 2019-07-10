@@ -5,3 +5,5 @@ metadata:
 spec:
   # Add fields here
   size: 3
+  worker:
+    image: "qserv/qserv:9701693"

@@ -22,11 +22,6 @@ import (
 
 var log = logf.Log.WithName("controller_qserv")
 
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
-
 // Add creates a new Qserv Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
@@ -102,7 +97,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	// Define a new Pod object
-	workerStatefulSet := GenerateWorkerStatefulSet(qserv)
+	workerStatefulSet := generateWorkerStatefulSet(qserv)
 
 	// Set Qserv instance as the owner and controller
 	if err := controllerutil.SetControllerReference(qserv, workerStatefulSet, r.scheme); err != nil {
@@ -155,7 +150,7 @@ func newPodForCR(cr *qservv1alpha1.Qserv) *corev1.Pod {
 	}
 }
 
-func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet {
+func generateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet {
 	name := cr.Name + "-qserv"
 	namespace := cr.Namespace
 
