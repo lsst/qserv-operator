@@ -4,15 +4,14 @@ import (
 	"context"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	"github.com/lsst/qserv-operator/pkg/controller/qserv/internal/sync"
+	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -67,8 +66,10 @@ var _ reconcile.Reconciler = &ReconcileQserv{}
 type ReconcileQserv struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	recorder record.EventRecorder
+	// failover *failover.QservFailover
 }
 
 // Reconcile reads that state of the cluster for a Qserv object and makes changes based on the state read
@@ -96,117 +97,30 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
-	// Define a new Pod object
-	workerStatefulSet := generateWorkerStatefulSet(qserv)
-
-	// Set Qserv instance as the owner and controller
-	if err := controllerutil.SetControllerReference(qserv, workerStatefulSet, r.scheme); err != nil {
-		return reconcile.Result{}, err
-	}
-
+	r.scheme.Default(qserv)
 	qserv.SetDefaults()
 
-	// Check if this Pod already exists
-	found := &appsv1beta2.StatefulSet{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: workerStatefulSet.Name, Namespace: workerStatefulSet.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new worker StatefulSet", "StatefulSet.Namespace", workerStatefulSet.Namespace, "StatefulSet.Name", workerStatefulSet.Name)
-		err = r.client.Create(context.TODO(), workerStatefulSet)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
+	syncers := []syncer.Interface{
+		sync.NewXrootdConfigMapSyncer(qserv, r.client, r.scheme),
+		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
+	}
 
-		// Pod created successfully - don't requeue
-		return reconcile.Result{}, nil
-	} else if err != nil {
+	if err = r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	// Pod already exists - don't requeue
-	reqLogger.Info("Skip reconcile: worker StatefulSet already exists", "StatefulSet.Namespace", workerStatefulSet.Namespace, "StatefulSet.Name", workerStatefulSet.Name)
+	// if err = r.failover.CheckAndHeal(qserv); err != nil {
+	// 	return reconcile.Result{}, err
+	// }
+
 	return reconcile.Result{}, nil
 }
 
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *qservv1alpha1.Qserv) *corev1.Pod {
-	labels := map[string]string{
-		"app": cr.Name,
+func (r *ReconcileQserv) sync(syncers []syncer.Interface) error {
+	for _, s := range syncers {
+		if err := syncer.Sync(context.TODO(), s, r.recorder); err != nil {
+			return err
+		}
 	}
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
-				},
-			},
-		},
-	}
-}
-
-func generateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-qserv"
-	namespace := cr.Namespace
-
-	spec := cr.Spec
-
-	labels := map[string]string{
-		"app":  name,
-		"tier": "worker",
-	}
-
-	var replicas int32 = 2
-
-	command := []string{
-		"sh",
-		"/config-start/start.sh",
-	}
-
-	ss := &appsv1beta2.StatefulSet{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: appsv1beta2.StatefulSetSpec{
-			ServiceName: name,
-			Replicas:    &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
-				Type: "RollingUpdate",
-			},
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:            "cmsd",
-							Image:           spec.Worker.Image,
-							ImagePullPolicy: "Always",
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "cmsd",
-									ContainerPort: 2131,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-							Command: command,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return ss
+	return nil
 }

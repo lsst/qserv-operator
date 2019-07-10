@@ -5,13 +5,6 @@ const (
 	defaultQservImage   = "qserv/qserv:11a6001"
 )
 
-var (
-	defaultXrootdConfig = []string{
-		"down-after-milliseconds 5000",
-		"failover-timeout 10000",
-	}
-)
-
 // SetDefaults sets Redis field defaults
 func (r *Qserv) SetDefaults() {
 
@@ -21,9 +14,5 @@ func (r *Qserv) SetDefaults() {
 
 	if len(r.Spec.Worker.Image) == 0 {
 		r.Spec.Worker.Image = defaultQservImage
-	}
-
-	if len(r.Spec.Xrootd.CustomConfig) == 0 {
-		r.Spec.Xrootd.CustomConfig = defaultXrootdConfig
 	}
 }

@@ -26,26 +26,26 @@ type QservSpec struct {
 
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
-	Image        string   `json:"image,omitempty"`
-	Replicas     int32    `json:"replicas,omitempty"`
-	CustomConfig []string `json:"customConfig,omitempty"`
-	Command      []string `json:"command,omitempty"`
+	Image           string   `json:"image,omitempty"`
+	Replicas        int32    `json:"replicas,omitempty"`
+	XrootdConfigMap []string `json:"xrootdConfigMap,omitempty"`
+	Command         []string `json:"command,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
-	Image        string   `json:"image,omitempty"`
-	Replicas     int32    `json:"replicas,omitempty"`
-	CustomConfig []string `json:"customConfig,omitempty"`
-	Command      []string `json:"command,omitempty"`
+	Image           string   `json:"image,omitempty"`
+	Replicas        int32    `json:"replicas,omitempty"`
+	XrootdConfigMap []string `json:"xrootdConfigMap,omitempty"`
+	Command         []string `json:"command,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
 type XrootdSettings struct {
-	Image        string   `json:"image,omitempty"`
-	Replicas     int32    `json:"replicas,omitempty"`
-	CustomConfig []string `json:"customConfig,omitempty"`
-	Command      []string `json:"command,omitempty"`
+	Image           string   `json:"image,omitempty"`
+	Replicas        int32    `json:"replicas,omitempty"`
+	XrootdConfigMap []string `json:"xrootdConfigMap,omitempty"`
+	Command         []string `json:"command,omitempty"`
 }
 
 // QservStatus defines the observed state of Qserv

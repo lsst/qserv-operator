@@ -10,6 +10,8 @@ require (
 	github.com/go-logr/logr v0.1.0 // indirect
 	github.com/go-logr/zapr v0.1.0 // indirect
 	github.com/go-openapi/spec v0.18.0
+	github.com/go-redis/redis v6.15.2+incompatible // indirect
+	github.com/go-test/deep v1.0.1
 	github.com/golang/groupcache v0.0.0-20180924190550-6f2cf27854a4 // indirect
 	github.com/golang/mock v1.2.0 // indirect
 	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
@@ -18,6 +20,7 @@ require (
 	github.com/gophercloud/gophercloud v0.0.0-20190318015731-ff9851476e98 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.8.5 // indirect
+	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/kube-incubator/redis-operator v0.0.0-20190617093024-4c74f0c74f77
 	github.com/lithammer/dedent v1.1.0
