@@ -133,18 +133,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 							Name:    "cmsd",
 							Image:   spec.Worker.Image,
 							Command: command,
-						},
-						{
-							Name:  "xrootd",
-							Image: spec.Worker.Image,
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "xrootd",
-									ContainerPort: 1094,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-							Command: command,
+							Args:    []string{"-S", "cmsd"},
 						},
 						{
 							Name:  "mariadb",
@@ -153,6 +142,18 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								{
 									Name:          "mariadb",
 									ContainerPort: 3306,
+									Protocol:      corev1.ProtocolTCP,
+								},
+							},
+							Command: command,
+						},
+						{
+							Name:  "xrootd",
+							Image: spec.Worker.Image,
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "xrootd",
+									ContainerPort: 1094,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
@@ -177,8 +178,27 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			Name: configMapName,
 		},
 	}}}
-
 	ss.Spec.Template.Spec.Containers[0].VolumeMounts = volumeMounts
+
+	cmsdAddCapabilities := make([]corev1.Capability, 1)
+	cmsdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
+	cmsdSecurityCtx := corev1.SecurityContext{
+		Capabilities: &corev1.Capabilities{
+			Add: cmsdAddCapabilities,
+		},
+	}
+	ss.Spec.Template.Spec.Containers[0].SecurityContext = &cmsdSecurityCtx
+
+	xrootdAddCapabilities := make([]corev1.Capability, 2)
+	xrootdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
+	xrootdAddCapabilities[1] = corev1.Capability("SYS_RESOURCE")
+	xrootdSecurityCtx := corev1.SecurityContext{
+		Capabilities: &corev1.Capabilities{
+			Add: xrootdAddCapabilities,
+		},
+	}
+	ss.Spec.Template.Spec.Containers[2].SecurityContext = &xrootdSecurityCtx
+
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss

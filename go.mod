@@ -23,7 +23,7 @@ require (
 	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/kube-incubator/redis-operator v0.0.0-20190617093024-4c74f0c74f77
-	github.com/lithammer/dedent v1.1.0
+	github.com/lithammer/dedent v1.1.0 // indirect
 	github.com/operator-framework/operator-sdk v0.8.2-0.20190522220659-031d71ef8154
 	github.com/pborman/uuid v0.0.0-20180906182336-adf5a7427709 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
