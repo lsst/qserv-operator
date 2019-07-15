@@ -229,7 +229,7 @@ if [ "$service" = "xrootd" -a "$INSTANCE_NAME" = 'worker' ]; then
 
 fi
 
-su qserv -c "/config-start/xrd.sh -S $service"
+su qserv -c "/config/xrd.sh -S $service"
 `
 const XrootdFinalStartupFileContent string = `#!/bin/sh
 

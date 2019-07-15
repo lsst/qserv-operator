@@ -94,6 +94,12 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	name := cr.Name + "-qserv"
 	namespace := cr.Namespace
 
+	const (
+		CMSD = iota
+		MARIADB
+		XROOTD
+	)
+
 	spec := cr.Spec
 
 	labels = map[string]string{
@@ -165,20 +171,13 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		},
 	}
 
-	size := 1
-	var volumeMounts = make([]corev1.VolumeMount, size)
-	var volumes = make([]corev1.Volume, size)
+	var volumeMounts = make([]corev1.VolumeMount, 1)
+	var volumes = make([]corev1.Volume, 1)
 
-	index := 0
 	volumename := "config-xrootd"
-	volumeMounts[index] = corev1.VolumeMount{Name: volumename, MountPath: "/config"}
-	configMapName := util.GetXrootdConfigName(cr)
-	volumes[index] = corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
-		LocalObjectReference: corev1.LocalObjectReference{
-			Name: configMapName,
-		},
-	}}}
-	ss.Spec.Template.Spec.Containers[0].VolumeMounts = volumeMounts
+	volumeMounts[0] = corev1.VolumeMount{Name: volumename, MountPath: "/config"}
+
+	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = volumeMounts
 
 	cmsdAddCapabilities := make([]corev1.Capability, 1)
 	cmsdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
@@ -187,7 +186,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			Add: cmsdAddCapabilities,
 		},
 	}
-	ss.Spec.Template.Spec.Containers[0].SecurityContext = &cmsdSecurityCtx
+	ss.Spec.Template.Spec.Containers[CMSD].SecurityContext = &cmsdSecurityCtx
 
 	xrootdAddCapabilities := make([]corev1.Capability, 2)
 	xrootdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
@@ -197,8 +196,17 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			Add: xrootdAddCapabilities,
 		},
 	}
-	ss.Spec.Template.Spec.Containers[2].SecurityContext = &xrootdSecurityCtx
+	ss.Spec.Template.Spec.Containers[XROOTD].SecurityContext = &xrootdSecurityCtx
+	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = volumeMounts
 
+	executeMode := int32(0555)
+	configMapName := util.GetXrootdConfigName(cr)
+	volumes[0] = corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
+		LocalObjectReference: corev1.LocalObjectReference{
+			Name: configMapName,
+		},
+		DefaultMode: &executeMode,
+	}}}
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss
