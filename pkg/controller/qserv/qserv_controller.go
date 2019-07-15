@@ -4,6 +4,7 @@ import (
 	"context"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
+	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/controller/qserv/internal/sync"
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 	corev1 "k8s.io/api/core/v1"
@@ -101,8 +102,13 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	qserv.SetDefaults()
 
 	syncers := []syncer.Interface{
-		sync.NewXrootdEtcConfigMapSyncer(qserv, r.client, r.scheme),
 		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
+	}
+
+	for _, configmapClass := range constants.ConfigmapClasses {
+		for _, subpath := range []string{"etc", "start"} {
+			syncers = append(syncers, sync.NewConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+		}
 	}
 
 	if err = r.sync(syncers); err != nil {

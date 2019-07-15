@@ -1,6 +1,9 @@
 package sync
 
 import (
+	"fmt"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -10,17 +13,10 @@ import (
 )
 
 // NewXrootdEtcConfigMapSyncer returns a new sync.Interface for reconciling XrootdEtc ConfigMap
-func NewXrootdEtcConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	cm := qserv.GenerateConfigMap(r, controllerLabels, "xrootd", "etc")
-	return syncer.NewObjectSyncer("XrootdEtcConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
-		return nil
-	})
-}
-
-// NewXrootdStartConfigMapSyncer returns a new sync.Interface for reconciling XrootdStart ConfigMap
-func NewXrootStartConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	cm := qserv.GenerateConfigMap(r, controllerLabels, "xrootd", "start")
-	return syncer.NewObjectSyncer("XrootdStartConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
+func NewConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, service string, subpath string) syncer.Interface {
+	cm := qserv.GenerateConfigMap(r, controllerLabels, service, subpath)
+	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(service), strings.Title(subpath))
+	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
 }

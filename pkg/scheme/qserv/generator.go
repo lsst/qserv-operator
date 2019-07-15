@@ -3,7 +3,6 @@ package qserv
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -14,7 +13,10 @@ import (
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("qserv")
 
 // func GenerateSentinelService(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.Service {
 // 	name := util.GetSentinelName(r)
@@ -83,36 +85,41 @@ type filedesc struct {
 func getFileContent(path string) string {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err, fmt.Sprintf("Cannot open file: %s", path))
+		os.Exit(1)
 	}
 	defer file.Close()
 
 	b, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err, fmt.Sprintf("Cannot read file: %s", path))
+		os.Exit(1)
 	}
 	return fmt.Sprintf("%s", b)
 }
 
-func getConfigData(service string, subdir string) map[string]string {
-
+func getConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[string]string {
+	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 	files := make(map[string]string)
-	root := fmt.Sprint("/configmap/%v/%v", service, subdir)
+	root := filepath.Join("/", "configmap", service, subdir)
+	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		reqLogger.Info(fmt.Sprintf("Scan %s", path))
 		if !info.IsDir() {
+			reqLogger.Info("dudu")
 			files[info.Name()] = getFileContent(path)
-
 		}
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
+		os.Exit(1)
 	}
 	return files
 }
 
 func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *corev1.ConfigMap {
-	name := fmt.Sprintf("%s-%s", service, subdir)
+	name := fmt.Sprintf("config-%s-%s", service, subdir)
 	namespace := r.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
@@ -123,12 +130,12 @@ func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: getConfigData(service, subdir),
+		Data: getConfigData(r, service, subdir),
 	}
 }
 
 func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-qserv"
+	name := cr.Name + "-worker"
 	namespace := cr.Namespace
 
 	const (
@@ -148,7 +155,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	command := []string{
 		"sh",
-		"/config/start.sh",
+		"/config-start/start.sh",
 	}
 
 	ss := &appsv1beta2.StatefulSet{
@@ -175,7 +182,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 						{
 							Name:    "cmsd",
 							Image:   spec.Worker.Image,
-							Command: command,
+							Command: []string{"/config-start/start.sh"},
 							Args:    []string{"-S", "cmsd"},
 						},
 						{
@@ -238,21 +245,23 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	ss.Spec.Template.Spec.Containers[XROOTD].SecurityContext = &xrootdSecurityCtx
 	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = volumeMounts
 
-	executeMode := int32(0555)
-	configMapName := "xrootd-etc"
-	volumes = append(volumes, corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
-		LocalObjectReference: corev1.LocalObjectReference{
-			Name: configMapName,
-		},
-		DefaultMode: &executeMode,
-	}}})
-	configMapName = "xrootd-start"
-	volumes = append(volumes, corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
-		LocalObjectReference: corev1.LocalObjectReference{
-			Name: configMapName,
-		},
-		DefaultMode: &executeMode,
-	}}})
+	for _, configmapClass := range constants.ConfigmapClasses {
+		executeMode := int32(0555)
+		configName := fmt.Sprintf("config-%s-etc", configmapClass)
+		volumes = append(volumes, corev1.Volume{Name: configName, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: configName,
+			},
+		}}})
+		configName = fmt.Sprintf("config-%s-start", configmapClass)
+		volumes = append(volumes, corev1.Volume{Name: configName, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: configName,
+			},
+			DefaultMode: &executeMode,
+		}}})
+	}
+
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss
