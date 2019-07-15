@@ -14,6 +14,9 @@ type QservSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
+	// Common settings
+	StorageClass string `json:"storageclass,omitempty"`
+
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
 
@@ -26,26 +29,20 @@ type QservSpec struct {
 
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
-	Image           string   `json:"image,omitempty"`
-	Replicas        int32    `json:"replicas,omitempty"`
-	XrootdConfigMap []string `json:"xrootdConfigMap,omitempty"`
-	Command         []string `json:"command,omitempty"`
+	Image    string `json:"image,omitempty"`
+	Replicas int32  `json:"replicas,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
-	Image           string   `json:"image,omitempty"`
-	Replicas        int32    `json:"replicas,omitempty"`
-	XrootdConfigMap []string `json:"xrootdConfigMap,omitempty"`
-	Command         []string `json:"command,omitempty"`
+	Image    string `json:"image,omitempty"`
+	Replicas int32  `json:"replicas,omitempty"`
 }
 
-// WorkerSettings defines the specification of the worker cluster
+// XrootdSettings defines the specification of the xrootd redirectors cluster
 type XrootdSettings struct {
-	Image           string   `json:"image,omitempty"`
-	Replicas        int32    `json:"replicas,omitempty"`
-	XrootdConfigMap []string `json:"xrootdConfigMap,omitempty"`
-	Command         []string `json:"command,omitempty"`
+	Image    string `json:"image,omitempty"`
+	Replicas int32  `json:"replicas,omitempty"`
 }
 
 // QservStatus defines the observed state of Qserv

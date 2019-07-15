@@ -12,24 +12,10 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-func NewMicroserviceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, microservice string, subpath string) syncer.Interface {
-	cm := qserv.GenerateMicroserviceConfigMap(r, controllerLabels, microservice, subpath)
-	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(microservice), strings.Title(subpath))
-	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
-		return nil
-	})
-}
-
-func NewDomainNameConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	cm := qserv.GenerateDomainNameConfigMap(r, controllerLabels)
-	return syncer.NewObjectSyncer("DomainNameConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
-		return nil
-	})
-}
-
-func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db string) syncer.Interface {
-	cm := qserv.GenerateSqlConfigMap(r, controllerLabels, db)
-	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(db))
+// NewXrootdEtcConfigMapSyncer returns a new sync.Interface for reconciling XrootdEtc ConfigMap
+func NewSecretSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, service string) syncer.Interface {
+	cm := qserv.GenerateSecret(r, controllerLabels, service)
+	objectName := fmt.Sprintf("%sSecret", strings.Title(service))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})

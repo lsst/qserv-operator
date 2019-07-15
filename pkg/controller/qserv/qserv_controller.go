@@ -4,6 +4,7 @@ import (
 	"context"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
+	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/controller/qserv/internal/sync"
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 	corev1 "k8s.io/api/core/v1"
@@ -101,8 +102,26 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	qserv.SetDefaults()
 
 	syncers := []syncer.Interface{
-		sync.NewXrootdConfigMapSyncer(qserv, r.client, r.scheme),
+		sync.NewCzarServiceSyncer(qserv, r.client, r.scheme),
+		sync.NewCzarStatefulSetSyncer(qserv, r.client, r.scheme),
+		sync.NewDomainNameConfigMapSyncer(qserv, r.client, r.scheme),
 		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
+		sync.NewXrootdRedirectorServiceSyncer(qserv, r.client, r.scheme),
+		sync.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),
+	}
+
+	for _, configmapClass := range constants.MicroserviceConfigmaps {
+		for _, subpath := range []string{"etc", "start"} {
+			syncers = append(syncers, sync.NewMicroserviceConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+		}
+	}
+
+	for _, secretClass := range constants.MicroserviceSecrets {
+		syncers = append(syncers, sync.NewSecretSyncer(qserv, r.client, r.scheme, secretClass))
+	}
+
+	for _, db := range constants.Databases {
+		syncers = append(syncers, sync.NewSqlConfigMapSyncer(qserv, r.client, r.scheme, db))
 	}
 
 	if err = r.sync(syncers); err != nil {

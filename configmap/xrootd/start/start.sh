@@ -37,10 +37,7 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-export XROOTD_DOMAIN="xrootd-mgr"
-export XROOTD_DN="${XROOTD_DOMAIN}"
-
-if hostname | egrep "^xrootd-mgr-[0-9]+"
+if hostname | egrep "^${XROOTD_RDR_DN}-[0-9]+$"
 then
     INSTANCE_NAME='manager'
 else

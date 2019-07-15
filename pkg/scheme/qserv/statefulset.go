@@ -2,117 +2,35 @@ package qserv
 
 import (
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
-	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-// func GenerateSentinelService(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.Service {
-// 	name := util.GetSentinelName(r)
-// 	namespace := r.Namespace
+var log = logf.Log.WithName("qserv")
 
-// 	sentinelTargetPort := intstr.FromInt(26379)
-// 	labels = util.MergeLabels(labels, util.GetLabels(constants.SentinelRoleName, r.Name))
-
-// 	return &corev1.Service{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      name,
-// 			Namespace: namespace,
-// 			Labels:    labels,
-// 		},
-// 		Spec: corev1.ServiceSpec{
-// 			Selector: labels,
-// 			Ports: []corev1.ServicePort{
-// 				{
-// 					Name:       "sentinel",
-// 					Port:       26379,
-// 					TargetPort: sentinelTargetPort,
-// 					Protocol:   "TCP",
-// 				},
-// 			},
-// 		},
-// 	}
-// }
-
-// func GenerateRedisService(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.Service {
-// 	name := util.GetRedisName(r)
-// 	namespace := r.Namespace
-
-// 	labels = util.MergeLabels(labels, util.GetLabels(constants.RedisRoleName, r.Name))
-
-// 	return &corev1.Service{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      name,
-// 			Namespace: namespace,
-// 			Labels:    labels,
-// 			Annotations: map[string]string{
-// 				"prometheus.io/scrape": "true",
-// 				"prometheus.io/port":   "http",
-// 				"prometheus.io/path":   "/metrics",
-// 			},
-// 		},
-// 		Spec: corev1.ServiceSpec{
-// 			Type:      corev1.ServiceTypeClusterIP,
-// 			ClusterIP: corev1.ClusterIPNone,
-// 			Ports: []corev1.ServicePort{
-// 				{
-// 					Port:     constants.ExporterPort,
-// 					Protocol: corev1.ProtocolTCP,
-// 					Name:     constants.ExporterPortName,
-// 				},
-// 			},
-// 			Selector: labels,
-// 		},
-// 	}
-// }
-
-func GenerateXrootdConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.ConfigMap {
-	name := util.GetXrootdConfigName(r)
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
-
-	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: map[string]string{
-			constants.XrootdConfigFileName:       constants.XrootdConfigFileContent,
-			constants.XrdssiConfigFileName:       constants.XrdssiConfigFileContent,
-			constants.XrootdStartupFileName:      constants.XrootdStartupFileContent,
-			constants.XrootdFinalStartupFileName: constants.XrootdFinalStartupFileContent,
-		},
-	}
-}
-
-func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-qserv"
+func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	name := cr.Name + "-czar"
 	namespace := cr.Namespace
 
-	const (
-		CMSD = iota
-		MARIADB
-		XROOTD
-	)
+	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
 
-	spec := cr.Spec
+	var replicas int32 = 1
+	storageClass := "standard"
+	storageSize := "1G"
 
-	labels = map[string]string{
-		"app":  name,
-		"tier": "worker",
-	}
+	initContainer, initVolumes := getInitContainer(cr, constants.CzarName)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr)
+	proxyContainer, proxyVolumes := getProxyContainer(cr)
+	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 
-	var replicas int32 = 2
-
-	command := []string{
-		"sh",
-		"/config/start.sh",
-	}
+	var volumes VolumeSet
+	volumes.make(initVolumes, mariadbVolumes, proxyVolumes, wmgrVolumes)
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -129,41 +47,34 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
-			Template: corev1.PodTemplateSpec{
+			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:    "cmsd",
-							Image:   spec.Worker.Image,
-							Command: command,
-							Args:    []string{"-S", "cmsd"},
-						},
-						{
-							Name:  "mariadb",
-							Image: spec.Worker.Image,
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "mariadb",
-									ContainerPort: 3306,
-									Protocol:      corev1.ProtocolTCP,
-								},
+				Spec: v1.PodSpec{
+					InitContainers: []v1.Container{
+						initContainer,
+					},
+					Containers: []v1.Container{
+						mariadbContainer,
+						proxyContainer,
+						wmgrContainer,
+					},
+					Volumes: volumes.toSlice(),
+				},
+			},
+			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "qserv-data",
+					},
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						StorageClassName: &storageClass,
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								"storage": resource.MustParse(storageSize),
 							},
-							Command: command,
-						},
-						{
-							Name:  "xrootd",
-							Image: spec.Worker.Image,
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "xrootd",
-									ContainerPort: 1094,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-							Command: command,
 						},
 					},
 				},
@@ -171,43 +82,131 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		},
 	}
 
-	var volumeMounts = make([]corev1.VolumeMount, 1)
-	var volumes = make([]corev1.Volume, 1)
+	return ss
+}
 
-	volumename := "config-xrootd"
-	volumeMounts[0] = corev1.VolumeMount{Name: volumename, MountPath: "/config"}
+func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	name := cr.Name + "-worker"
+	namespace := cr.Namespace
 
-	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = volumeMounts
+	const (
+		MARIADB = iota
+		WMGR
+	)
 
-	cmsdAddCapabilities := make([]corev1.Capability, 1)
-	cmsdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
-	cmsdSecurityCtx := corev1.SecurityContext{
-		Capabilities: &corev1.Capabilities{
-			Add: cmsdAddCapabilities,
+	const INIT = 0
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
+
+	var replicas int32 = 2
+	storageClass := "standard"
+	storageSize := "1G"
+
+	initContainer, initVolumes := getInitContainer(cr, constants.WorkerName)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr)
+	xrootdContainers, xrootdVolumes := getXrootdContainers(cr)
+	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
+
+	// xrootd/cmsd workers only
+	for i, _ := range xrootdContainers {
+		xrootdContainers[i].VolumeMounts = append(xrootdContainers[i].VolumeMounts, getDataVolumeMount())
+	}
+
+	// Volumes
+	var volumes VolumeSet
+	volumes.make(initVolumes, mariadbVolumes, wmgrVolumes, xrootdVolumes)
+
+	ss := &appsv1beta2.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1beta2.StatefulSetSpec{
+			PodManagementPolicy: "Parallel",
+			ServiceName:         name,
+			Replicas:            &replicas,
+			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+				Type: "RollingUpdate",
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: v1.PodSpec{
+					InitContainers: []v1.Container{
+						initContainer,
+					},
+					Containers: []v1.Container{
+						mariadbContainer,
+						wmgrContainer,
+						xrootdContainers[0],
+						xrootdContainers[1],
+					},
+					Volumes: volumes.toSlice(),
+				},
+			},
+			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "qserv-data",
+					},
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						StorageClassName: &storageClass,
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								"storage": resource.MustParse(storageSize),
+							},
+						},
+					},
+				},
+			},
+		}}
+
+	return ss
+}
+
+func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	namespace := cr.Namespace
+	name := util.GetXrootdRedirectorName(cr)
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
+
+	var replicas int32 = 2
+
+	containers, volumes := getXrootdContainers(cr)
+
+	ss := &appsv1beta2.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1beta2.StatefulSetSpec{
+			PodManagementPolicy: "Parallel",
+			ServiceName:         name,
+			Replicas:            &replicas,
+			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+				Type: "RollingUpdate",
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: v1.PodSpec{
+					Containers: containers,
+					Volumes:    volumes.toSlice(),
+				},
+			},
 		},
 	}
-	ss.Spec.Template.Spec.Containers[CMSD].SecurityContext = &cmsdSecurityCtx
-
-	xrootdAddCapabilities := make([]corev1.Capability, 2)
-	xrootdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
-	xrootdAddCapabilities[1] = corev1.Capability("SYS_RESOURCE")
-	xrootdSecurityCtx := corev1.SecurityContext{
-		Capabilities: &corev1.Capabilities{
-			Add: xrootdAddCapabilities,
-		},
-	}
-	ss.Spec.Template.Spec.Containers[XROOTD].SecurityContext = &xrootdSecurityCtx
-	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = volumeMounts
-
-	executeMode := int32(0555)
-	configMapName := util.GetXrootdConfigName(cr)
-	volumes[0] = corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
-		LocalObjectReference: corev1.LocalObjectReference{
-			Name: configMapName,
-		},
-		DefaultMode: &executeMode,
-	}}}
-	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss
 }

@@ -1,4 +1,4 @@
-#!/bin/ sh
+#!/bin/sh
 
 # Start Qserv replication worker service inside pod
 

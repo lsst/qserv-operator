@@ -3,7 +3,9 @@ kind: Qserv
 metadata:
   name: example-qserv
 spec:
-  # Add fields here
-  size: 3
+  storageclass: "standard"
   worker:
+    replicas: 3
+    image: "qserv/qserv:9701693"
+  xrootd:
     image: "qserv/qserv:9701693"

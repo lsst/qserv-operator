@@ -5,7 +5,7 @@ import (
 )
 
 var controllerLabels = map[string]string{
-	"app.kubernetes.io/managed-by": "redis-operator",
+	"app.kubernetes.io/managed-by": "qserv-operator",
 }
 
 var noFunc = func(existing runtime.Object) error {

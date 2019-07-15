@@ -4,19 +4,19 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	redisv1alpha1 "github.com/kube-incubator/redis-operator/pkg/apis/redis/v1alpha1"
-	"github.com/kube-incubator/redis-operator/pkg/scheme/redis"
-	"github.com/kube-incubator/redis-operator/pkg/staging/syncer"
+	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
+	"github.com/lsst/qserv-operator/pkg/scheme/qserv"
+	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-// NewRedisServiceSyncer returns a new sync.Interface for reconciling Redis Service
-func NewRedisServiceSyncer(r *redisv1alpha1.Redis, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := redis.GenerateRedisService(r, controllerLabels)
-	return syncer.NewObjectSyncer("RedisService", r, svc, c, scheme, noFunc)
+// NewCzarServiceSyncer returns a new sync.Interface for reconciling Czar Service
+func NewCzarServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	svc := qserv.GenerateCzarService(r, controllerLabels)
+	return syncer.NewObjectSyncer("CzarService", r, svc, c, scheme, noFunc)
 }
 
-// NewSentinelServiceSyncer returns a new sync.Interface for reconciling Sentinel Service
-func NewSentinelServiceSyncer(r *redisv1alpha1.Redis, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := redis.GenerateSentinelService(r, controllerLabels)
-	return syncer.NewObjectSyncer("SentinelService", r, svc, c, scheme, noFunc)
+// NewXrootdRedirectorServiceSyncer returns a new sync.Interface for reconciling Xrootd Redirector Service
+func NewXrootdRedirectorServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	svc := qserv.GenerateXrootdRedirectorService(r, controllerLabels)
+	return syncer.NewObjectSyncer("XrootdRedirectorService", r, svc, c, scheme, noFunc)
 }
