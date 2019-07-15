@@ -3,7 +3,7 @@ package constants
 const (
 	BaseName                             = "lsst"
 	AppLabel                             = "qserv-operator"
-	XrootdConfigName                     = "xrootd-etc"
+	XrootdConfigName                     = "xrootd"
 	RedisStorageVolumeName               = "redis-data"
 	RedisConfigurationVolumeName         = "redis-config"
 	RedisShutdownConfigurationVolumeName = "redis-shutdown-config"

@@ -11,8 +11,8 @@ import (
 
 // NewXrootdConfigMapSyncer returns a new sync.Interface for reconciling Xrootd ConfigMap
 func NewXrootdConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	cm := qserv.GenerateXrootdConfigMap(r, controllerLabels)
-	return syncer.NewObjectSyncer("XrootdConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
+	cm := qserv.GenerateConfigMap(r, controllerLabels, "xrootd", "etc")
+	return syncer.NewObjectSyncer("XrootdEtcConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
 }

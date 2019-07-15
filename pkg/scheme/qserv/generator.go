@@ -1,6 +1,12 @@
 package qserv
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -69,7 +75,43 @@ import (
 // 	}
 // }
 
-func GenerateXrootdConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.ConfigMap {
+type filedesc struct {
+	name    string
+	content []byte
+}
+
+func getFileContent(path string) string {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fmt.Sprintf("%s", b)
+}
+
+func getConfigData(service string, subdir string) map[string]string {
+
+	files := make(map[string]string)
+	root := fmt.Sprint("/configmap/%v/%v", service, subdir)
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files[info.Name()] = getFileContent(path)
+
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return files
+}
+
+func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *corev1.ConfigMap {
 	name := util.GetXrootdConfigName(r)
 	namespace := r.Namespace
 
@@ -81,12 +123,7 @@ func GenerateXrootdConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: map[string]string{
-			constants.XrootdConfigFileName:       constants.XrootdConfigFileContent,
-			constants.XrdssiConfigFileName:       constants.XrdssiConfigFileContent,
-			constants.XrootdStartupFileName:      constants.XrootdStartupFileContent,
-			constants.XrootdFinalStartupFileName: constants.XrootdFinalStartupFileContent,
-		},
+		Data: getConfigData(service, subdir),
 	}
 }
 
@@ -179,6 +216,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = volumeMounts
 
+	GenerateConfigMap(cr, labels, "xrootd", "etc")
 	cmsdAddCapabilities := make([]corev1.Capability, 1)
 	cmsdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
 	cmsdSecurityCtx := corev1.SecurityContext{
