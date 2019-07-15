@@ -9,10 +9,18 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-// NewXrootdConfigMapSyncer returns a new sync.Interface for reconciling Xrootd ConfigMap
-func NewXrootdConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+// NewXrootdEtcConfigMapSyncer returns a new sync.Interface for reconciling XrootdEtc ConfigMap
+func NewXrootdEtcConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	cm := qserv.GenerateConfigMap(r, controllerLabels, "xrootd", "etc")
 	return syncer.NewObjectSyncer("XrootdEtcConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
+		return nil
+	})
+}
+
+// NewXrootdStartConfigMapSyncer returns a new sync.Interface for reconciling XrootdStart ConfigMap
+func NewXrootStartConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	cm := qserv.GenerateConfigMap(r, controllerLabels, "xrootd", "start")
+	return syncer.NewObjectSyncer("XrootdStartConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
 }

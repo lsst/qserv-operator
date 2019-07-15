@@ -112,7 +112,7 @@ func getConfigData(service string, subdir string) map[string]string {
 }
 
 func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *corev1.ConfigMap {
-	name := util.GetXrootdConfigName(r)
+	name := fmt.Sprintf("%s-%s", service, subdir)
 	namespace := r.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
@@ -208,15 +208,16 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		},
 	}
 
-	var volumeMounts = make([]corev1.VolumeMount, 1)
-	var volumes = make([]corev1.Volume, 1)
+	var volumeMounts []corev1.VolumeMount
+	var volumes []corev1.Volume
 
-	volumename := "config-xrootd"
-	volumeMounts[0] = corev1.VolumeMount{Name: volumename, MountPath: "/config"}
+	volumename := "config-xrootd-etc"
+	volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: volumename, MountPath: "/config-etc"})
+	volumename = "config-xrootd-start"
+	volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: volumename, MountPath: "/config-start"})
 
 	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = volumeMounts
 
-	GenerateConfigMap(cr, labels, "xrootd", "etc")
 	cmsdAddCapabilities := make([]corev1.Capability, 1)
 	cmsdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
 	cmsdSecurityCtx := corev1.SecurityContext{
@@ -226,9 +227,9 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	}
 	ss.Spec.Template.Spec.Containers[CMSD].SecurityContext = &cmsdSecurityCtx
 
-	xrootdAddCapabilities := make([]corev1.Capability, 2)
-	xrootdAddCapabilities[0] = corev1.Capability("IPC_LOCK")
-	xrootdAddCapabilities[1] = corev1.Capability("SYS_RESOURCE")
+	var xrootdAddCapabilities []corev1.Capability
+	xrootdAddCapabilities = append(xrootdAddCapabilities, corev1.Capability("IPC_LOCK"))
+	xrootdAddCapabilities = append(xrootdAddCapabilities, corev1.Capability("SYS_RESOURCE"))
 	xrootdSecurityCtx := corev1.SecurityContext{
 		Capabilities: &corev1.Capabilities{
 			Add: xrootdAddCapabilities,
@@ -238,13 +239,20 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = volumeMounts
 
 	executeMode := int32(0555)
-	configMapName := util.GetXrootdConfigName(cr)
-	volumes[0] = corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
+	configMapName := "xrootd-etc"
+	volumes = append(volumes, corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
 		LocalObjectReference: corev1.LocalObjectReference{
 			Name: configMapName,
 		},
 		DefaultMode: &executeMode,
-	}}}
+	}}})
+	configMapName = "xrootd-start"
+	volumes = append(volumes, corev1.Volume{Name: volumename, VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
+		LocalObjectReference: corev1.LocalObjectReference{
+			Name: configMapName,
+		},
+		DefaultMode: &executeMode,
+	}}})
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss
