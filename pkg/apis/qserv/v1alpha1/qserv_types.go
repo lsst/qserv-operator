@@ -15,6 +15,9 @@ type QservSpec struct {
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// Czar defines the settings for czar cluster
+	Common CommonSettings `json:"common,omitempty"`
+
+	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
 
 	// Worker defines the settings for worker cluster
@@ -22,6 +25,11 @@ type QservSpec struct {
 
 	// Worker defines the settings for worker cluster
 	Xrootd XrootdSettings `json:"xrootd,omitempty"`
+}
+
+// CommonSettings defines the common specifications
+type CommonSettings struct {
+	StorageClass string `json:"storageclass,omitempty"`
 }
 
 // CzarSettings defines the specification of the czar cluster

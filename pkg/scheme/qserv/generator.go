@@ -6,8 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
@@ -134,13 +135,14 @@ func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service
 	}
 }
 
-func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-worker"
 	namespace := cr.Namespace
 
 	const (
 		CMSD = iota
 		MARIADB
+		WMGR
 		XROOTD
 	)
 
@@ -152,22 +154,23 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	}
 
 	var replicas int32 = 2
+	storageClass := "standard"
+	storageSize := "1G"
 
 	command := []string{
-		"sh",
 		"/config-start/start.sh",
 	}
 
-	ss := &appsv1beta2.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1beta2.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			ServiceName: name,
 			Replicas:    &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{
@@ -178,11 +181,18 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
+					// InitContainers: []corev1.InitContainers{
+					// 	{
+					// 		Name:    "initdb",
+					// 		Image:   spec.Worker.Image,
+					// 		Command: command,
+					// 	},
+					// },
 					Containers: []corev1.Container{
 						{
 							Name:    "cmsd",
 							Image:   spec.Worker.Image,
-							Command: []string{"/config-start/start.sh"},
+							Command: command,
 							Args:    []string{"-S", "cmsd"},
 						},
 						{
@@ -192,6 +202,18 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								{
 									Name:          "mariadb",
 									ContainerPort: 3306,
+									Protocol:      corev1.ProtocolTCP,
+								},
+							},
+							Command: command,
+						},
+						{
+							Name:  "wmgr",
+							Image: spec.Worker.Image,
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "wmgr",
+									ContainerPort: 5012,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
@@ -212,8 +234,23 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 					},
 				},
 			},
-		},
-	}
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "qserv-data",
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+						StorageClassName: &storageClass,
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								"storage_size": resource.MustParse(storageSize),
+							},
+						},
+					},
+				},
+			},
+		}}
 
 	var volumeMounts []corev1.VolumeMount
 	var volumes []corev1.Volume
