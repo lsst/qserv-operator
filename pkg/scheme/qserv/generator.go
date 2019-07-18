@@ -99,6 +99,18 @@ func getFileContent(path string) string {
 	return fmt.Sprintf("%s", b)
 }
 
+// TODO manage secret cleanly
+func getSecretData(r *qservv1alpha1.Qserv, service string) map[string][]byte {
+	files := make(map[string][]byte)
+	if service == "mariadb" {
+		files["mariadb.secret.sh"] = []byte(`MYSQL_ROOT_PASSWORD="CHANGEME"
+		MYSQL_MONITOR_PASSWORD="CHANGEMETOO"`)
+	} else if service == "wmgr" {
+		files["wmgr.secret"] = []byte(`USER:CHANGEMEAGAIN`)
+	}
+	return files
+}
+
 func getConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[string]string {
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 	files := make(map[string]string)
@@ -131,6 +143,22 @@ func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service
 			Labels:    labels,
 		},
 		Data: getConfigData(r, service, subdir),
+	}
+}
+
+func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, service string) *v1.Secret {
+	name := fmt.Sprintf("secret-%s", service)
+	namespace := r.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+
+	return &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Data: getSecretData(r, service),
 	}
 }
 
@@ -286,20 +314,11 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			},
 		}}
 
-	var volumeMounts []v1.VolumeMount
-	var volumeName string
-
 	// INIT
-	addVolume("mariadb", &ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts)
+	addVolumes("mariadb", &ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts)
 
 	// CMSD
-	volumeMounts = nil
-	volumeName = "config-xrootd-etc"
-	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"})
-	volumeName = "config-xrootd-start"
-	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-start"})
-
-	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = volumeMounts
+	addVolumes("xrootd", &ss.Spec.Template.Spec.InitContainers[CMSD].VolumeMounts)
 
 	cmsdAddCapabilities := make([]v1.Capability, 1)
 	cmsdAddCapabilities[0] = v1.Capability("IPC_LOCK")
@@ -311,6 +330,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	ss.Spec.Template.Spec.Containers[CMSD].SecurityContext = &cmsdSecurityCtx
 
 	// XROOTD
+	addVolumes("xrootd", &ss.Spec.Template.Spec.InitContainers[XROOTD].VolumeMounts)
+
 	var xrootdAddCapabilities []v1.Capability
 	xrootdAddCapabilities = append(xrootdAddCapabilities, v1.Capability("IPC_LOCK"))
 	xrootdAddCapabilities = append(xrootdAddCapabilities, v1.Capability("SYS_RESOURCE"))
@@ -320,7 +341,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		},
 	}
 	ss.Spec.Template.Spec.Containers[XROOTD].SecurityContext = &xrootdSecurityCtx
-	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = volumeMounts
 
 	// Volumes
 	var volumes []v1.Volume
@@ -360,7 +380,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
-func addVolume(service string, target *[]v1.VolumeMount) {
+func addVolumes(service string, target *[]v1.VolumeMount) {
 	volumeMounts := *target
 	volumeName := fmt.Sprintf("config-%s-etc", service)
 	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"})
