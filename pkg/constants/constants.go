@@ -15,4 +15,4 @@ const (
 	GraceTime = 30
 )
 
-var ConfigmapClasses = []string{"mariadb", "xrootd", "wmgr"}
+var WorkerServiceConfigmaps = []string{"mariadb", "xrootd", "wmgr"}

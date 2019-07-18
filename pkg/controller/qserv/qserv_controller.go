@@ -103,7 +103,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 
 	syncers := []syncer.Interface{}
 
-	for _, configmapClass := range constants.ConfigmapClasses {
+	for _, configmapClass := range constants.WorkerServiceConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {
 			syncers = append(syncers, sync.NewConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
 		}
