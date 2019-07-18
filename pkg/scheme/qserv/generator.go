@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	appsv1 "k8s.io/api/apps/v1"
+	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -105,9 +105,8 @@ func getConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[st
 	root := filepath.Join("/", "configmap", service, subdir)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		reqLogger.Info(fmt.Sprintf("Scan %s", path))
 		if !info.IsDir() {
-			reqLogger.Info("dudu")
+			reqLogger.Info(fmt.Sprintf("Scan %s", path))
 			files[info.Name()] = getFileContent(path)
 		}
 		return nil
@@ -135,7 +134,7 @@ func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service
 	}
 }
 
-func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
 	name := cr.Name + "-worker"
 	namespace := cr.Namespace
 
@@ -161,16 +160,16 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		"/config-start/start.sh",
 	}
 
-	ss := &appsv1.StatefulSet{
+	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1.StatefulSetSpec{
+		Spec: appsv1beta2.StatefulSetSpec{
 			ServiceName: name,
 			Replicas:    &replicas,
-			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{
@@ -181,13 +180,13 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
-					// InitContainers: []corev1.InitContainers{
-					// 	{
-					// 		Name:    "initdb",
-					// 		Image:   spec.Worker.Image,
-					// 		Command: command,
-					// 	},
-					// },
+					InitContainers: []corev1.Container{
+						{
+							Name:    "initdb",
+							Image:   spec.Worker.Image,
+							Command: command,
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:    "cmsd",
@@ -244,7 +243,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 						StorageClassName: &storageClass,
 						Resources: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
-								"storage_size": resource.MustParse(storageSize),
+								"storage": resource.MustParse(storageSize),
 							},
 						},
 					},

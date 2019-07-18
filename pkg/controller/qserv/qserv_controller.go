@@ -101,15 +101,15 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	r.scheme.Default(qserv)
 	qserv.SetDefaults()
 
-	syncers := []syncer.Interface{
-		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
-	}
+	syncers := []syncer.Interface{}
 
 	for _, configmapClass := range constants.ConfigmapClasses {
 		for _, subpath := range []string{"etc", "start"} {
 			syncers = append(syncers, sync.NewConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
 		}
 	}
+
+	syncers = append(syncers, sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme))
 
 	if err = r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
