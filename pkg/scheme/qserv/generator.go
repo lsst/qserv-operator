@@ -111,7 +111,7 @@ func getSecretData(r *qservv1alpha1.Qserv, service string) map[string][]byte {
 	return files
 }
 
-func getConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[string]string {
+func getServiceConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[string]string {
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 	files := make(map[string]string)
 	root := filepath.Join("/", "configmap", service, subdir)
@@ -130,7 +130,26 @@ func getConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[st
 	return files
 }
 
-func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *v1.ConfigMap {
+func getSqlConfigData(r *qservv1alpha1.Qserv, db string) map[string]string {
+	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+	files := make(map[string]string)
+	root := filepath.Join("/", "configmap", "init", "sql", db)
+	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			reqLogger.Info(fmt.Sprintf("Scan %s", path))
+			files[info.Name()] = getFileContent(path)
+		}
+		return nil
+	})
+	if err != nil {
+		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
+		os.Exit(1)
+	}
+	return files
+}
+
+func GenerateServiceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *v1.ConfigMap {
 	name := fmt.Sprintf("config-%s-%s", service, subdir)
 	namespace := r.Namespace
 
@@ -142,7 +161,47 @@ func GenerateConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: getConfigData(r, service, subdir),
+		Data: getServiceConfigData(r, service, subdir),
+	}
+}
+
+func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db string) *v1.ConfigMap {
+	name := fmt.Sprintf("config-sql-%s", db)
+	namespace := r.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+
+	return &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Data: getSqlConfigData(r, db),
+	}
+}
+
+func GenerateDomainNameConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
+	name := "config-domainnames"
+	namespace := r.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+
+	data := make(map[string]string)
+	data["CZAR"] = constants.CZAR
+	data["CZAR_DN"] = fmt.Sprintf("%s.%s", constants.CZAR, constants.QSERV_DOMAIN)
+	data["QSERV_DOMAIN"] = constants.QSERV_DOMAIN
+	data["REPL_CTL"] = constants.REPL_CTL
+	data["REPL_DB"] = constants.REPL_DB
+	data["XROOTD_MANAGER"] = constants.XROOTD_MANAGER
+
+	return &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Data: data,
 	}
 }
 
@@ -315,10 +374,10 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		}}
 
 	// INIT
-	addVolumes("mariadb", &ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts)
+	ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts = append(ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts, getConfigVolumes("mariadb")...)
 
 	// CMSD
-	addVolumes("xrootd", &ss.Spec.Template.Spec.InitContainers[CMSD].VolumeMounts)
+	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = append(ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts, getConfigVolumes("cmsd")...)
 
 	cmsdAddCapabilities := make([]v1.Capability, 1)
 	cmsdAddCapabilities[0] = v1.Capability("IPC_LOCK")
@@ -330,7 +389,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	ss.Spec.Template.Spec.Containers[CMSD].SecurityContext = &cmsdSecurityCtx
 
 	// XROOTD
-	addVolumes("xrootd", &ss.Spec.Template.Spec.InitContainers[XROOTD].VolumeMounts)
+	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = append(ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts, getConfigVolumes("xrootd")...)
 
 	var xrootdAddCapabilities []v1.Capability
 	xrootdAddCapabilities = append(xrootdAddCapabilities, v1.Capability("IPC_LOCK"))
@@ -362,30 +421,35 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			DefaultMode: &executeMode,
 		}}})
 	}
-	configName = "config-domainnames"
-	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-		LocalObjectReference: v1.LocalObjectReference{
-			Name: configName,
-		},
-	}}})
-	configName = "config-sql-worker"
-	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-		LocalObjectReference: v1.LocalObjectReference{
-			Name: configName,
-		},
-	}}})
 
+	for _, configName := range []string{"config-domainnames", "config-sql-worker"} {
+		volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
+			LocalObjectReference: v1.LocalObjectReference{
+				Name: configName,
+			},
+		}}})
+	}
+
+	for _, secretName := range []string{"secret-mariadb", "secret-wmgr"} {
+		volumes = append(volumes, v1.Volume{Name: secretName, VolumeSource: v1.VolumeSource{Secret: &v1.SecretVolumeSource{
+			SecretName: secretName,
+		},
+		}})
+	}
+
+	volumes = append(volumes, v1.Volume{Name: "xrootd-adminpath", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss
 }
 
-func addVolumes(service string, target *[]v1.VolumeMount) {
-	volumeMounts := *target
+func getConfigVolumes(service string) []v1.VolumeMount {
+	var volumeMounts []v1.VolumeMount
 	volumeName := fmt.Sprintf("config-%s-etc", service)
 	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"})
 	volumeName = fmt.Sprintf("config-%s-start", service)
 	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-start"})
+	return volumeMounts
 }
 
 // func GenerateRedisConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.ConfigMap {

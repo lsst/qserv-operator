@@ -12,10 +12,24 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-// NewXrootdEtcConfigMapSyncer returns a new sync.Interface for reconciling XrootdEtc ConfigMap
-func NewConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, service string, subpath string) syncer.Interface {
-	cm := qserv.GenerateConfigMap(r, controllerLabels, service, subpath)
+func NewServiceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, service string, subpath string) syncer.Interface {
+	cm := qserv.GenerateServiceConfigMap(r, controllerLabels, service, subpath)
 	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(service), strings.Title(subpath))
+	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
+		return nil
+	})
+}
+
+func NewDomainNameConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	cm := qserv.GenerateDomainNameConfigMap(r, controllerLabels)
+	return syncer.NewObjectSyncer("DomainNameConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
+		return nil
+	})
+}
+
+func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db string) syncer.Interface {
+	cm := qserv.GenerateSqlConfigMap(r, controllerLabels, db)
+	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(db))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})

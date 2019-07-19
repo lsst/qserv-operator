@@ -101,15 +101,21 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	r.scheme.Default(qserv)
 	qserv.SetDefaults()
 
-	syncers := []syncer.Interface{}
+	syncers := []syncer.Interface{sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme), sync.NewDomainNameConfigMapSyncer(qserv, r.client, r.scheme)}
 
 	for _, configmapClass := range constants.WorkerServiceConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {
-			syncers = append(syncers, sync.NewConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+			syncers = append(syncers, sync.NewServiceConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
 		}
 	}
 
-	syncers = append(syncers, sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme))
+	for _, secretClass := range constants.WorkerServiceSecrets {
+		syncers = append(syncers, sync.NewSecretSyncer(qserv, r.client, r.scheme, secretClass))
+	}
+
+	for _, db := range constants.Databases {
+		syncers = append(syncers, sync.NewSqlConfigMapSyncer(qserv, r.client, r.scheme, db))
+	}
 
 	if err = r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
