@@ -377,7 +377,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts = append(ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts, getConfigVolumes("mariadb")...)
 
 	// CMSD
-	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = append(ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts, getConfigVolumes("cmsd")...)
+	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = append(ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts, getConfigVolumes("xrootd")...)
 
 	cmsdAddCapabilities := make([]v1.Capability, 1)
 	cmsdAddCapabilities[0] = v1.Capability("IPC_LOCK")
