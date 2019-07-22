@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Start mariadb inside pod
 # and do not exit
 
