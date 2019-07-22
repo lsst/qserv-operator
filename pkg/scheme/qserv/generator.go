@@ -315,6 +315,13 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 							Image:   spec.Worker.Image,
 							Command: command,
 							Args:    []string{"-S", "cmsd"},
+							SecurityContext: &v1.SecurityContext{
+								Capabilities: &v1.Capabilities{
+									Add: []v1.Capability{
+										v1.Capability("IPC_LOCK"),
+									},
+								},
+							},
 						},
 						{
 							Name:  "mariadb",
@@ -327,6 +334,18 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								},
 							},
 							Command: command,
+							VolumeMounts: []v1.VolumeMount{
+								{
+									MountPath: "/qserv/data",
+									Name:      "qserv-data",
+									ReadOnly:  false,
+								},
+								{
+									MountPath: "/qserv/run/tmp",
+									Name:      "tmp-volume",
+									ReadOnly:  false,
+								},
+							},
 						},
 						{
 							Name:  "wmgr",
@@ -339,6 +358,40 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								},
 							},
 							Command: command,
+							Env: []v1.EnvVar{
+								{
+									Name: "CZAR_DN",
+									ValueFrom: &v1.EnvVarSource{
+										ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{Name: "config-domainnames"},
+											Key:                  "CZAR_DN",
+											Optional:             &trueVal,
+										},
+									},
+								},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									MountPath: "/qserv/data",
+									Name:      "qserv-data",
+									ReadOnly:  false,
+								},
+								{
+									MountPath: "/qserv/run/tmp",
+									Name:      "tmp-volume",
+									ReadOnly:  false,
+								},
+								{
+									MountPath: "/secret-mariadb",
+									Name:      "secret-mariadb",
+									ReadOnly:  false,
+								},
+								{
+									MountPath: "/secret-wmgr",
+									Name:      "secret-wmgr",
+									ReadOnly:  false,
+								},
+							},
 						},
 						{
 							Name:  "xrootd",
@@ -351,6 +404,14 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								},
 							},
 							Command: command,
+							SecurityContext: &v1.SecurityContext{
+								Capabilities: &v1.Capabilities{
+									Add: []v1.Capability{
+										v1.Capability("IPC_LOCK"),
+										v1.Capability("SYS_RESOURCE"),
+									},
+								},
+							},
 						},
 					},
 				},
@@ -373,39 +434,18 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			},
 		}}
 
-	// INIT
-	ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts = append(ss.Spec.Template.Spec.InitContainers[INIT].VolumeMounts, getConfigVolumes("mariadb")...)
-
-	// CMSD
-	ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts = append(ss.Spec.Template.Spec.Containers[CMSD].VolumeMounts, getConfigVolumes("xrootd")...)
-
-	cmsdAddCapabilities := make([]v1.Capability, 1)
-	cmsdAddCapabilities[0] = v1.Capability("IPC_LOCK")
-	cmsdSecurityCtx := v1.SecurityContext{
-		Capabilities: &v1.Capabilities{
-			Add: cmsdAddCapabilities,
-		},
-	}
-	ss.Spec.Template.Spec.Containers[CMSD].SecurityContext = &cmsdSecurityCtx
-
-	// XROOTD
-	ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts = append(ss.Spec.Template.Spec.Containers[XROOTD].VolumeMounts, getConfigVolumes("xrootd")...)
-
-	var xrootdAddCapabilities []v1.Capability
-	xrootdAddCapabilities = append(xrootdAddCapabilities, v1.Capability("IPC_LOCK"))
-	xrootdAddCapabilities = append(xrootdAddCapabilities, v1.Capability("SYS_RESOURCE"))
-	xrootdSecurityCtx := v1.SecurityContext{
-		Capabilities: &v1.Capabilities{
-			Add: xrootdAddCapabilities,
-		},
-	}
-	ss.Spec.Template.Spec.Containers[XROOTD].SecurityContext = &xrootdSecurityCtx
+	// All containers
+	mountConfigVolumes(&ss.Spec.Template.Spec.InitContainers[INIT], "mariadb")
+	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[CMSD], "xrootd")
+	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[MARIADB], "mariadb")
+	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[WMGR], "wmgr")
+	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[XROOTD], "xrootd")
 
 	// Volumes
 	var volumes []v1.Volume
-	var configName string
 
 	for _, configmapClass := range constants.WorkerServiceConfigmaps {
+		var configName string
 		executeMode := int32(0555)
 		configName = fmt.Sprintf("config-%s-etc", configmapClass)
 		volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
@@ -437,10 +477,16 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		}})
 	}
 
-	volumes = append(volumes, v1.Volume{Name: "xrootd-adminpath", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
+	for _, emptyDirName := range []string{"xrootd-adminpath", "tmp-volume"} {
+		volumes = append(volumes, v1.Volume{Name: emptyDirName, VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
+	}
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	return ss
+}
+
+func mountConfigVolumes(container *v1.Container, service string) {
+	container.VolumeMounts = append(container.VolumeMounts, getConfigVolumes(service)...)
 }
 
 func getConfigVolumes(service string) []v1.VolumeMount {
