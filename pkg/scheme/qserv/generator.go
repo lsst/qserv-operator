@@ -485,6 +485,120 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
+func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	name := cr.Name + "xrootd-redirector"
+	namespace := cr.Namespace
+
+	labels = map[string]string{
+		"app":  name,
+		"tier": "xrootd-redirector",
+	}
+
+	var replicas int32 = 2
+
+	containers, volumes := getXrootdContainers(cr)
+
+	ss := &appsv1beta2.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1beta2.StatefulSetSpec{
+			ServiceName: name,
+			Replicas:    &replicas,
+			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+				Type: "RollingUpdate",
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: v1.PodSpec{
+					Containers: containers,
+					Volumes:    volumes,
+				},
+			},
+		},
+	}
+
+	return ss
+}
+
+func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) {
+
+	const (
+		CMSD = iota
+		XROOTD
+	)
+
+	spec := cr.Spec
+
+	containers := []v1.Container{
+		{
+			Name:    "cmsd",
+			Image:   spec.Worker.Image,
+			Command: constants.Command,
+			Args:    []string{"-S", "cmsd"},
+			SecurityContext: &v1.SecurityContext{
+				Capabilities: &v1.Capabilities{
+					Add: []v1.Capability{
+						v1.Capability("IPC_LOCK"),
+					},
+				},
+			},
+		},
+		{
+			Name:  "xrootd",
+			Image: spec.Worker.Image,
+			Ports: []v1.ContainerPort{
+				{
+					Name:          "xrootd",
+					ContainerPort: 1094,
+					Protocol:      v1.ProtocolTCP,
+				},
+			},
+			Command: constants.Command,
+			SecurityContext: &v1.SecurityContext{
+				Capabilities: &v1.Capabilities{
+					Add: []v1.Capability{
+						v1.Capability("IPC_LOCK"),
+						v1.Capability("SYS_RESOURCE"),
+					},
+				},
+			},
+		},
+	}
+	mountConfigVolumes(&containers[CMSD], constants.XrootdConfigName)
+	mountConfigVolumes(&containers[XROOTD], constants.XrootdConfigName)
+
+	// Volumes
+	var volumes []v1.Volume
+
+	var configName string
+	executeMode := int32(0555)
+	configName = fmt.Sprintf("config-%s-etc", constants.XrootdConfigName)
+	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
+		LocalObjectReference: v1.LocalObjectReference{
+			Name: configName,
+		},
+	}}})
+	configName = fmt.Sprintf("config-%s-start", constants.XrootdConfigName)
+	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
+		LocalObjectReference: v1.LocalObjectReference{
+			Name: configName,
+		},
+		DefaultMode: &executeMode,
+	}}})
+
+	volumes = append(volumes, v1.Volume{Name: "xrootd-adminpath", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
+
+	return containers, volumes
+}
+
 func mountConfigVolumes(container *v1.Container, service string) {
 	container.VolumeMounts = append(container.VolumeMounts, getConfigVolumes(service)...)
 }

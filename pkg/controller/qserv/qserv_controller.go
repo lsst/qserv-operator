@@ -101,7 +101,11 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	r.scheme.Default(qserv)
 	qserv.SetDefaults()
 
-	syncers := []syncer.Interface{sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme), sync.NewDomainNameConfigMapSyncer(qserv, r.client, r.scheme)}
+	syncers := []syncer.Interface{
+		sync.NewDomainNameConfigMapSyncer(qserv, r.client, r.scheme),
+		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
+		sync.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),
+	}
 
 	for _, configmapClass := range constants.WorkerServiceConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {

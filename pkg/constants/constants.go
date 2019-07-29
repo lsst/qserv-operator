@@ -24,3 +24,5 @@ const (
 var WorkerServiceConfigmaps = []string{"mariadb", "xrootd", "wmgr"}
 var WorkerServiceSecrets = []string{"mariadb", "wmgr"}
 var Databases = []string{"czar", "repl", "worker"}
+
+var Command = []string{"/config-start/start.sh"}
