@@ -226,10 +226,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	namespace := cr.Namespace
 
 	const (
-		CMSD = iota
-		MARIADB
+		MARIADB = iota
 		WMGR
-		XROOTD
 	)
 
 	const INIT = 0
@@ -311,19 +309,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 					},
 					Containers: []v1.Container{
 						{
-							Name:    "cmsd",
-							Image:   spec.Worker.Image,
-							Command: command,
-							Args:    []string{"-S", "cmsd"},
-							SecurityContext: &v1.SecurityContext{
-								Capabilities: &v1.Capabilities{
-									Add: []v1.Capability{
-										v1.Capability("IPC_LOCK"),
-									},
-								},
-							},
-						},
-						{
 							Name:  "mariadb",
 							Image: spec.Worker.Image,
 							Ports: []v1.ContainerPort{
@@ -393,26 +378,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								},
 							},
 						},
-						{
-							Name:  "xrootd",
-							Image: spec.Worker.Image,
-							Ports: []v1.ContainerPort{
-								{
-									Name:          "xrootd",
-									ContainerPort: 1094,
-									Protocol:      v1.ProtocolTCP,
-								},
-							},
-							Command: command,
-							SecurityContext: &v1.SecurityContext{
-								Capabilities: &v1.Capabilities{
-									Add: []v1.Capability{
-										v1.Capability("IPC_LOCK"),
-										v1.Capability("SYS_RESOURCE"),
-									},
-								},
-							},
-						},
 					},
 				},
 			},
@@ -436,15 +401,13 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	// All containers
 	mountConfigVolumes(&ss.Spec.Template.Spec.InitContainers[INIT], "mariadb")
-	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[CMSD], "xrootd")
 	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[MARIADB], "mariadb")
 	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[WMGR], "wmgr")
-	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[XROOTD], "xrootd")
 
 	// Volumes
 	var volumes []v1.Volume
 
-	for _, configmapClass := range constants.WorkerServiceConfigmaps {
+	for _, configmapClass := range []string{"mariadb", "wmgr"} {
 		var configName string
 		executeMode := int32(0555)
 		configName = fmt.Sprintf("config-%s-etc", configmapClass)
@@ -480,7 +443,12 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	for _, emptyDirName := range []string{"xrootd-adminpath", "tmp-volume"} {
 		volumes = append(volumes, v1.Volume{Name: emptyDirName, VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
 	}
+
 	ss.Spec.Template.Spec.Volumes = volumes
+
+	containers, volumes := getXrootdContainers(cr)
+	ss.Spec.Template.Spec.Containers = append(ss.Spec.Template.Spec.Containers, containers...)
+	ss.Spec.Template.Spec.Volumes = append(ss.Spec.Template.Spec.Volumes, volumes...)
 
 	return ss
 }
