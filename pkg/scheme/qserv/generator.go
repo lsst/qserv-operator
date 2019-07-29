@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
@@ -454,7 +455,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 }
 
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "xrootd-redirector"
+	name := cr.Name + "-xrootd-redirector"
 	namespace := cr.Namespace
 
 	labels = map[string]string{
@@ -537,6 +538,24 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 						v1.Capability("SYS_RESOURCE"),
 					},
 				},
+			},
+			LivenessProbe: &v1.Probe{
+				Handler: v1.Handler{
+					TCPSocket: &v1.TCPSocketAction{
+						Port: intstr.IntOrString("xrootd"),
+					},
+				},
+				InitialDelaySeconds: 10,
+				PeriodSeconds:       10,
+			},
+			ReadinessProbe: &v1.Probe{
+				Handler: v1.Handler{
+					TCPSocket: &v1.TCPSocketAction{
+						Port: intstr.IntOrString("xrootd"),
+					},
+				},
+				InitialDelaySeconds: 10,
+				PeriodSeconds:       5,
 			},
 		},
 	}
