@@ -295,6 +295,12 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		"/config-start/start.sh",
 	}
 
+	dataVolumeMount := v1.VolumeMount{
+		MountPath: "/qserv/data",
+		Name:      "qserv-data",
+		ReadOnly:  false,
+	}
+
 	trueVal := false
 
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
@@ -306,8 +312,9 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			Labels:    labels,
 		},
 		Spec: appsv1beta2.StatefulSetSpec{
-			ServiceName: name,
-			Replicas:    &replicas,
+			PodManagementPolicy: "Parallel",
+			ServiceName:         name,
+			Replicas:            &replicas,
 			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
@@ -339,11 +346,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								},
 							},
 							VolumeMounts: []v1.VolumeMount{
-								{
-									MountPath: "/qserv/data",
-									Name:      "qserv-data",
-									ReadOnly:  false,
-								},
+								dataVolumeMount,
 								{
 									MountPath: "/secret-mariadb",
 									Name:      "secret-mariadb",
@@ -370,11 +373,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 							},
 							Command: command,
 							VolumeMounts: []v1.VolumeMount{
-								{
-									MountPath: "/qserv/data",
-									Name:      "qserv-data",
-									ReadOnly:  false,
-								},
+								dataVolumeMount,
 								{
 									MountPath: "/qserv/run/tmp",
 									Name:      "tmp-volume",
@@ -404,33 +403,16 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			},
 		}}
 
-	// All containers
+	// Mariadb containers
 	mountConfigVolumes(&ss.Spec.Template.Spec.InitContainers[INIT], "mariadb")
 	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[MARIADB], "mariadb")
-	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[WMGR], "wmgr")
 
 	// Volumes
 	var volumes []v1.Volume
 
 	volumes = append(volumes, wmgrVolumes...)
-
-	for _, configmapClass := range []string{"mariadb"} {
-		var configName string
-		executeMode := int32(0555)
-		configName = fmt.Sprintf("config-%s-etc", configmapClass)
-		volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-			LocalObjectReference: v1.LocalObjectReference{
-				Name: configName,
-			},
-		}}})
-		configName = fmt.Sprintf("config-%s-start", configmapClass)
-		volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-			LocalObjectReference: v1.LocalObjectReference{
-				Name: configName,
-			},
-			DefaultMode: &executeMode,
-		}}})
-	}
+	volumes = append(volumes, getConfigVolumes("mariadb")...)
+	volumes = append(volumes, v1.Volume{Name: "tmp-volume", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
 
 	for _, configName := range []string{"config-domainnames", "config-sql-worker"} {
 		volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
@@ -450,6 +432,12 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	ss.Spec.Template.Spec.Volumes = volumes
 
 	containers, volumes := getXrootdContainers(cr)
+
+	// xrootd/cmsd workers only
+	for i, _ := range containers {
+		containers[i].VolumeMounts = append(containers[i].VolumeMounts, dataVolumeMount)
+	}
+
 	ss.Spec.Template.Spec.Containers = append(ss.Spec.Template.Spec.Containers, containers...)
 	ss.Spec.Template.Spec.Volumes = append(ss.Spec.Template.Spec.Volumes, volumes...)
 
@@ -476,8 +464,9 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			Labels:    labels,
 		},
 		Spec: appsv1beta2.StatefulSetSpec{
-			ServiceName: name,
-			Replicas:    &replicas,
+			PodManagementPolicy: "Parallel",
+			ServiceName:         name,
+			Replicas:            &replicas,
 			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
@@ -599,6 +588,9 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, []v1.Volume) {
 
 	// Volumes
 	var volumes []v1.Volume
+
+	volumes = append(volumes, getConfigVolumes("wmgr")...)
+
 	// TODO Add volumes
 	return container, volumes
 }
