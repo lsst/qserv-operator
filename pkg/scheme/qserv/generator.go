@@ -222,6 +222,53 @@ func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, service st
 	}
 }
 
+func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	name := cr.Name + "-xrootd-redirector"
+	namespace := cr.Namespace
+
+	labels = map[string]string{
+		"app":  name,
+		"tier": "xrootd-redirector",
+	}
+
+	var replicas int32 = 2
+
+	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
+
+	ss := &appsv1beta2.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1beta2.StatefulSetSpec{
+			ServiceName: name,
+			Replicas:    &replicas,
+			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+				Type: "RollingUpdate",
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: v1.PodSpec{
+					InitContainers: []v1.Container{
+						// TODO
+						v1.Container{},
+					},
+					Containers: []v1.Container{wmgrContainer},
+					Volumes:    wmgrVolumes,
+				},
+			},
+		},
+	}
+
+	return ss
+}
+
 func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
 	name := cr.Name + "-worker"
 	namespace := cr.Namespace
@@ -249,6 +296,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	}
 
 	trueVal := false
+
+	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -333,52 +382,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 								},
 							},
 						},
-						{
-							Name:  "wmgr",
-							Image: spec.Worker.Image,
-							Ports: []v1.ContainerPort{
-								{
-									Name:          "wmgr",
-									ContainerPort: 5012,
-									Protocol:      v1.ProtocolTCP,
-								},
-							},
-							Command: command,
-							Env: []v1.EnvVar{
-								{
-									Name: "CZAR_DN",
-									ValueFrom: &v1.EnvVarSource{
-										ConfigMapKeyRef: &v1.ConfigMapKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{Name: "config-domainnames"},
-											Key:                  "CZAR_DN",
-											Optional:             &trueVal,
-										},
-									},
-								},
-							},
-							VolumeMounts: []v1.VolumeMount{
-								{
-									MountPath: "/qserv/data",
-									Name:      "qserv-data",
-									ReadOnly:  false,
-								},
-								{
-									MountPath: "/qserv/run/tmp",
-									Name:      "tmp-volume",
-									ReadOnly:  false,
-								},
-								{
-									MountPath: "/secret-mariadb",
-									Name:      "secret-mariadb",
-									ReadOnly:  false,
-								},
-								{
-									MountPath: "/secret-wmgr",
-									Name:      "secret-wmgr",
-									ReadOnly:  false,
-								},
-							},
-						},
+						wmgrContainer,
 					},
 				},
 			},
@@ -408,7 +412,9 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	// Volumes
 	var volumes []v1.Volume
 
-	for _, configmapClass := range []string{"mariadb", "wmgr"} {
+	volumes = append(volumes, wmgrVolumes...)
+
+	for _, configmapClass := range []string{"mariadb"} {
 		var configName string
 		executeMode := int32(0555)
 		configName = fmt.Sprintf("config-%s-etc", configmapClass)
@@ -439,10 +445,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			SecretName: secretName,
 		},
 		}})
-	}
-
-	for _, emptyDirName := range []string{"xrootd-adminpath", "tmp-volume"} {
-		volumes = append(volumes, v1.Volume{Name: emptyDirName, VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
 	}
 
 	ss.Spec.Template.Spec.Volumes = volumes
@@ -497,6 +499,110 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
+func getInitContainer(cr *qservv1alpha1.Qserv) (v1.Container, []v1.Volume) {
+	spec := cr.Spec
+	trueVal := false
+
+	container := v1.Container{
+		Name:  "initdb",
+		Image: spec.Worker.Image,
+		Command: []string{
+			"/config-start/mariadb-configure.sh",
+		},
+		Env: []v1.EnvVar{
+			{
+				Name: "CZAR",
+				ValueFrom: &v1.EnvVarSource{
+					ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+						LocalObjectReference: v1.LocalObjectReference{Name: "config-domainnames"},
+						Key:                  "CZAR",
+						Optional:             &trueVal,
+					},
+				},
+			},
+		},
+		VolumeMounts: []v1.VolumeMount{
+			{
+				MountPath: "/qserv/data",
+				Name:      "qserv-data",
+				ReadOnly:  false,
+			},
+			{
+				MountPath: "/secret-mariadb",
+				Name:      "secret-mariadb",
+				ReadOnly:  false,
+			},
+			{
+				MountPath: "/config-sql/czar",
+				Name:      "config-sql-czar",
+				ReadOnly:  false,
+			},
+		},
+	}
+	var volumes []v1.Volume
+	// TODO Add volumes
+	return container, volumes
+}
+
+func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, []v1.Volume) {
+	spec := cr.Spec
+	trueVal := false
+
+	container := v1.Container{
+		Name:  "wmgr",
+		Image: spec.Worker.Image,
+		Ports: []v1.ContainerPort{
+			{
+				Name:          "wmgr",
+				ContainerPort: 5012,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+		Command: constants.Command,
+		Env: []v1.EnvVar{
+			{
+				Name: "CZAR_DN",
+				ValueFrom: &v1.EnvVarSource{
+					ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+						LocalObjectReference: v1.LocalObjectReference{Name: "config-domainnames"},
+						Key:                  "CZAR_DN",
+						Optional:             &trueVal,
+					},
+				},
+			},
+		},
+		VolumeMounts: []v1.VolumeMount{
+			{
+				MountPath: "/qserv/data",
+				Name:      "qserv-data",
+				ReadOnly:  false,
+			},
+			{
+				MountPath: "/qserv/run/tmp",
+				Name:      "tmp-volume",
+				ReadOnly:  false,
+			},
+			{
+				MountPath: "/secret-mariadb",
+				Name:      "secret-mariadb",
+				ReadOnly:  true,
+			},
+			{
+				MountPath: "/secret-wmgr",
+				Name:      "secret-wmgr",
+				ReadOnly:  true,
+			},
+		},
+	}
+
+	mountConfigVolumes(&container, "wmgr")
+
+	// Volumes
+	var volumes []v1.Volume
+	// TODO Add volumes
+	return container, volumes
+}
+
 func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) {
 
 	const (
@@ -542,7 +648,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 			LivenessProbe: &v1.Probe{
 				Handler: v1.Handler{
 					TCPSocket: &v1.TCPSocketAction{
-						Port: intstr.IntOrString("xrootd"),
+						Port: intstr.FromString("xrootd"),
 					},
 				},
 				InitialDelaySeconds: 10,
@@ -551,7 +657,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 			ReadinessProbe: &v1.Probe{
 				Handler: v1.Handler{
 					TCPSocket: &v1.TCPSocketAction{
-						Port: intstr.IntOrString("xrootd"),
+						Port: intstr.FromString("xrootd"),
 					},
 				},
 				InitialDelaySeconds: 10,
@@ -565,32 +671,39 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 	// Volumes
 	var volumes []v1.Volume
 
-	var configName string
-	executeMode := int32(0555)
-	configName = fmt.Sprintf("config-%s-etc", constants.XrootdConfigName)
-	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-		LocalObjectReference: v1.LocalObjectReference{
-			Name: configName,
-		},
-	}}})
-	configName = fmt.Sprintf("config-%s-start", constants.XrootdConfigName)
-	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-		LocalObjectReference: v1.LocalObjectReference{
-			Name: configName,
-		},
-		DefaultMode: &executeMode,
-	}}})
+	volumes = append(volumes, getConfigVolumes(constants.XrootdConfigName)...)
 
 	volumes = append(volumes, v1.Volume{Name: "xrootd-adminpath", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
 
 	return containers, volumes
 }
 
-func mountConfigVolumes(container *v1.Container, service string) {
-	container.VolumeMounts = append(container.VolumeMounts, getConfigVolumes(service)...)
+func getConfigVolumes(service string) []v1.Volume {
+	var volumes []v1.Volume
+
+	var configName string
+	executeMode := int32(0555)
+	configName = fmt.Sprintf("config-%s-etc", service)
+	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
+		LocalObjectReference: v1.LocalObjectReference{
+			Name: configName,
+		},
+	}}})
+	configName = fmt.Sprintf("config-%s-start", service)
+	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
+		LocalObjectReference: v1.LocalObjectReference{
+			Name: configName,
+		},
+		DefaultMode: &executeMode,
+	}}})
+	return volumes
 }
 
-func getConfigVolumes(service string) []v1.VolumeMount {
+func mountConfigVolumes(container *v1.Container, service string) {
+	container.VolumeMounts = append(container.VolumeMounts, getConfigVolumeMounts(service)...)
+}
+
+func getConfigVolumeMounts(service string) []v1.VolumeMount {
 	var volumeMounts []v1.VolumeMount
 	volumeName := fmt.Sprintf("config-%s-etc", service)
 	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"})
