@@ -81,7 +81,7 @@ then
 
     echo "-- "
     echo "-- Initializing Qserv database"
-    if [ "$HOSTNAME" = "$CZAR" ]; then
+    if hostname | egrep "^${CZAR_DN}-[0-9]+$"; then
         INSTANCE_NAME='czar'
     elif [ "$HOSTNAME" = "$REPL_DB" ]; then
         INSTANCE_NAME='repl'

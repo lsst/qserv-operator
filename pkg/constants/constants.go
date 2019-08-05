@@ -32,11 +32,10 @@ const (
 
 	GraceTime = 30
 
-	CZAR           = "czar-0"
-	REPL_CTL       = "repl-ctl"
-	REPL_DB        = "repl-db-0"
-	QSERV_DOMAIN   = "qserv"
-	XROOTD_MANAGER = "xrootd-0"
+	CZAR         = "czar-0"
+	REPL_CTL     = "repl-ctl"
+	REPL_DB      = "repl-db-0"
+	QSERV_DOMAIN = "qserv"
 )
 
 var MicroserviceConfigmaps = []string{MariadbName, XrootdName, MysqlProxyName, WmgrName}

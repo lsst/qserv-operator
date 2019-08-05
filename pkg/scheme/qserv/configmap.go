@@ -139,12 +139,8 @@ func GenerateDomainNameConfigMap(r *qservv1alpha1.Qserv, labels map[string]strin
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
 
 	data := make(map[string]string)
-	data["CZAR"] = constants.CZAR
-	data["CZAR_DN"] = fmt.Sprintf("%s.%s", constants.CZAR, constants.QSERV_DOMAIN)
-	data["QSERV_DOMAIN"] = constants.QSERV_DOMAIN
 	data["REPL_CTL"] = constants.REPL_CTL
 	data["REPL_DB"] = constants.REPL_DB
-	data["XROOTD_MANAGER"] = constants.XROOTD_MANAGER
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{

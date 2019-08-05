@@ -7,7 +7,7 @@ import (
 	"github.com/lsst/qserv-operator/pkg/constants"
 )
 
-// GetCzarName returns the name for xrootd redirector ressources
+// GetCzarName returns the name for czar ressources
 func GetCzarName(r *qservv1alpha1.Qserv) string {
 	return generateName(r.Name, constants.CzarName)
 }

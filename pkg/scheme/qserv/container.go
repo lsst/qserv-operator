@@ -13,7 +13,6 @@ import (
 
 func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
 	spec := cr.Spec
-	trueVal := false
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
 
 	container := v1.Container{
@@ -24,14 +23,8 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 		},
 		Env: []v1.EnvVar{
 			{
-				Name: "CZAR",
-				ValueFrom: &v1.EnvVarSource{
-					ConfigMapKeyRef: &v1.ConfigMapKeySelector{
-						LocalObjectReference: v1.LocalObjectReference{Name: "config-domainnames"},
-						Key:                  "CZAR",
-						Optional:             &trueVal,
-					},
-				},
+				Name:  "CZAR_DN",
+				Value: util.GetCzarName(cr),
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
@@ -130,7 +123,6 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 
 func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
-	trueVal := false
 
 	container := v1.Container{
 		Name:  "wmgr",
@@ -145,14 +137,8 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		Command: constants.Command,
 		Env: []v1.EnvVar{
 			{
-				Name: "CZAR_DN",
-				ValueFrom: &v1.EnvVarSource{
-					ConfigMapKeyRef: &v1.ConfigMapKeySelector{
-						LocalObjectReference: v1.LocalObjectReference{Name: "config-domainnames"},
-						Key:                  "CZAR_DN",
-						Optional:             &trueVal,
-					},
-				},
+				Name:  "CZAR_DN",
+				Value: util.GetCzarName(cr),
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
@@ -197,12 +183,10 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 	)
 
 	spec := cr.Spec
-	redirectorName := util.GetXrootdRedirectorName(cr)
 
 	envRedirector := v1.EnvVar{
-
 		Name:  "XROOTD_RDR_DN",
-		Value: redirectorName,
+		Value: util.GetXrootdRedirectorName(cr),
 	}
 
 	containers := []v1.Container{
