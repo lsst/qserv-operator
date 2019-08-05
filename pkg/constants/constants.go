@@ -2,15 +2,15 @@ package constants
 
 const (
 	BaseName = "lsst"
-	AppLabel = "qserv-operator"
+	AppLabel = "qserv"
 
-	XrootdConfigName                     = "xrootd"
-	RedisStorageVolumeName               = "redis-data"
-	RedisConfigurationVolumeName         = "redis-config"
-	RedisShutdownConfigurationVolumeName = "redis-shutdown-config"
-	RedisRoleName                        = "redis"
-	HostnameTopologyKey                  = "kubernetes.io/hostname"
-	XrootdRoleName                       = "xrootd"
+	CzarName   = "czar"
+	WorkerName = "worker"
+
+	XrootdName           = "xrootd"
+	XrootdPort           = 1094
+	XrootdPortName       = "xrootd"
+	XrootdRedirectorName = "xrootd-redirector"
 
 	GraceTime = 30
 

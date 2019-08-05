@@ -47,37 +47,32 @@ var log = logf.Log.WithName("qserv")
 // 	}
 // }
 
-// func GenerateRedisService(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.Service {
-// 	name := util.GetRedisName(r)
-// 	namespace := r.Namespace
+func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetXrootdRedirectorName(cr)
+	namespace := cr.Namespace
 
-// 	labels = util.MergeLabels(labels, util.GetLabels(constants.RedisRoleName, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
 
-// 	return &corev1.Service{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      name,
-// 			Namespace: namespace,
-// 			Labels:    labels,
-// 			Annotations: map[string]string{
-// 				"prometheus.io/scrape": "true",
-// 				"prometheus.io/port":   "http",
-// 				"prometheus.io/path":   "/metrics",
-// 			},
-// 		},
-// 		Spec: corev1.ServiceSpec{
-// 			Type:      corev1.ServiceTypeClusterIP,
-// 			ClusterIP: corev1.ClusterIPNone,
-// 			Ports: []corev1.ServicePort{
-// 				{
-// 					Port:     constants.ExporterPort,
-// 					Protocol: corev1.ProtocolTCP,
-// 					Name:     constants.ExporterPortName,
-// 				},
-// 			},
-// 			Selector: labels,
-// 		},
-// 	}
-// }
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.XrootdPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.XrootdPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
 
 type filedesc struct {
 	name    string
@@ -154,7 +149,7 @@ func GenerateServiceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, 
 	name := fmt.Sprintf("config-%s-%s", service, subdir)
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -170,7 +165,7 @@ func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db s
 	name := fmt.Sprintf("config-sql-%s", db)
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -186,7 +181,7 @@ func GenerateDomainNameConfigMap(r *qservv1alpha1.Qserv, labels map[string]strin
 	name := "config-domainnames"
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
 
 	data := make(map[string]string)
 	data["CZAR"] = constants.CZAR
@@ -210,7 +205,7 @@ func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, service st
 	name := fmt.Sprintf("secret-%s", service)
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRoleName, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
 
 	return &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -223,17 +218,22 @@ func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, service st
 }
 
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-xrootd-redirector"
+	name := cr.Name + "-czar"
 	namespace := cr.Namespace
 
 	labels = map[string]string{
 		"app":  name,
-		"tier": "xrootd-redirector",
+		"tier": "czar",
 	}
 
 	var replicas int32 = 2
+	storageClass := "standard"
+	storageSize := "1G"
 
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
+	initContainer, initVolumes := getInitContainer(cr)
+
+	volumes := append(wmgrVolumes, initVolumes...)
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -256,11 +256,26 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 				},
 				Spec: v1.PodSpec{
 					InitContainers: []v1.Container{
-						// TODO
-						v1.Container{},
+						initContainer,
 					},
 					Containers: []v1.Container{wmgrContainer},
-					Volumes:    wmgrVolumes,
+					Volumes:    volumes,
+				},
+			},
+			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "qserv-data",
+					},
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						StorageClassName: &storageClass,
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								"storage": resource.MustParse(storageSize),
+							},
+						},
+					},
 				},
 			},
 		},
@@ -282,10 +297,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	spec := cr.Spec
 
-	labels = map[string]string{
-		"app":  name,
-		"tier": "worker",
-	}
+	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
 
 	var replicas int32 = 2
 	storageClass := "standard"
@@ -444,18 +456,11 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
-func getXrootdRdrSvcName(cr *qservv1alpha1.Qserv) string {
-	name := cr.Name + "-xrootd-redirector"
-	return name
-}
-
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
 	namespace := cr.Namespace
-	name := getXrootdRdrSvcName(cr)
-	labels = map[string]string{
-		"app":  name,
-		"tier": "xrootd-redirector",
-	}
+	name := util.GetXrootdRedirectorName(cr)
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
 
 	var replicas int32 = 2
 
@@ -607,7 +612,13 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 	)
 
 	spec := cr.Spec
-	name := getXrootdRdrSvcName(cr)
+	redirectorName := util.GetXrootdRedirectorName(cr)
+
+	envRedirector := v1.EnvVar{
+
+		Name:  "XROOTD_RDR_DN",
+		Value: redirectorName,
+	}
 
 	containers := []v1.Container{
 		{
@@ -616,10 +627,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 			Command: constants.Command,
 			Args:    []string{"-S", "cmsd"},
 			Env: []v1.EnvVar{
-				{
-					Name:  "XROOTD_RDR_DN",
-					Value: name,
-				},
+				envRedirector,
 			},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
@@ -641,10 +649,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 			},
 			Command: constants.Command,
 			Env: []v1.EnvVar{
-				{
-					Name:  "XROOTD_RDR_DN",
-					Value: name,
-				},
+				envRedirector,
 			},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
@@ -674,13 +679,13 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 			},
 		},
 	}
-	mountConfigVolumes(&containers[CMSD], constants.XrootdConfigName)
-	mountConfigVolumes(&containers[XROOTD], constants.XrootdConfigName)
+	mountConfigVolumes(&containers[CMSD], constants.XrootdName)
+	mountConfigVolumes(&containers[XROOTD], constants.XrootdName)
 
 	// Volumes
 	var volumes []v1.Volume
 
-	volumes = append(volumes, getConfigVolumes(constants.XrootdConfigName)...)
+	volumes = append(volumes, getConfigVolumes(constants.XrootdName)...)
 
 	volumes = append(volumes, v1.Volume{Name: "xrootd-adminpath", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
 

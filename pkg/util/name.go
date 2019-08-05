@@ -7,18 +7,20 @@ import (
 	"github.com/lsst/qserv-operator/pkg/constants"
 )
 
-// // GetRedisShutdownConfigMapName returns the name for redis configmap
-// func GetRedisShutdownConfigMapName(r *qservv1alpha1.Qserv) string {
-//         if r.Spec.Redis.ShutdownConfigMap != "" {
-//                 return r.Spec.Redis.ShutdownConfigMap
-//         }
-//         return GetRedisShutdownName(r)
-// }
+// GetCzarName returns the name for xrootd redirector ressources
+func GetCzarName(r *qservv1alpha1.Qserv) string {
+	return generateName(r.Name, constants.CzarName)
+}
 
-// // GetRedisName returns the name for redis resources
-// func GetRedisName(r *qservv1alpha1.Qserv) string {
-//         return generateName(constants.RedisName, r.Name)
-// }
+// GetWorkerName returns the name for xrootd redirector ressources
+func GetWorkerName(r *qservv1alpha1.Qserv) string {
+	return generateName(r.Name, constants.WorkerName)
+}
+
+// GetXrootdRedirectorName returns the name for xrootd redirector ressources
+func GetXrootdRedirectorName(r *qservv1alpha1.Qserv) string {
+	return generateName(r.Name, constants.XrootdRedirectorName)
+}
 
 // // GetRedisShutdownName returns the name for redis resources
 // func GetRedisShutdownName(r *qservv1alpha1.Qserv) string {
@@ -26,10 +28,10 @@ import (
 // }
 
 // GetXrootdName returns the name for xrootd resources
-func GetXrootdConfigName(r *qservv1alpha1.Qserv) string {
-	return generateName(constants.XrootdConfigName, r.Name)
+func GetXrootdName(r *qservv1alpha1.Qserv) string {
+	return generateName(r.Name, constants.XrootdName)
 }
 
-func generateName(typeName, metaName string) string {
-	return fmt.Sprintf("%s-%s-%s", constants.BaseName, typeName, metaName)
+func generateName(metaName, typeName string) string {
+	return fmt.Sprintf("%s-%s", metaName, typeName)
 }

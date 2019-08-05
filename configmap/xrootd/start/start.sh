@@ -37,7 +37,7 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-if hostname | egrep egrep "xrootd-redirector-[0-9]+$"
+if hostname | egrep "xrootd-redirector-[0-9]+$"
 then
     INSTANCE_NAME='manager'
 else
