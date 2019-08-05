@@ -56,6 +56,7 @@ DATA_FILES=$(find "$DATA_DIR" -mindepth 1 ! -name "$EXCLUDE_DIR1")
 STATE_FILE="$DATA_DIR/INIT_IN_PROGRESS.state"
 if [ -f "$STATE_FILE" ]; then
     >&2 echo "ERROR: previous data initialization crashed"
+    sleep 3600
     exit 1
 fi
 
@@ -81,13 +82,6 @@ then
 
     echo "-- "
     echo "-- Initializing Qserv database"
-    if hostname | egrep "^${CZAR_DN}-[0-9]+$"; then
-        INSTANCE_NAME='czar'
-    elif [ "$HOSTNAME" = "$REPL_DB" ]; then
-        INSTANCE_NAME='repl'
-    else
-        INSTANCE_NAME='worker'
-    fi
     for file_name in "${SQL_DIR}/${INSTANCE_NAME}"/*; do
         echo "-- Loading ${file_name} in MySQL"
         basename=$(basename "$file_name")

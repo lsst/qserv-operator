@@ -23,8 +23,8 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 		},
 		Env: []v1.EnvVar{
 			{
-				Name:  "CZAR_DN",
-				Value: util.GetCzarName(cr),
+				Name:  "INSTANCE_NAME",
+				Value: component,
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{

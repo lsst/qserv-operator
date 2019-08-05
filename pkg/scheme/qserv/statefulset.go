@@ -20,7 +20,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
 
-	var replicas int32 = 2
+	var replicas int32 = 1
 	storageClass := "standard"
 	storageSize := "1G"
 
@@ -28,8 +28,6 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr)
 	proxyContainer, proxyVolumes := getProxyContainer(cr)
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
-
-	// TODO add proxy
 
 	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes, proxyVolumes, wmgrVolumes)
