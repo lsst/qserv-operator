@@ -26,7 +26,7 @@ sed -i "s/<ENV_CZAR_DN>/${CZAR_DN}/" "$WMGR_CONFIG"
 sed -i "s/<ENV_MYSQL_ROOT_PASSWORD>/${MYSQL_ROOT_PASSWORD}/" "$WMGR_CONFIG"
 
 # Czar only, Useful for multinode integration test
-DOT_CONFIG_TPL="/config-dot-lsst/qserv.conf"
+DOT_CONFIG_TPL="/config-dot-qserv/qserv.conf"
 if [ -f "$DOT_CONFIG_TPL" ]; then
     mkdir /home/qserv/.lsst
     DOT_CONFIG="/home/qserv/.lsst/qserv.conf"

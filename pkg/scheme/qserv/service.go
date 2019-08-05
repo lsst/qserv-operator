@@ -35,6 +35,38 @@ import (
 // 	}
 // }
 
+func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetWorkerName(cr)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.WmgrPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.WmgrPortName,
+				},
+				{
+					Port:     constants.XrootdPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.XrootdPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
 func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetCzarName(cr)
 	namespace := cr.Namespace
@@ -52,9 +84,9 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
-					Port:     constants.CmsdPort,
+					Port:     constants.MysqlProxyPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.CmsdPortName,
+					Name:     constants.MysqlProxyPortName,
 				},
 			},
 			Selector: labels,
@@ -82,6 +114,11 @@ func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]
 					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
 					Name:     constants.XrootdPortName,
+				},
+				{
+					Port:     constants.CmsdPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.CmsdPortName,
 				},
 			},
 			Selector: labels,

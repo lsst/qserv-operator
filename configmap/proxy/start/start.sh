@@ -43,10 +43,14 @@ else
     exit 1
 fi
 
-QSERV_CONFIG=/config-etc/qserv-czar.cnf
-if [ ! -e "$QSERV_CONFIG" ]; then
+QSERV_CONFIG_IN="/config-etc/qserv-czar.cnf"
+QSERV_CONFIG="/tmp/qserv-czar.cnf"
+if [ ! -e "$QSERV_CONFIG_IN" ]; then
     log_failure_msg "Unable to find qserv-czar configuration file"
     exit 1
+else
+    sed "s/<ENV_XROOTD_RDR_DN>/${XROOTD_RDR_DN}/" "$QSERV_CONFIG_IN" \
+        > "$QSERV_CONFIG"
 fi
 
 # Set default mysql-proxy configuration.

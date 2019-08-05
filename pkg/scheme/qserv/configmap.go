@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-logr/logr"
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
@@ -62,29 +63,8 @@ func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, service st
 	}
 }
 
-func getServiceConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[string]string {
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+func scanDir(root string, reqLogger logr.Logger) map[string]string {
 	files := make(map[string]string)
-	root := filepath.Join("/", "configmap", service, subdir)
-	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			reqLogger.Info(fmt.Sprintf("Scan %s", path))
-			files[info.Name()] = getFileContent(path)
-		}
-		return nil
-	})
-	if err != nil {
-		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
-		os.Exit(1)
-	}
-	return files
-}
-
-func getSqlConfigData(r *qservv1alpha1.Qserv, db string) map[string]string {
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
-	files := make(map[string]string)
-	root := filepath.Join("/", "configmap", "init", "sql", db)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
@@ -101,10 +81,13 @@ func getSqlConfigData(r *qservv1alpha1.Qserv, db string) map[string]string {
 }
 
 func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *v1.ConfigMap {
+	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+
 	name := fmt.Sprintf("config-%s-%s", service, subdir)
 	namespace := r.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
+	root := filepath.Join("/", "configmap", service, subdir)
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -112,15 +95,18 @@ func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]str
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: getServiceConfigData(r, service, subdir),
+		Data: scanDir(root, reqLogger),
 	}
 }
 
 func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db string) *v1.ConfigMap {
+	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+
 	name := fmt.Sprintf("config-sql-%s", db)
 	namespace := r.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
+	root := filepath.Join("/", "configmap", "init", "sql", db)
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -128,19 +114,18 @@ func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db s
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: getSqlConfigData(r, db),
+		Data: scanDir(root, reqLogger),
 	}
 }
 
-func GenerateDomainNameConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
-	name := "config-domainnames"
+func GenerateDotQservConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
+	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+
+	name := "config-dot-qserv"
 	namespace := r.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
-
-	data := make(map[string]string)
-	data["REPL_CTL"] = constants.REPL_CTL
-	data["REPL_DB"] = constants.REPL_DB
+	root := filepath.Join("/", "configmap", "dot-qserv")
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -148,6 +133,6 @@ func GenerateDomainNameConfigMap(r *qservv1alpha1.Qserv, labels map[string]strin
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: data,
+		Data: scanDir(root, reqLogger),
 	}
 }

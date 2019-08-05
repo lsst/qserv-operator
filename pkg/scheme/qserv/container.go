@@ -47,7 +47,6 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 	var volumes VolumeSet
 	volumes.make(nil)
 
-	volumes.addConfigMapVolume("config-domainnames")
 	volumes.addConfigMapVolume(sqlConfigMap)
 	volumes.addEtcStartVolumes("mariadb")
 	volumes.addSecretVolume("secret-mariadb")
@@ -103,6 +102,12 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 			},
 		},
 		Command: constants.Command,
+		Env: []v1.EnvVar{
+			{
+				Name:  "XROOTD_RDR_DN",
+				Value: util.GetXrootdRedirectorName(cr),
+			},
+		},
 		VolumeMounts: []v1.VolumeMount{
 			// Used for mysql socket access
 			// TODO move mysql socket in emptyDir?
@@ -125,12 +130,12 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
 	container := v1.Container{
-		Name:  "wmgr",
+		Name:  constants.WmgrName,
 		Image: spec.Worker.Image,
 		Ports: []v1.ContainerPort{
 			{
-				Name:          "wmgr",
-				ContainerPort: 5012,
+				Name:          constants.WmgrPortName,
+				ContainerPort: constants.WmgrPort,
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
@@ -142,9 +147,11 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
-			getDataVolumeMount(),
-			getEtcVolumeMount("wmgr"),
-			getStartVolumeMount("wmgr"),
+			{
+				MountPath: filepath.Join("/", "config-dot-qserv"),
+				Name:      "config-dot-qserv",
+				ReadOnly:  true,
+			},
 			{
 				MountPath: "/qserv/run/tmp",
 				Name:      "tmp-volume",
@@ -160,6 +167,9 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Name:      "secret-wmgr",
 				ReadOnly:  true,
 			},
+			getDataVolumeMount(),
+			getEtcVolumeMount(constants.WmgrName),
+			getStartVolumeMount(constants.WmgrName),
 		},
 	}
 
@@ -167,6 +177,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	var volumes VolumeSet
 	volumes.make(nil)
 
+	volumes.addConfigMapVolume("config-dot-qserv")
 	volumes.addSecretVolume("secret-wmgr")
 	volumes.addEmptyDirVolume("tmp-volume")
 	volumes.addEtcStartVolumes("wmgr")
@@ -206,6 +217,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 				},
 			},
 			VolumeMounts: []v1.VolumeMount{
+				getAdminPathMount(),
 				getEtcVolumeMount(constants.XrootdName),
 				getStartVolumeMount(constants.XrootdName),
 			},
@@ -251,6 +263,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 				PeriodSeconds:       5,
 			},
 			VolumeMounts: []v1.VolumeMount{
+				getAdminPathMount(),
 				getEtcVolumeMount(constants.XrootdName),
 				getStartVolumeMount(constants.XrootdName),
 			},

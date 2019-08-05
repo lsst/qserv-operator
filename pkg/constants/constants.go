@@ -19,7 +19,7 @@ const (
 	MysqlProxyPortName = MysqlProxyName
 
 	WmgrName     = "wmgr"
-	WmgrPort     = 4040
+	WmgrPort     = 5012
 	WmgrPortName = WmgrName
 
 	WorkerName = "worker"
