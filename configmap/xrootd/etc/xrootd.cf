@@ -70,8 +70,9 @@ xrd.network nodnr
 xrd.network dyndns
 xrd.network cache 0
 
-all.manager xrootd-mgr-0.xrootd-mgr:2131
-all.manager xrootd-mgr-1.xrootd-mgr:2131
+set xrootddn = $XROOTD_RDR_DN
+all.manager ${xrootddn}-0.${xrootddn}:2131
+all.manager ${xrootddn}-1.${xrootddn}:2131
 
 # - cmsd redirector runs on port 2131
 # - cmsd server does not open server socket

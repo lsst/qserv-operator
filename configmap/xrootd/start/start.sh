@@ -37,10 +37,6 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-# TODO pass service name i.e. 'example-qserv-xrootd-redirector' inside env variable
-export XROOTD_DOMAIN="xrootd-mgr"
-export XROOTD_DN="${XROOTD_DOMAIN}"
-
 if hostname | egrep egrep "xrootd-redirector-[0-9]+$"
 then
     INSTANCE_NAME='manager'

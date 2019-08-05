@@ -444,10 +444,14 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
-func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func getXrootdRdrSvcName(cr *qservv1alpha1.Qserv) string {
 	name := cr.Name + "-xrootd-redirector"
-	namespace := cr.Namespace
+	return name
+}
 
+func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	namespace := cr.Namespace
+	name := getXrootdRdrSvcName(cr)
 	labels = map[string]string{
 		"app":  name,
 		"tier": "xrootd-redirector",
@@ -603,6 +607,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 	)
 
 	spec := cr.Spec
+	name := getXrootdRdrSvcName(cr)
 
 	containers := []v1.Container{
 		{
@@ -610,6 +615,12 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 			Image:   spec.Worker.Image,
 			Command: constants.Command,
 			Args:    []string{"-S", "cmsd"},
+			Env: []v1.EnvVar{
+				{
+					Name:  "XROOTD_RDR_DN",
+					Value: name,
+				},
+			},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{
@@ -629,6 +640,12 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 				},
 			},
 			Command: constants.Command,
+			Env: []v1.EnvVar{
+				{
+					Name:  "XROOTD_RDR_DN",
+					Value: name,
+				},
+			},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{

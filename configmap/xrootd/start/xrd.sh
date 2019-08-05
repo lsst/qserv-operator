@@ -75,9 +75,9 @@ if [ "$INSTANCE_NAME" = 'worker' ]; then
     fi
 
     # Wait for at least one xrootd redirector readiness
-    until timeout 1 bash -c "cat < /dev/null > /dev/tcp/${XROOTD_DN}/2131"
+    until timeout 1 bash -c "cat < /dev/null > /dev/tcp/${XROOTD_RDR_DN}/2131"
     do
-        echo "Wait for xrootd manager (${XROOTD_DN})..."
+        echo "Wait for xrootd redirector to be up and running  (${XROOTD_RDR_DN})..."
         sleep 2
     done
 
