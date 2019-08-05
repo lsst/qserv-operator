@@ -2,14 +2,39 @@ package qserv
 
 import (
 	"fmt"
+	"path/filepath"
 
 	v1 "k8s.io/api/core/v1"
 )
 
 type Volumes map[v1.Volume]struct{}
 
-func (vs *Volumes) make() {
+func (vs *Volumes) make(volumesList ...Volumes) {
 	*vs = Volumes(make(map[v1.Volume]struct{}))
+	for _, vols := range volumesList {
+		for k := range map[v1.Volume]struct{}(vols) {
+			(*vs)[k] = struct{}{}
+		}
+	}
+}
+
+func (vs *Volumes) add(vols Volumes) {
+	for k := range vols {
+		(*vs)[k] = struct{}{}
+	}
+}
+
+func (vs *Volumes) addConfigMapExecVolume(name string, executeMode *int32) {
+	volume := v1.Volume{
+		Name: name,
+		VolumeSource: v1.VolumeSource{
+			ConfigMap: &v1.ConfigMapVolumeSource{
+				LocalObjectReference: v1.LocalObjectReference{
+					Name: name,
+				},
+				DefaultMode: executeMode,
+			}}}
+	(*vs)[volume] = struct{}{}
 }
 
 func (vs *Volumes) addConfigMapVolume(name string) {
@@ -21,8 +46,17 @@ func (vs *Volumes) addConfigMapVolume(name string) {
 					Name: name,
 				},
 			}}}
-	var s struct{}
-	(*vs)[volume] = s
+	(*vs)[volume] = struct{}{}
+}
+
+func (vs *Volumes) addEmptyDirVolume(name string) {
+	volume := v1.Volume{
+		Name: name,
+		VolumeSource: v1.VolumeSource{
+			EmptyDir: &v1.EmptyDirVolumeSource{},
+		},
+	}
+	(*vs)[volume] = struct{}{}
 }
 
 func (vs *Volumes) addSecretVolume(name string) {
@@ -46,36 +80,30 @@ func (vs Volumes) toSlice() []v1.Volume {
 	return volumes
 }
 
-func getConfigVolumes(service string) []v1.Volume {
-	var volumes []v1.Volume
+func (vs *Volumes) addEtcStartVolumes(component string) {
 
-	var configName string
-	executeMode := int32(0555)
-	configName = fmt.Sprintf("config-%s-etc", service)
-	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-		LocalObjectReference: v1.LocalObjectReference{
-			Name: configName,
-		},
-	}}})
-	configName = fmt.Sprintf("config-%s-start", service)
-	volumes = append(volumes, v1.Volume{Name: configName, VolumeSource: v1.VolumeSource{ConfigMap: &v1.ConfigMapVolumeSource{
-		LocalObjectReference: v1.LocalObjectReference{
-			Name: configName,
-		},
-		DefaultMode: &executeMode,
-	}}})
-	return volumes
+	configName := fmt.Sprintf("config-%s-etc", component)
+	(*vs).addConfigMapVolume(configName)
+
+	configName = fmt.Sprintf("config-%s-start", component)
+	mode := int32(0555)
+	(*vs).addConfigMapExecVolume(configName, &mode)
 }
 
-func mountConfigVolumes(container *v1.Container, service string) {
-	container.VolumeMounts = append(container.VolumeMounts, getConfigVolumeMounts(service)...)
+func getDataVolumeMount() v1.VolumeMount {
+	return v1.VolumeMount{
+		MountPath: filepath.Join("/", "qserv", "data"),
+		Name:      "qserv-data",
+		ReadOnly:  false,
+	}
 }
 
-func getConfigVolumeMounts(service string) []v1.VolumeMount {
-	var volumeMounts []v1.VolumeMount
-	volumeName := fmt.Sprintf("config-%s-etc", service)
-	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"})
-	volumeName = fmt.Sprintf("config-%s-start", service)
-	volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumeName, MountPath: "/config-start"})
-	return volumeMounts
+func getEtcVolumeMount(microservice string) v1.VolumeMount {
+	volumeName := fmt.Sprintf("config-%s-etc", microservice)
+	return v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"}
+}
+
+func getStartVolumeMount(microservice string) v1.VolumeMount {
+	volumeName := fmt.Sprintf("config-%s-start", microservice)
+	return v1.VolumeMount{Name: volumeName, MountPath: "/config-start"}
 }

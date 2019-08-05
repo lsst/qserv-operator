@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, []v1.Volume) {
+func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, Volumes) {
 	spec := cr.Spec
 	trueVal := false
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
@@ -35,11 +35,9 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
-			{
-				MountPath: filepath.Join("/", "qserv", "data"),
-				Name:      "qserv-data",
-				ReadOnly:  false,
-			},
+			getDataVolumeMount(),
+			getEtcVolumeMount("mariadb"),
+			getStartVolumeMount("mariadb"),
 			{
 				MountPath: filepath.Join("/", "secret-mariadb"),
 				Name:      "secret-mariadb",
@@ -52,18 +50,85 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 			},
 		},
 	}
+
 	var volumes Volumes
-	volumes.make()
+	volumes.make(nil)
 
 	volumes.addConfigMapVolume("config-domainnames")
 	volumes.addConfigMapVolume(sqlConfigMap)
-
+	volumes.addEtcStartVolumes("mariadb")
 	volumes.addSecretVolume("secret-mariadb")
 
-	return container, volumes.toSlice()
+	return container, volumes
 }
 
-func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, []v1.Volume) {
+func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
+	spec := cr.Spec
+	container := v1.Container{
+		Name:  constants.MariadbName,
+		Image: spec.Worker.Image,
+		Ports: []v1.ContainerPort{
+			{
+				Name:          constants.MariadbPortName,
+				ContainerPort: constants.MariadbPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+		Command: constants.Command,
+		VolumeMounts: []v1.VolumeMount{
+			getDataVolumeMount(),
+			getEtcVolumeMount("mariadb"),
+			getStartVolumeMount("mariadb"),
+			{
+				MountPath: "/qserv/run/tmp",
+				Name:      "tmp-volume",
+				ReadOnly:  false,
+			},
+		},
+	}
+
+	// Volumes
+	var volumes Volumes
+	volumes.make(nil)
+
+	volumes.addEmptyDirVolume("tmp-volume")
+	volumes.addEtcStartVolumes("mariadb")
+
+	return container, volumes
+}
+
+func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
+	spec := cr.Spec
+	container := v1.Container{
+		Name:  constants.MysqlProxyName,
+		Image: spec.Worker.Image,
+		Ports: []v1.ContainerPort{
+			{
+				Name:          constants.MysqlProxyPortName,
+				ContainerPort: constants.MysqlProxyPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+		Command: constants.Command,
+		VolumeMounts: []v1.VolumeMount{
+			// Used for mysql socket access
+			// TODO move mysql socket in emptyDir?
+			getDataVolumeMount(),
+			getEtcVolumeMount(constants.MysqlProxyName),
+			getStartVolumeMount(constants.MysqlProxyName),
+		},
+	}
+
+	// Volumes
+	var volumes Volumes
+	volumes.make(nil)
+
+	volumes.addEtcStartVolumes(constants.MysqlProxyName)
+
+	return container, volumes
+}
+
+func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	spec := cr.Spec
 	trueVal := false
 
@@ -91,11 +156,9 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, []v1.Volume) {
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
-			{
-				MountPath: "/qserv/data",
-				Name:      "qserv-data",
-				ReadOnly:  false,
-			},
+			getDataVolumeMount(),
+			getEtcVolumeMount("wmgr"),
+			getStartVolumeMount("wmgr"),
 			{
 				MountPath: "/qserv/run/tmp",
 				Name:      "tmp-volume",
@@ -114,27 +177,19 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, []v1.Volume) {
 		},
 	}
 
-	mountConfigVolumes(&container, "wmgr")
-
 	// Volumes
-	var volumes []v1.Volume
+	var volumes Volumes
+	volumes.make(nil)
 
-	secretName := "secret-wmgr"
-	volumes = append(volumes, v1.Volume{
-		Name: secretName,
-		VolumeSource: v1.VolumeSource{
-			Secret: &v1.SecretVolumeSource{
-				SecretName: secretName,
-			},
-		}})
-
-	volumes = append(volumes, getConfigVolumes("wmgr")...)
+	volumes.addSecretVolume("secret-wmgr")
+	volumes.addEmptyDirVolume("tmp-volume")
+	volumes.addEtcStartVolumes("wmgr")
 
 	// TODO Add volumes
 	return container, volumes
 }
 
-func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) {
+func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, Volumes) {
 
 	const (
 		CMSD = iota
@@ -165,6 +220,10 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 						v1.Capability("IPC_LOCK"),
 					},
 				},
+			},
+			VolumeMounts: []v1.VolumeMount{
+				getEtcVolumeMount(constants.XrootdName),
+				getStartVolumeMount(constants.XrootdName),
 			},
 		},
 		{
@@ -207,17 +266,19 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, []v1.Volume) 
 				InitialDelaySeconds: 10,
 				PeriodSeconds:       5,
 			},
+			VolumeMounts: []v1.VolumeMount{
+				getEtcVolumeMount(constants.XrootdName),
+				getStartVolumeMount(constants.XrootdName),
+			},
 		},
 	}
-	mountConfigVolumes(&containers[CMSD], constants.XrootdName)
-	mountConfigVolumes(&containers[XROOTD], constants.XrootdName)
 
 	// Volumes
-	var volumes []v1.Volume
+	var volumes Volumes
+	volumes.make(nil)
 
-	volumes = append(volumes, getConfigVolumes(constants.XrootdName)...)
-
-	volumes = append(volumes, v1.Volume{Name: "xrootd-adminpath", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
+	volumes.addEtcStartVolumes(constants.XrootdName)
+	volumes.addEmptyDirVolume(constants.XrootdAdminPathVolumeName)
 
 	return containers, volumes
 }

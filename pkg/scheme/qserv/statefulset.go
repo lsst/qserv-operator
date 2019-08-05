@@ -1,11 +1,6 @@
 package qserv
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -19,203 +14,6 @@ import (
 
 var log = logf.Log.WithName("qserv")
 
-// func GenerateSentinelService(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.Service {
-// 	name := util.GetSentinelName(r)
-// 	namespace := r.Namespace
-
-// 	sentinelTargetPort := intstr.FromInt(26379)
-// 	labels = util.MergeLabels(labels, util.GetLabels(constants.SentinelRoleName, r.Name))
-
-// 	return &corev1.Service{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      name,
-// 			Namespace: namespace,
-// 			Labels:    labels,
-// 		},
-// 		Spec: corev1.ServiceSpec{
-// 			Selector: labels,
-// 			Ports: []corev1.ServicePort{
-// 				{
-// 					Name:       "sentinel",
-// 					Port:       26379,
-// 					TargetPort: sentinelTargetPort,
-// 					Protocol:   "TCP",
-// 				},
-// 			},
-// 		},
-// 	}
-// }
-
-type filedesc struct {
-	name    string
-	content []byte
-}
-
-func getFileContent(path string) string {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Cannot open file: %s", path))
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Cannot read file: %s", path))
-		os.Exit(1)
-	}
-	return fmt.Sprintf("%s", b)
-}
-
-// TODO manage secret cleanly
-func getSecretData(r *qservv1alpha1.Qserv, service string) map[string][]byte {
-	files := make(map[string][]byte)
-	if service == "mariadb" {
-		files["mariadb.secret.sh"] = []byte(`MYSQL_ROOT_PASSWORD="CHANGEME"
-		MYSQL_MONITOR_PASSWORD="CHANGEMETOO"`)
-	} else if service == "wmgr" {
-		files["wmgr.secret"] = []byte(`USER:CHANGEMEAGAIN`)
-	}
-	return files
-}
-
-func getServiceConfigData(r *qservv1alpha1.Qserv, service string, subdir string) map[string]string {
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
-	files := make(map[string]string)
-	root := filepath.Join("/", "configmap", service, subdir)
-	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			reqLogger.Info(fmt.Sprintf("Scan %s", path))
-			files[info.Name()] = getFileContent(path)
-		}
-		return nil
-	})
-	if err != nil {
-		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
-		os.Exit(1)
-	}
-	return files
-}
-
-func getSqlConfigData(r *qservv1alpha1.Qserv, db string) map[string]string {
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
-	files := make(map[string]string)
-	root := filepath.Join("/", "configmap", "init", "sql", db)
-	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			reqLogger.Info(fmt.Sprintf("Scan %s", path))
-			files[info.Name()] = getFileContent(path)
-		}
-		return nil
-	})
-	if err != nil {
-		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
-		os.Exit(1)
-	}
-	return files
-}
-
-func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetXrootdRedirectorName(cr)
-	namespace := cr.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
-
-	return &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: v1.ServiceSpec{
-			Type:      v1.ServiceTypeClusterIP,
-			ClusterIP: v1.ClusterIPNone,
-			Ports: []v1.ServicePort{
-				{
-					Port:     constants.XrootdPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.XrootdPortName,
-				},
-			},
-			Selector: labels,
-		},
-	}
-}
-
-func GenerateServiceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *v1.ConfigMap {
-	name := fmt.Sprintf("config-%s-%s", service, subdir)
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
-
-	return &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: getServiceConfigData(r, service, subdir),
-	}
-}
-
-func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db string) *v1.ConfigMap {
-	name := fmt.Sprintf("config-sql-%s", db)
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
-
-	return &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: getSqlConfigData(r, db),
-	}
-}
-
-func GenerateDomainNameConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
-	name := "config-domainnames"
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
-
-	data := make(map[string]string)
-	data["CZAR"] = constants.CZAR
-	data["CZAR_DN"] = fmt.Sprintf("%s.%s", constants.CZAR, constants.QSERV_DOMAIN)
-	data["QSERV_DOMAIN"] = constants.QSERV_DOMAIN
-	data["REPL_CTL"] = constants.REPL_CTL
-	data["REPL_DB"] = constants.REPL_DB
-	data["XROOTD_MANAGER"] = constants.XROOTD_MANAGER
-
-	return &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: data,
-	}
-}
-
-func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, service string) *v1.Secret {
-	name := fmt.Sprintf("secret-%s", service)
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
-
-	return &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: getSecretData(r, service),
-	}
-}
-
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
 	name := cr.Name + "-czar"
 	namespace := cr.Namespace
@@ -226,10 +24,15 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	storageClass := "standard"
 	storageSize := "1G"
 
-	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 	initContainer, initVolumes := getInitContainer(cr, constants.CzarName)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr)
+	proxyContainer, proxyVolumes := getProxyContainer(cr)
+	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 
-	volumes := append(wmgrVolumes, initVolumes...)
+	// TODO add proxy
+
+	var volumes Volumes
+	volumes.make(initVolumes, mariadbVolumes, proxyVolumes, wmgrVolumes)
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -254,8 +57,12 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 					InitContainers: []v1.Container{
 						initContainer,
 					},
-					Containers: []v1.Container{wmgrContainer},
-					Volumes:    volumes,
+					Containers: []v1.Container{
+						mariadbContainer,
+						proxyContainer,
+						wmgrContainer,
+					},
+					Volumes: volumes.toSlice(),
 				},
 			},
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
@@ -291,26 +98,25 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	const INIT = 0
 
-	spec := cr.Spec
-
 	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
 
 	var replicas int32 = 2
 	storageClass := "standard"
 	storageSize := "1G"
 
-	command := []string{
-		"/config-start/start.sh",
-	}
-
-	dataVolumeMount := v1.VolumeMount{
-		MountPath: "/qserv/data",
-		Name:      "qserv-data",
-		ReadOnly:  false,
-	}
-
-	initContainer, initVolumes := getInitContainer(cr, constants.CzarName)
+	initContainer, initVolumes := getInitContainer(cr, constants.WorkerName)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr)
+	xrootdContainers, xrootdVolumes := getXrootdContainers(cr)
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
+
+	// xrootd/cmsd workers only
+	for i, _ := range xrootdContainers {
+		xrootdContainers[i].VolumeMounts = append(xrootdContainers[i].VolumeMounts, getDataVolumeMount())
+	}
+
+	// Volumes
+	var volumes Volumes
+	volumes.make(initVolumes, mariadbVolumes, wmgrVolumes, xrootdVolumes)
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -337,28 +143,12 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 						initContainer,
 					},
 					Containers: []v1.Container{
-						{
-							Name:  "mariadb",
-							Image: spec.Worker.Image,
-							Ports: []v1.ContainerPort{
-								{
-									Name:          "mariadb",
-									ContainerPort: 3306,
-									Protocol:      v1.ProtocolTCP,
-								},
-							},
-							Command: command,
-							VolumeMounts: []v1.VolumeMount{
-								dataVolumeMount,
-								{
-									MountPath: "/qserv/run/tmp",
-									Name:      "tmp-volume",
-									ReadOnly:  false,
-								},
-							},
-						},
+						mariadbContainer,
 						wmgrContainer,
+						xrootdContainers[0],
+						xrootdContainers[1],
 					},
+					Volumes: volumes.toSlice(),
 				},
 			},
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
@@ -378,31 +168,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 				},
 			},
 		}}
-
-	// Mariadb containers
-	mountConfigVolumes(&ss.Spec.Template.Spec.InitContainers[INIT], "mariadb")
-	mountConfigVolumes(&ss.Spec.Template.Spec.Containers[MARIADB], "mariadb")
-
-	// Volumes
-	var volumes []v1.Volume
-
-	volumes = append(volumes, initVolumes...)
-	volumes = append(volumes, wmgrVolumes...)
-	volumes = append(volumes, getConfigVolumes("mariadb")...)
-
-	volumes = append(volumes, v1.Volume{Name: "tmp-volume", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}})
-
-	ss.Spec.Template.Spec.Volumes = volumes
-
-	containers, volumes := getXrootdContainers(cr)
-
-	// xrootd/cmsd workers only
-	for i, _ := range containers {
-		containers[i].VolumeMounts = append(containers[i].VolumeMounts, dataVolumeMount)
-	}
-
-	ss.Spec.Template.Spec.Containers = append(ss.Spec.Template.Spec.Containers, containers...)
-	ss.Spec.Template.Spec.Volumes = append(ss.Spec.Template.Spec.Volumes, volumes...)
 
 	return ss
 }
@@ -439,7 +204,7 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 				},
 				Spec: v1.PodSpec{
 					Containers: containers,
-					Volumes:    volumes,
+					Volumes:    volumes.toSlice(),
 				},
 			},
 		},

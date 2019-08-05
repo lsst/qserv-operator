@@ -7,10 +7,23 @@ const (
 	CzarName   = "czar"
 	WorkerName = "worker"
 
-	XrootdName           = "xrootd"
-	XrootdPort           = 1094
-	XrootdPortName       = "xrootd"
-	XrootdRedirectorName = "xrootd-redirector"
+	MariadbName     = "mariadb"
+	MariadbPort     = 3306
+	MariadbPortName = "mariadb"
+
+	MysqlProxyName     = "proxy"
+	MysqlProxyPort     = 4040
+	MysqlProxyPortName = "proxy"
+
+	XrootdAdminPathVolumeName = "xrootd-adminpath"
+	XrootdName                = "xrootd"
+	XrootdPort                = 1094
+	XrootdPortName            = "xrootd"
+	XrootdRedirectorName      = "xrootd-redirector"
+
+	CmsdName     = "cmsd"
+	CmsdPort     = 2131
+	CmsdPortName = "cmsd"
 
 	GraceTime = 30
 
