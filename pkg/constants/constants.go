@@ -21,7 +21,7 @@ const (
 	XROOTD_MANAGER = "xrootd-0"
 )
 
-var WorkerServiceConfigmaps = []string{"mariadb", "xrootd", "wmgr"}
+var WorkerServiceConfigmaps = []string{"mariadb", XrootdName, "wmgr"}
 var WorkerServiceSecrets = []string{"mariadb", "wmgr"}
 var Databases = []string{"czar", "repl", "worker"}
 
