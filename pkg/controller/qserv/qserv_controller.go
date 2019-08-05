@@ -102,6 +102,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	qserv.SetDefaults()
 
 	syncers := []syncer.Interface{
+		sync.NewCzarServiceSyncer(qserv, r.client, r.scheme),
 		sync.NewCzarStatefulSetSyncer(qserv, r.client, r.scheme),
 		sync.NewDomainNameConfigMapSyncer(qserv, r.client, r.scheme),
 		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
@@ -109,13 +110,13 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 		sync.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),
 	}
 
-	for _, configmapClass := range constants.WorkerServiceConfigmaps {
+	for _, configmapClass := range constants.MicroserviceConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {
-			syncers = append(syncers, sync.NewServiceConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+			syncers = append(syncers, sync.NewMicroserviceConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
 		}
 	}
 
-	for _, secretClass := range constants.WorkerServiceSecrets {
+	for _, secretClass := range constants.MicroserviceSecrets {
 		syncers = append(syncers, sync.NewSecretSyncer(qserv, r.client, r.scheme, secretClass))
 	}
 

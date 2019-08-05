@@ -31,7 +31,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 
 	// TODO add proxy
 
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes, proxyVolumes, wmgrVolumes)
 
 	ss := &appsv1beta2.StatefulSet{
@@ -115,7 +115,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	}
 
 	// Volumes
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes, wmgrVolumes, xrootdVolumes)
 
 	ss := &appsv1beta2.StatefulSet{

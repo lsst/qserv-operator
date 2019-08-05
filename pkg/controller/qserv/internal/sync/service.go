@@ -9,6 +9,12 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
+// NewCzarServiceSyncer returns a new sync.Interface for reconciling Czar Service
+func NewCzarServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	svc := qserv.GenerateCzarService(r, controllerLabels)
+	return syncer.NewObjectSyncer("CzarService", r, svc, c, scheme, noFunc)
+}
+
 // NewXrootdRedirectorServiceSyncer returns a new sync.Interface for reconciling Xrootd Redirector Service
 func NewXrootdRedirectorServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	svc := qserv.GenerateXrootdRedirectorService(r, controllerLabels)

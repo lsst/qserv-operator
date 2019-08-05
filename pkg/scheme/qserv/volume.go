@@ -7,24 +7,25 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-type Volumes map[v1.Volume]struct{}
+// VolumeSet contains a set of v1.Volume
+type VolumeSet map[string]v1.Volume
 
-func (vs *Volumes) make(volumesList ...Volumes) {
-	*vs = Volumes(make(map[v1.Volume]struct{}))
-	for _, vols := range volumesList {
-		for k := range map[v1.Volume]struct{}(vols) {
-			(*vs)[k] = struct{}{}
+func (vs *VolumeSet) make(volumeSets ...VolumeSet) {
+	*vs = VolumeSet(make(map[string]v1.Volume))
+	for _, vols := range volumeSets {
+		for k, v := range map[string]v1.Volume(vols) {
+			(*vs)[k] = v
 		}
 	}
 }
 
-func (vs *Volumes) add(vols Volumes) {
-	for k := range vols {
-		(*vs)[k] = struct{}{}
+func (vs *VolumeSet) add(vols VolumeSet) {
+	for k, v := range vols {
+		(*vs)[k] = v
 	}
 }
 
-func (vs *Volumes) addConfigMapExecVolume(name string, executeMode *int32) {
+func (vs *VolumeSet) addConfigMapExecVolume(name string, executeMode *int32) {
 	volume := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
@@ -34,10 +35,10 @@ func (vs *Volumes) addConfigMapExecVolume(name string, executeMode *int32) {
 				},
 				DefaultMode: executeMode,
 			}}}
-	(*vs)[volume] = struct{}{}
+	(*vs)[name] = volume
 }
 
-func (vs *Volumes) addConfigMapVolume(name string) {
+func (vs *VolumeSet) addConfigMapVolume(name string) {
 	volume := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
@@ -46,20 +47,20 @@ func (vs *Volumes) addConfigMapVolume(name string) {
 					Name: name,
 				},
 			}}}
-	(*vs)[volume] = struct{}{}
+	(*vs)[name] = volume
 }
 
-func (vs *Volumes) addEmptyDirVolume(name string) {
+func (vs *VolumeSet) addEmptyDirVolume(name string) {
 	volume := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
 			EmptyDir: &v1.EmptyDirVolumeSource{},
 		},
 	}
-	(*vs)[volume] = struct{}{}
+	(*vs)[name] = volume
 }
 
-func (vs *Volumes) addSecretVolume(name string) {
+func (vs *VolumeSet) addSecretVolume(name string) {
 	volume := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
@@ -67,25 +68,23 @@ func (vs *Volumes) addSecretVolume(name string) {
 				SecretName: name,
 			},
 		}}
-
-	var s struct{}
-	(*vs)[volume] = s
+	(*vs)[name] = volume
 }
 
-func (vs Volumes) toSlice() []v1.Volume {
+func (vs VolumeSet) toSlice() []v1.Volume {
 	var volumes []v1.Volume
-	for k := range vs {
-		volumes = append(volumes, k)
+	for _, v := range vs {
+		volumes = append(volumes, v)
 	}
 	return volumes
 }
 
-func (vs *Volumes) addEtcStartVolumes(component string) {
+func (vs *VolumeSet) addEtcStartVolumes(microservice string) {
 
-	configName := fmt.Sprintf("config-%s-etc", component)
+	configName := fmt.Sprintf("config-%s-etc", microservice)
 	(*vs).addConfigMapVolume(configName)
 
-	configName = fmt.Sprintf("config-%s-start", component)
+	configName = fmt.Sprintf("config-%s-start", microservice)
 	mode := int32(0555)
 	(*vs).addConfigMapExecVolume(configName, &mode)
 }

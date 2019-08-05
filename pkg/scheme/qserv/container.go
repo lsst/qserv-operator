@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, Volumes) {
+func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	trueVal := false
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
@@ -51,7 +51,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 		},
 	}
 
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(nil)
 
 	volumes.addConfigMapVolume("config-domainnames")
@@ -62,7 +62,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 	return container, volumes
 }
 
-func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
+func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	container := v1.Container{
 		Name:  constants.MariadbName,
@@ -88,7 +88,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	}
 
 	// Volumes
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(nil)
 
 	volumes.addEmptyDirVolume("tmp-volume")
@@ -97,7 +97,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	return container, volumes
 }
 
-func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
+func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	container := v1.Container{
 		Name:  constants.MysqlProxyName,
@@ -120,7 +120,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	}
 
 	// Volumes
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(nil)
 
 	volumes.addEtcStartVolumes(constants.MysqlProxyName)
@@ -128,7 +128,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	return container, volumes
 }
 
-func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
+func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	trueVal := false
 
@@ -178,7 +178,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	}
 
 	// Volumes
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(nil)
 
 	volumes.addSecretVolume("secret-wmgr")
@@ -189,7 +189,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, Volumes) {
 	return container, volumes
 }
 
-func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, Volumes) {
+func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 
 	const (
 		CMSD = iota
@@ -274,7 +274,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, Volumes) {
 	}
 
 	// Volumes
-	var volumes Volumes
+	var volumes VolumeSet
 	volumes.make(nil)
 
 	volumes.addEtcStartVolumes(constants.XrootdName)

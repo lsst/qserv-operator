@@ -100,7 +100,7 @@ func getSqlConfigData(r *qservv1alpha1.Qserv, db string) map[string]string {
 	return files
 }
 
-func GenerateServiceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *v1.ConfigMap {
+func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service string, subdir string) *v1.ConfigMap {
 	name := fmt.Sprintf("config-%s-%s", service, subdir)
 	namespace := r.Namespace
 

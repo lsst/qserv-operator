@@ -4,26 +4,31 @@ const (
 	BaseName = "lsst"
 	AppLabel = "qserv"
 
-	CzarName   = "czar"
-	WorkerName = "worker"
-
-	MariadbName     = "mariadb"
-	MariadbPort     = 3306
-	MariadbPortName = "mariadb"
-
-	MysqlProxyName     = "proxy"
-	MysqlProxyPort     = 4040
-	MysqlProxyPortName = "proxy"
-
-	XrootdAdminPathVolumeName = "xrootd-adminpath"
-	XrootdName                = "xrootd"
-	XrootdPort                = 1094
-	XrootdPortName            = "xrootd"
-	XrootdRedirectorName      = "xrootd-redirector"
+	CzarName = "czar"
 
 	CmsdName     = "cmsd"
 	CmsdPort     = 2131
 	CmsdPortName = "cmsd"
+
+	MariadbName     = "mariadb"
+	MariadbPort     = 3306
+	MariadbPortName = MariadbName
+
+	MysqlProxyName     = "proxy"
+	MysqlProxyPort     = 4040
+	MysqlProxyPortName = MysqlProxyName
+
+	WmgrName     = "wmgr"
+	WmgrPort     = 4040
+	WmgrPortName = WmgrName
+
+	WorkerName = "worker"
+
+	XrootdAdminPathVolumeName = "xrootd-adminpath"
+	XrootdName                = "xrootd"
+	XrootdPort                = 1094
+	XrootdPortName            = XrootdName
+	XrootdRedirectorName      = "xrootd-redirector"
 
 	GraceTime = 30
 
@@ -34,8 +39,8 @@ const (
 	XROOTD_MANAGER = "xrootd-0"
 )
 
-var WorkerServiceConfigmaps = []string{"mariadb", XrootdName, "wmgr"}
-var WorkerServiceSecrets = []string{"mariadb", "wmgr"}
+var MicroserviceConfigmaps = []string{MariadbName, XrootdName, MysqlProxyName, WmgrName}
+var MicroserviceSecrets = []string{MariadbName, WmgrName}
 var Databases = []string{"czar", "repl", "worker"}
 
 var Command = []string{"/config-start/start.sh"}

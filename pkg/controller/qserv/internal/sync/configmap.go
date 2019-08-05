@@ -12,9 +12,9 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-func NewServiceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, service string, subpath string) syncer.Interface {
-	cm := qserv.GenerateServiceConfigMap(r, controllerLabels, service, subpath)
-	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(service), strings.Title(subpath))
+func NewMicroserviceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, microservice string, subpath string) syncer.Interface {
+	cm := qserv.GenerateMicroserviceConfigMap(r, controllerLabels, microservice, subpath)
+	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(microservice), strings.Title(subpath))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
