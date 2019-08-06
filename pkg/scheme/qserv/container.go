@@ -102,6 +102,12 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 			},
 		},
 		Command: constants.Command,
+		Env: []v1.EnvVar{
+			{
+				Name:  "XROOTD_RDR_DN",
+				Value: util.GetXrootdRedirectorName(cr),
+			},
+		},
 		VolumeMounts: []v1.VolumeMount{
 			// Used for mysql socket access
 			// TODO move mysql socket in emptyDir?

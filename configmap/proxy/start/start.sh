@@ -36,17 +36,21 @@ MYPROXY_CONF_IN="/config-etc/my-proxy.cnf"
 # FIXME: copy to /etc when write access is enabled
 MYPROXY_CONF="/tmp/my-proxy.cnf"
 if [ -e "$MYPROXY_CONF_IN" ]; then
-    cp "$MYPROXY_CONF_IN" "$MYPROXY_CONF"
+    cp "$MYPROXY_CONF_IN" > "$MYPROXY_CONF"
     chmod 660 "$MYPROXY_CONF"
 else
     log_failure_msg "Unable to find mysql-proxy configuration file"
     exit 1
 fi
 
-QSERV_CONFIG=/config-etc/qserv-czar.cnf
-if [ ! -e "$QSERV_CONFIG" ]; then
+QSERV_CONFIG_IN="/config-etc/qserv-czar.cnf"
+QSERV_CONFIG="/tmp/qserv-czar.cnf"
+if [ ! -e "$QSERV_CONFIG_IN" ]; then
     log_failure_msg "Unable to find qserv-czar configuration file"
     exit 1
+else
+    sed "s/<ENV_XROOTD_RDR_DN>/${XROOTD_RDR_DN}/" "$QSERV_CONFIG_IN" \
+        > "$QSERV_CONFIG"
 fi
 
 # Set default mysql-proxy configuration.
