@@ -108,7 +108,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 
 	// xrootd/cmsd workers only
-	for i, _ := range xrootdContainers {
+	for i := range xrootdContainers {
 		xrootdContainers[i].VolumeMounts = append(xrootdContainers[i].VolumeMounts, getDataVolumeMount())
 	}
 

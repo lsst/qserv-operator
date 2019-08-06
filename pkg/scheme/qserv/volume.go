@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/lsst/qserv-operator/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -93,6 +94,14 @@ func getDataVolumeMount() v1.VolumeMount {
 	return v1.VolumeMount{
 		MountPath: filepath.Join("/", "qserv", "data"),
 		Name:      "qserv-data",
+		ReadOnly:  false,
+	}
+}
+
+func getAdminPathMount() v1.VolumeMount {
+	return v1.VolumeMount{
+		MountPath: filepath.Join("/", "qserv", "run", "tmp", "xrd"),
+		Name:      constants.XrootdAdminPathVolumeName,
 		ReadOnly:  false,
 	}
 }

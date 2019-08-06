@@ -217,6 +217,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 				},
 			},
 			VolumeMounts: []v1.VolumeMount{
+				getAdminPathMount(),
 				getEtcVolumeMount(constants.XrootdName),
 				getStartVolumeMount(constants.XrootdName),
 			},
@@ -262,6 +263,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 				PeriodSeconds:       5,
 			},
 			VolumeMounts: []v1.VolumeMount{
+				getAdminPathMount(),
 				getEtcVolumeMount(constants.XrootdName),
 				getStartVolumeMount(constants.XrootdName),
 			},
