@@ -104,7 +104,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	syncers := []syncer.Interface{
 		sync.NewCzarServiceSyncer(qserv, r.client, r.scheme),
 		sync.NewCzarStatefulSetSyncer(qserv, r.client, r.scheme),
-		sync.NewDomainNameConfigMapSyncer(qserv, r.client, r.scheme),
+		sync.NewDotQservConfigMapSyncer(qserv, r.client, r.scheme),
 		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
 		sync.NewXrootdRedirectorServiceSyncer(qserv, r.client, r.scheme),
 		sync.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),

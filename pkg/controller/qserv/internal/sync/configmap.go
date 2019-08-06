@@ -20,9 +20,9 @@ func NewMicroserviceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, sch
 	})
 }
 
-func NewDomainNameConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	cm := qserv.GenerateDomainNameConfigMap(r, controllerLabels)
-	return syncer.NewObjectSyncer("DomainNameConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
+func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	cm := qserv.GenerateDotQservConfigMap(r, controllerLabels)
+	return syncer.NewObjectSyncer("DotQservConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
 }
