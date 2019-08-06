@@ -36,7 +36,7 @@ MYPROXY_CONF_IN="/config-etc/my-proxy.cnf"
 # FIXME: copy to /etc when write access is enabled
 MYPROXY_CONF="/tmp/my-proxy.cnf"
 if [ -e "$MYPROXY_CONF_IN" ]; then
-    cp "$MYPROXY_CONF_IN" > "$MYPROXY_CONF"
+    cp "$MYPROXY_CONF_IN" "$MYPROXY_CONF"
     chmod 660 "$MYPROXY_CONF"
 else
     log_failure_msg "Unable to find mysql-proxy configuration file"
