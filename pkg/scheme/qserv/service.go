@@ -35,6 +35,33 @@ import (
 // 	}
 // }
 
+func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetWorkerName(cr)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.WmgrPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.WmgrPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
 func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetCzarName(cr)
 	namespace := cr.Namespace
