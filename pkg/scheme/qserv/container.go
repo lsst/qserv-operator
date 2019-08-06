@@ -47,7 +47,6 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 	var volumes VolumeSet
 	volumes.make(nil)
 
-	volumes.addConfigMapVolume("config-domainnames")
 	volumes.addConfigMapVolume(sqlConfigMap)
 	volumes.addEtcStartVolumes("mariadb")
 	volumes.addSecretVolume("secret-mariadb")
