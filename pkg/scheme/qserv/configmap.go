@@ -125,7 +125,7 @@ func GenerateDotQservConfigMap(r *qservv1alpha1.Qserv, labels map[string]string)
 	namespace := r.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdName, r.Name))
-	root := filepath.Join("/", "dot-qserv")
+	root := filepath.Join("/", "configmap", "dot-qserv")
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
