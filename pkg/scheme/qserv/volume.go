@@ -100,7 +100,7 @@ func getDataVolumeMount() v1.VolumeMount {
 
 func getAdminPathMount() v1.VolumeMount {
 	return v1.VolumeMount{
-		MountPath: filepath.Join("/", "qserv", "run", "tmp", "xrd"),
+		MountPath: filepath.Join("/", "tmp", "xrd"),
 		Name:      constants.XrootdAdminPathVolumeName,
 		ReadOnly:  false,
 	}
@@ -114,4 +114,18 @@ func getEtcVolumeMount(microservice string) v1.VolumeMount {
 func getStartVolumeMount(microservice string) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-start", microservice)
 	return v1.VolumeMount{Name: volumeName, MountPath: "/config-start"}
+}
+
+func getXrootdVolumeMounts(component string) []v1.VolumeMount {
+	volumeMounts := []v1.VolumeMount{
+		getAdminPathMount(),
+		getEtcVolumeMount(constants.XrootdName),
+		getStartVolumeMount(constants.XrootdName),
+	}
+
+	// xrootd/cmsd workers only
+	if component == constants.WorkerName {
+		volumeMounts = append(volumeMounts, getDataVolumeMount())
+	}
+	return volumeMounts
 }

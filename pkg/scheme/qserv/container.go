@@ -16,7 +16,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
 
 	container := v1.Container{
-		Name:  "initdb",
+		Name:  constants.InitDbName,
 		Image: spec.Worker.Image,
 		Command: []string{
 			"/config-start/mariadb-configure.sh",
@@ -61,12 +61,14 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		Image: spec.Worker.Image,
 		Ports: []v1.ContainerPort{
 			{
-				Name:          constants.MariadbPortName,
+				Name:          constants.MariadbName,
 				ContainerPort: constants.MariadbPort,
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		Command: constants.Command,
+		Command:        constants.Command,
+		LivenessProbe:  getLivenessProbe(constants.MariadbName),
+		ReadinessProbe: getReadinessProbe(constants.MariadbName),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
 			getEtcVolumeMount("mariadb"),
@@ -92,16 +94,18 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	container := v1.Container{
-		Name:  constants.MysqlProxyName,
+		Name:  constants.ProxyName,
 		Image: spec.Worker.Image,
 		Ports: []v1.ContainerPort{
 			{
-				Name:          constants.MysqlProxyPortName,
-				ContainerPort: constants.MysqlProxyPort,
+				Name:          constants.ProxyName,
+				ContainerPort: constants.ProxyPort,
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		Command: constants.Command,
+		LivenessProbe:  getLivenessProbe(constants.ProxyName),
+		ReadinessProbe: getReadinessProbe(constants.ProxyName),
+		Command:        constants.Command,
 		Env: []v1.EnvVar{
 			{
 				Name:  "XROOTD_RDR_DN",
@@ -112,8 +116,8 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 			// Used for mysql socket access
 			// TODO move mysql socket in emptyDir?
 			getDataVolumeMount(),
-			getEtcVolumeMount(constants.MysqlProxyName),
-			getStartVolumeMount(constants.MysqlProxyName),
+			getEtcVolumeMount(constants.ProxyName),
+			getStartVolumeMount(constants.ProxyName),
 		},
 	}
 
@@ -121,7 +125,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	var volumes VolumeSet
 	volumes.make(nil)
 
-	volumes.addEtcStartVolumes(constants.MysqlProxyName)
+	volumes.addEtcStartVolumes(constants.ProxyName)
 
 	return container, volumes
 }
@@ -134,7 +138,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		Image: spec.Worker.Image,
 		Ports: []v1.ContainerPort{
 			{
-				Name:          constants.WmgrPortName,
+				Name:          constants.WmgrName,
 				ContainerPort: constants.WmgrPort,
 				Protocol:      v1.ProtocolTCP,
 			},
@@ -146,6 +150,8 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Value: util.GetCzarName(cr),
 			},
 		},
+		LivenessProbe:  getLivenessProbe(constants.WmgrName),
+		ReadinessProbe: getReadinessProbe(constants.WmgrName),
 		VolumeMounts: []v1.VolumeMount{
 			{
 				MountPath: filepath.Join("/", "config-dot-qserv"),
@@ -186,7 +192,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	return container, volumes
 }
 
-func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
+func getXrootdContainers(cr *qservv1alpha1.Qserv, component string) ([]v1.Container, VolumeSet) {
 
 	const (
 		CMSD = iota
@@ -200,9 +206,11 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 		Value: util.GetXrootdRedirectorName(cr),
 	}
 
+	volumeMounts := getXrootdVolumeMounts(component)
+
 	containers := []v1.Container{
 		{
-			Name:    "cmsd",
+			Name:    constants.CmsdName,
 			Image:   spec.Worker.Image,
 			Command: constants.Command,
 			Args:    []string{"-S", "cmsd"},
@@ -216,18 +224,14 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 					},
 				},
 			},
-			VolumeMounts: []v1.VolumeMount{
-				getAdminPathMount(),
-				getEtcVolumeMount(constants.XrootdName),
-				getStartVolumeMount(constants.XrootdName),
-			},
+			VolumeMounts: volumeMounts,
 		},
 		{
-			Name:  "xrootd",
+			Name:  constants.XrootdName,
 			Image: spec.Worker.Image,
 			Ports: []v1.ContainerPort{
 				{
-					Name:          "xrootd",
+					Name:          constants.XrootdName,
 					ContainerPort: 1094,
 					Protocol:      v1.ProtocolTCP,
 				},
@@ -236,6 +240,8 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 			Env: []v1.EnvVar{
 				envRedirector,
 			},
+			LivenessProbe:  getLivenessProbe(constants.XrootdName),
+			ReadinessProbe: getReadinessProbe(constants.XrootdName),
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{
@@ -244,30 +250,21 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 					},
 				},
 			},
-			LivenessProbe: &v1.Probe{
-				Handler: v1.Handler{
-					TCPSocket: &v1.TCPSocketAction{
-						Port: intstr.FromString("xrootd"),
-					},
-				},
-				InitialDelaySeconds: 10,
-				PeriodSeconds:       10,
-			},
-			ReadinessProbe: &v1.Probe{
-				Handler: v1.Handler{
-					TCPSocket: &v1.TCPSocketAction{
-						Port: intstr.FromString("xrootd"),
-					},
-				},
-				InitialDelaySeconds: 10,
-				PeriodSeconds:       5,
-			},
-			VolumeMounts: []v1.VolumeMount{
-				getAdminPathMount(),
-				getEtcVolumeMount(constants.XrootdName),
-				getStartVolumeMount(constants.XrootdName),
-			},
+			VolumeMounts: volumeMounts,
 		},
+	}
+
+	// Cmsd port is only open on redirectors, not on workers
+	if component == constants.XrootdRedirectorName {
+		containers[0].Ports = []v1.ContainerPort{
+			{
+				Name:          constants.CmsdName,
+				ContainerPort: 2131,
+				Protocol:      v1.ProtocolTCP,
+			},
+		}
+		containers[0].LivenessProbe = getLivenessProbe(constants.CmsdName)
+		containers[0].ReadinessProbe = getReadinessProbe(constants.CmsdName)
 	}
 
 	// Volumes
@@ -278,4 +275,28 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv) ([]v1.Container, VolumeSet) {
 	volumes.addEmptyDirVolume(constants.XrootdAdminPathVolumeName)
 
 	return containers, volumes
+}
+
+func getLivenessProbe(portName string) *v1.Probe {
+	return &v1.Probe{
+		Handler: v1.Handler{
+			TCPSocket: &v1.TCPSocketAction{
+				Port: intstr.FromString(portName),
+			},
+		},
+		InitialDelaySeconds: 10,
+		PeriodSeconds:       10,
+	}
+}
+
+func getReadinessProbe(portName string) *v1.Probe {
+	return &v1.Probe{
+		Handler: v1.Handler{
+			TCPSocket: &v1.TCPSocketAction{
+				Port: intstr.FromString(portName),
+			},
+		},
+		InitialDelaySeconds: 10,
+		PeriodSeconds:       5,
+	}
 }

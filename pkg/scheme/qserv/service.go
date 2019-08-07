@@ -54,12 +54,12 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v
 				{
 					Port:     constants.WmgrPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.WmgrPortName,
+					Name:     constants.WmgrName,
 				},
 				{
 					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.XrootdPortName,
+					Name:     constants.XrootdName,
 				},
 			},
 			Selector: labels,
@@ -84,9 +84,9 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
-					Port:     constants.MysqlProxyPort,
+					Port:     constants.ProxyPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.MysqlProxyPortName,
+					Name:     constants.ProxyName,
 				},
 			},
 			Selector: labels,
@@ -113,12 +113,12 @@ func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]
 				{
 					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.XrootdPortName,
+					Name:     constants.XrootdName,
 				},
 				{
 					Port:     constants.CmsdPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.CmsdPortName,
+					Name:     constants.CmsdName,
 				},
 			},
 			Selector: labels,
