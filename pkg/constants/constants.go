@@ -10,17 +10,16 @@ const (
 	CmsdPort     = 2131
 	CmsdPortName = "cmsd"
 
-	MariadbName     = "mariadb"
-	MariadbPort     = 3306
-	MariadbPortName = MariadbName
+	InitDbName = "initdb"
 
-	MysqlProxyName     = "proxy"
-	MysqlProxyPort     = 4040
-	MysqlProxyPortName = MysqlProxyName
+	MariadbName = "mariadb"
+	MariadbPort = 3306
 
-	WmgrName     = "wmgr"
-	WmgrPort     = 5012
-	WmgrPortName = WmgrName
+	ProxyName = "proxy"
+	ProxyPort = 4040
+
+	WmgrName = "wmgr"
+	WmgrPort = 5012
 
 	WorkerName = "worker"
 
@@ -38,7 +37,7 @@ const (
 	QSERV_DOMAIN = "qserv"
 )
 
-var MicroserviceConfigmaps = []string{MariadbName, XrootdName, MysqlProxyName, WmgrName}
+var MicroserviceConfigmaps = []string{MariadbName, XrootdName, ProxyName, WmgrName}
 var MicroserviceSecrets = []string{MariadbName, WmgrName}
 var Databases = []string{"czar", "repl", "worker"}
 

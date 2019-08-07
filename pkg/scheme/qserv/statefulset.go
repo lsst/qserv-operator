@@ -104,13 +104,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	initContainer, initVolumes := getInitContainer(cr, constants.WorkerName)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr)
-	xrootdContainers, xrootdVolumes := getXrootdContainers(cr)
+	xrootdContainers, xrootdVolumes := getXrootdContainers(cr, constants.WorkerName)
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
-
-	// xrootd/cmsd workers only
-	for i := range xrootdContainers {
-		xrootdContainers[i].VolumeMounts = append(xrootdContainers[i].VolumeMounts, getDataVolumeMount())
-	}
 
 	// Volumes
 	var volumes VolumeSet
@@ -178,7 +173,7 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	var replicas int32 = 2
 
-	containers, volumes := getXrootdContainers(cr)
+	containers, volumes := getXrootdContainers(cr, constants.XrootdRedirectorName)
 
 	ss := &appsv1beta2.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
