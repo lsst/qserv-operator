@@ -1,9 +1,11 @@
 sudo: required
-language: minimal
-dist: xenial
+language: go
+
+go
+- 1.11.12
 
 before_script:
-  - git clone --depth 1 -b "0.1" --single-branch https://github.com/fjammes/kind-travis-ci.git
+  - git clone --depth 1 -b "master" --single-branch https://github.com/fjammes/kind-travis-ci.git
   - ./kind-travis-ci/kind/k8s-create.sh
 
 script:
