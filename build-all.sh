@@ -9,6 +9,5 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/env.sh"
 
-go mod vendor
 operator-sdk generate k8s
 "$DIR"/build-image.sh

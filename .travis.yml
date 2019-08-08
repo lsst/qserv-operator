@@ -1,0 +1,25 @@
+sudo: required
+language: go
+dist: xenial
+
+go:
+- 1.12.7
+
+before_script:
+  - ./install-operator-sdk.sh
+  - git clone --depth 1 -b "qserv-operator-ci" --single-branch https://github.com/fjammes/kind-travis-ci.git
+  - ./kind-travis-ci/kind/k8s-create.sh
+  - export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+
+script:
+  - ./build.sh
+  - ./deploy.sh
+  - ./wait-operator-ready.sh
+  - kubectl apply -f ./deploy/crds/qserv_v1alpha1_qserv_cr.yaml
+  - ./wait-qserv-ready.sh 
+  - kubectl get all,endpoints,cm,pvc,pv -o wide
+  - ./run-integration-tests.sh
+
+after_success:
+  - echo "Push qserv-operator image to Docker Hub"

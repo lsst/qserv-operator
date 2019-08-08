@@ -19,27 +19,42 @@
 # You should have received a copy of the LSST License Statement and 
 # the GNU General Public License along with this program.  If not, 
 # see <http://www.lsstcorp.org/LegalNotices/>.
-# Launch Qserv multinode tests on Swarm cluster
+
+# Wait Qserv statefulset to be in running state
 
 # @author Fabrice Jammes SLAC/IN2P3
 
 set -e
-set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-WORKER_COUNT=2
 
-# Build CSS input data
-upper_id=$((WORKER_COUNT-1))
-for i in $(seq 0 "$upper_id");
+echo "Wait for qserv-operator to be in running state"
+
+GO_TPL="{{if .status.readyReplicas}}\
+    .status.readyReplicas is set \
+    {{end}}"
+
+dep="qserv-operator"
+
+echo -n "Wait for deployment '$dep' to start first pod"
+until [ -n "$READY" ]
 do
-    CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=5012 \
-    host=example-qserv-worker-${i}.example-qserv-worker; "
+    READY=$(kubectl get deployment "$dep" -o go-template --template "$GO_TPL")
+    sleep 2
+echo -n '.'
 done
+echo
 
-kubectl exec "example-qserv-czar-0" -c wmgr -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
-    setup qserv_distrib -t qserv-dev && \
-    echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:3306/qservCssData && \
-    qserv-test-integration.py -V DEBUG"
-
+echo -n "Wait for deployment '$dep' to start all pods"
+GO_TPL="{{if and (eq .spec.replicas .status.replicas) \
+    (eq .status.replicas .status.readyReplicas) \
+    }}true{{end}}"
+until [ -n "$STARTED" ]
+do
+    STARTED=$(kubectl get deployment "$dep" -o go-template --template "$GO_TPL")
+    sleep 2
+echo -n '.'
+done
+echo
+echo "Deployment '$dep' ready"
