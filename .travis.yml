@@ -1,0 +1,15 @@
+sudo: required
+language: minimal
+dist: xenial
+
+before_script:
+  - git clone --depth 1 -b "0.1" --single-branch https://github.com/fjammes/kind-travis-ci.git
+  - ./kind-travis-ci/kind/k8s-create.sh
+
+script:
+  - ./kind/launch.sh
+
+after_success:
+  - echo "Push qserv_deploy image to Docker Hub"
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - ./build-image.sh
