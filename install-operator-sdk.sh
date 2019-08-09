@@ -1,6 +1,6 @@
 #!/bin.sh
 
-# Helper to install operator-sdk 
+# Helper to install operator-sdk
 
 set -e
 set -x
