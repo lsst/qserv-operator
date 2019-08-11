@@ -100,7 +100,7 @@ func getDataVolumeMount() v1.VolumeMount {
 
 func getAdminPathMount() v1.VolumeMount {
 	return v1.VolumeMount{
-		MountPath: filepath.Join("/", "tmp", "xrd"),
+		MountPath: filepath.Join("/", "qserv", "run", "xrd"),
 		Name:      constants.XrootdAdminPathVolumeName,
 		ReadOnly:  false,
 	}
