@@ -22,7 +22,7 @@ before_script:
 - mkdir -p $HOME/.kube $HOME/.minikube
 - touch $KUBECONFIG
 - sudo minikube start --vm-driver=none --kubernetes-version=v1.15.0 
-- sudo chown -R travis: /home/travis/.minikube
+- sudo chown -R travis:travis /home/travis/.minikube
 - ./install-operator-sdk.sh
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
