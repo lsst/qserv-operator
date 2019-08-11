@@ -19,7 +19,7 @@ script:
   - kubectl apply -f ./deploy/crds/qserv_v1alpha1_qserv_cr.yaml
   - ./wait-qserv-ready.sh 
   - kubectl get all,endpoints,cm,pvc,pv -o wide
-  - ./run-integration-tests.sh
+  - ./wait-error.sh
 
 after_success:
   - echo "Push qserv-operator image to Docker Hub"
