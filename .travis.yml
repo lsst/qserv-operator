@@ -22,7 +22,7 @@ before_script:
 - mkdir -p $HOME/.kube $HOME/.minikube
 - touch $KUBECONFIG
 - sudo minikube start --vm-driver=none --kubernetes-version=v1.15.0 
-- "sudo chown -R travis: /home/travis/.minikube/"
+- sudo chown -R travis: /home/travis/.minikube
 - ./install-operator-sdk.sh
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
@@ -33,9 +33,7 @@ script:
   - kubectl apply -f ./deploy/crds/qserv_v1alpha1_qserv_cr.yaml
   - ./wait-qserv-ready.sh 
   - kubectl get all,endpoints,cm,pvc,pv -o wide
-  - ./wait-error.sh
-  - kubectl get all,endpoints,cm,pvc,pv -o wide
-  - tail -f /tmp/out.txt
+  - ./run-integration-tests.sh 
 
 after_success:
   - echo "Push qserv-operator image to Docker Hub"
