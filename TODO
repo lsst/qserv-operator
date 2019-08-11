@@ -1,1 +1,2 @@
-Is tmp-volume useful on worker pods?
+- Fix travis using https://medium.com/google-developers/how-to-run-travisci-locally-on-docker-822fc6b2db2e
+- Is tmp-volume useful on worker pods?
