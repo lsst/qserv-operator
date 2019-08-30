@@ -26,7 +26,7 @@ fi
 ##
 ##
 
-if [ "$HOSTNAME" = "$REPL_DB" ]; then
+if [ "$COMPONENT_NAME" = "repl" ]; then
     MYSQL_INSTALL_DB="mysql_install_db"
 else
     # Source pathes to eups packages
@@ -82,7 +82,7 @@ then
 
     echo "-- "
     echo "-- Initializing Qserv database"
-    for file_name in "${SQL_DIR}/${INSTANCE_NAME}"/*; do
+    for file_name in "${SQL_DIR}/${COMPONENT_NAME}"/*; do
         echo "-- Loading ${file_name} in MySQL"
         basename=$(basename "$file_name")
         if [ $basename == 'privileges.tpl.sql']; then
@@ -98,7 +98,7 @@ then
         fi
     done
 
-    if [ "$HOSTNAME" != "$REPL_DB" ]; then
+    if [ "$COMPONENT_NAME" != "repl" ]; then
         echo "-- "
         echo "-- Deploy scisql plugin"
         # WARN: SciSQL shared library (libcisql*.so) deployed by command

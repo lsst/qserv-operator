@@ -1,5 +1,7 @@
 package constants
 
+// All constants ending with 'Name' might have their value hard-coded in configmap/ directory
+// Do not change their value.
 const (
 	BaseName = "lsst"
 	AppLabel = "qserv"
@@ -18,6 +20,13 @@ const (
 	ProxyName = "proxy"
 	ProxyPort = 4040
 
+	QservName = "qserv"
+
+	ReplName    = "repl"
+	ReplCtlName = "repl-ctl"
+	ReplDbName  = "repl-db"
+	ReplWrkName = "repl-wrk"
+
 	WmgrName = "wmgr"
 	WmgrPort = 5012
 
@@ -30,15 +39,17 @@ const (
 	XrootdRedirectorName      = "xrootd-redirector"
 
 	GraceTime = 30
-
-	CZAR         = "czar-0"
-	REPL_CTL     = "repl-ctl"
-	REPL_DB      = "repl-db-0"
-	QSERV_DOMAIN = "qserv"
 )
 
-var MicroserviceConfigmaps = []string{MariadbName, XrootdName, ProxyName, WmgrName}
-var MicroserviceSecrets = []string{MariadbName, WmgrName}
-var Databases = []string{"czar", "repl", "worker"}
+// MicroserviceConfigmaps contains names of all micro-services which require configmaps named:
+// 'config-<microservice-name>-etc' and 'config-<microservice-name>-start'
+var MicroserviceConfigmaps = []string{MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
 
+// MicroserviceSecrets contains names of all micro-services which require secrets
+var MicroserviceSecrets = []string{MariadbName, WmgrName}
+
+// Databases contains names of all Qserv components which have a database
+var Databases = []string{CzarName, ReplName, WorkerName}
+
+// Command contains the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}

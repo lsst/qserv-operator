@@ -42,9 +42,9 @@ fi
 CONFIG_DIR="/config-etc"
 XROOTD_CONFIG="$CONFIG_DIR/xrootd.cf"
 
-# INSTANCE_NAME is required by xrdssi plugin to
+# COMPONENT_NAME is required by xrdssi plugin to
 # choose which type of queries to launch against metadata
-if [ "$INSTANCE_NAME" = 'worker' ]; then
+if [ "$COMPONENT_NAME" = 'worker' ]; then
 
     MYSQLD_SOCKET="/qserv/data/mysql/mysql.sock"
     XRDSSI_CONFIG="$CONFIG_DIR/xrdssi.cf"
@@ -87,4 +87,4 @@ fi
 # Start service
 #
 echo "Start $service"
-"$service" -c "$XROOTD_CONFIG" -n "$INSTANCE_NAME" -I v4 $OPT_XRD_SSI
+"$service" -c "$XROOTD_CONFIG" -n "$COMPONENT_NAME" -I v4 $OPT_XRD_SSI

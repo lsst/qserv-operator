@@ -11,19 +11,29 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
+func getMariadbImage(cr *qservv1alpha1.Qserv, component string) string {
 	spec := cr.Spec
+	var image string
+	if component == constants.ReplName {
+		image = spec.Replication.DbImage
+	} else {
+		image = spec.Worker.Image
+	}
+	return image
+}
+
+func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
 
 	container := v1.Container{
 		Name:  constants.InitDbName,
-		Image: spec.Worker.Image,
+		Image: getMariadbImage(cr, component),
 		Command: []string{
 			"/config-start/mariadb-configure.sh",
 		},
 		Env: []v1.EnvVar{
 			{
-				Name:  "INSTANCE_NAME",
+				Name:  "COMPONENT_NAME",
 				Value: component,
 			},
 		},
@@ -48,17 +58,24 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 	volumes.make(nil)
 
 	volumes.addConfigMapVolume(sqlConfigMap)
-	volumes.addEtcStartVolumes("mariadb")
+	volumes.addEtcStartVolumes(constants.MariadbName)
 	volumes.addSecretVolume("secret-mariadb")
 
 	return container, volumes
 }
 
-func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
-	spec := cr.Spec
+func getMariadbContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
+
+	var uservice string
+	if component == constants.ReplName {
+		uservice = constants.ReplDbName
+	} else {
+		uservice = constants.MariadbName
+	}
+
 	container := v1.Container{
 		Name:  constants.MariadbName,
-		Image: spec.Worker.Image,
+		Image: getMariadbImage(cr, component),
 		Ports: []v1.ContainerPort{
 			{
 				Name:          constants.MariadbName,
@@ -71,8 +88,8 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		ReadinessProbe: getReadinessProbe(constants.MariadbName),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount("mariadb"),
-			getStartVolumeMount("mariadb"),
+			getEtcVolumeMount(uservice),
+			getStartVolumeMount(uservice),
 			{
 				MountPath: "/qserv/run/tmp",
 				Name:      "tmp-volume",
@@ -86,7 +103,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	volumes.make(nil)
 
 	volumes.addEmptyDirVolume("tmp-volume")
-	volumes.addEtcStartVolumes("mariadb")
+	volumes.addEtcStartVolumes(uservice)
 
 	return container, volumes
 }

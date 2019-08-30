@@ -20,10 +20,13 @@ type QservSpec struct {
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
 
+	// Replication defines the settings for the replication framework
+	Replication ReplicationSettings `json:"replication,omitempty"`
+
 	// Worker defines the settings for worker cluster
 	Worker WorkerSettings `json:"worker,omitempty"`
 
-	// Worker defines the settings for worker cluster
+	// Xrootd defines the settings for worker cluster
 	Xrootd XrootdSettings `json:"xrootd,omitempty"`
 }
 
@@ -37,6 +40,12 @@ type CzarSettings struct {
 type WorkerSettings struct {
 	Image    string `json:"image,omitempty"`
 	Replicas int32  `json:"replicas,omitempty"`
+}
+
+// ReplicationSettings defines the specification of the replication framework
+type ReplicationSettings struct {
+	DbImage string `json:"dbimage,omitempty"`
+	Image   string `json:"image,omitempty"`
 }
 
 // XrootdSettings defines the specification of the xrootd redirectors cluster
