@@ -35,6 +35,87 @@ import (
 // 	}
 // }
 
+func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetCzarName(cr)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.ProxyPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.ProxyName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
+func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetReplicationCtlName(cr)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtlName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.MariadbPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.MariadbName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
+func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetReplicationDbName(cr)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDbName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.MariadbPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.MariadbName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
 func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetWorkerName(cr)
 	namespace := cr.Namespace
@@ -60,33 +141,6 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v
 					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
 					Name:     constants.XrootdName,
-				},
-			},
-			Selector: labels,
-		},
-	}
-}
-
-func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetCzarName(cr)
-	namespace := cr.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
-
-	return &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: v1.ServiceSpec{
-			Type:      v1.ServiceTypeClusterIP,
-			ClusterIP: v1.ClusterIPNone,
-			Ports: []v1.ServicePort{
-				{
-					Port:     constants.ProxyPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.ProxyName,
 				},
 			},
 			Selector: labels,

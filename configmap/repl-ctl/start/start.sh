@@ -12,7 +12,6 @@ set -x
 
 # Start master controller
 
-REPL_DB_HOST="repl-db-0.qserv"
 REPL_DB_PORT="3306"
 REPL_DB_USER="qsreplica"
 REPL_DB="qservReplica"
@@ -22,7 +21,7 @@ echo "Start replication controller pod: ${HOSTNAME}"
 # Wait for repl-db started
 # and contactable
 while true; do
-    if mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" --skip-column-names \
+    if mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" --skip-column-names \
         "${REPL_DB}" -e "SELECT CONCAT('Mariadb is up: ', version())"
     then
         break
@@ -35,7 +34,7 @@ done
 
 # Wait for repl-wrk to register inside repl-db
 while true; do
-    REGISTERED_WORKERS=$(mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
+    REGISTERED_WORKERS=$(mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
     --skip-column-names --batch "${REPL_DB}" -e "SELECT count(*) from config_worker")
     if [ "$REGISTERED_WORKERS" -eq "$WORKER_COUNT" ]
     then
@@ -62,7 +61,7 @@ cd "${WORK_DIR}"
 
 LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
-CONFIG="mysql://${REPL_DB_USER}@${REPL_DB_HOST}:${REPL_DB_PORT}/${REPL_DB}"
+CONFIG="mysql://${REPL_DB_USER}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
 PARAMETERS="--worker-evict-timeout=3600 --health-probe-interval=120 --replication-interval=1200"
 MALLOC_CONF=${OPT_MALLOC_CONF} LD_PRELOAD=${OPT_LD_PRELOAD} \
 qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}"

@@ -14,6 +14,52 @@ import (
 
 var log = logf.Log.WithName("qserv")
 
+func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+	name := cr.Name + "-" + constants.ReplCtlName
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtlName, cr.Name))
+
+	var replicas int32 = 1
+
+	replCtlContainer, replCtlVolumes := getReplicationCtlContainer(cr)
+
+	var volumes VolumeSet
+	volumes.make(replCtlVolumes)
+
+	ss := &appsv1beta2.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1beta2.StatefulSetSpec{
+			PodManagementPolicy: "Parallel",
+			ServiceName:         name,
+			Replicas:            &replicas,
+			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+				Type: "RollingUpdate",
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						replCtlContainer,
+					},
+					Volumes: volumes.toSlice(),
+				},
+			},
+		},
+	}
+
+	return ss
+}
+
 func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
 	name := cr.Name + "-" + constants.ReplDbName
 	namespace := cr.Namespace

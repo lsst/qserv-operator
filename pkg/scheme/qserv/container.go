@@ -22,6 +22,37 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component string) string {
 	return image
 }
 
+func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
+	spec := cr.Spec
+
+	container := v1.Container{
+		Name:    constants.ReplCtlName,
+		Image:   spec.Replication.Image,
+		Command: constants.Command,
+		Env: []v1.EnvVar{
+			{
+				Name:  "WORKER_COUNT",
+				Value: string(spec.Worker.Replicas),
+			},
+			{
+				Name:  "REPL_DB_DN",
+				Value: util.GetReplicationDbName(cr),
+			},
+		},
+		VolumeMounts: []v1.VolumeMount{
+			getEtcVolumeMount(constants.ReplCtlName),
+			getStartVolumeMount(constants.ReplCtlName),
+		},
+	}
+
+	var volumes VolumeSet
+	volumes.make(nil)
+
+	volumes.addEtcStartVolumes(constants.ReplCtlName)
+
+	return container, volumes
+}
+
 func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
 

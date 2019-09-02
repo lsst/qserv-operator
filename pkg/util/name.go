@@ -7,27 +7,32 @@ import (
 	"github.com/lsst/qserv-operator/pkg/constants"
 )
 
-// GetCzarName returns the name for czar ressources
+// GetCzarName returns the name for Czar ressources
 func GetCzarName(r *qservv1alpha1.Qserv) string {
 	return generateName(r.Name, constants.CzarName)
 }
 
-// GetWorkerName returns the name for xrootd redirector ressources
+// GetReplicationCtlName returns the name for Replication Controller ressources
+func GetReplicationCtlName(r *qservv1alpha1.Qserv) string {
+	return generateName(r.Name, constants.ReplDbName)
+}
+
+// GetReplicationDbName returns the name for Replication Db ressources
+func GetReplicationDbName(r *qservv1alpha1.Qserv) string {
+	return generateName(r.Name, constants.ReplDbName)
+}
+
+// GetWorkerName returns the name for Xrootd redirector ressources
 func GetWorkerName(r *qservv1alpha1.Qserv) string {
 	return generateName(r.Name, constants.WorkerName)
 }
 
-// GetXrootdRedirectorName returns the name for xrootd redirector ressources
+// GetXrootdRedirectorName returns the name for Xrootd redirector ressources
 func GetXrootdRedirectorName(r *qservv1alpha1.Qserv) string {
 	return generateName(r.Name, constants.XrootdRedirectorName)
 }
 
-// // GetRedisShutdownName returns the name for redis resources
-// func GetRedisShutdownName(r *qservv1alpha1.Qserv) string {
-//         return generateName(constants.RedisShutdownName, r.Name)
-// }
-
-// GetXrootdName returns the name for xrootd resources
+// GetXrootdName returns the name for Xrootd resources
 func GetXrootdName(r *qservv1alpha1.Qserv) string {
 	return generateName(r.Name, constants.XrootdName)
 }
