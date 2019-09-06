@@ -13,3 +13,4 @@ kubectl apply -f "$DIR"/deploy/operator.yaml
 
 echo "Run:"
 echo "kubectl apply -f $DIR/deploy/crds/qserv_v1alpha1_qserv_cr.yaml"
+kubectl apply -f $DIR/deploy/crds/qserv_v1alpha1_qserv_cr.yaml

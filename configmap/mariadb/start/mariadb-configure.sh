@@ -85,11 +85,16 @@ then
     for file_name in "${SQL_DIR}/${COMPONENT_NAME}"/*; do
         echo "-- Loading ${file_name} in MySQL"
         basename=$(basename "$file_name")
-        if [ $basename == 'privileges.tpl.sql']; then
-            sed -i "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name"
+        sql_file_name="/tmp/out.sql"
+        if [ "$basename" = 'privileges.tpl.sql' ]; then
+            sed "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name" > "$sql_file_name"
+        elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
+            sed "s/<XROOTD_RDR_DN>/${XROOTD_RDR_DN}/g" "$file_name" > "$sql_file_name"
+        else
+            sql_file_name="$file_name"
         fi
         if mysql -vvv --user="root" --password="${MYSQL_ROOT_PASSWORD}" \
-            < "${file_name}"
+            < "${sql_file_name}"
         then
             echo "-- -> success"
         else

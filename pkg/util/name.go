@@ -14,7 +14,7 @@ func GetCzarName(r *qservv1alpha1.Qserv) string {
 
 // GetReplicationCtlName returns the name for Replication Controller ressources
 func GetReplicationCtlName(r *qservv1alpha1.Qserv) string {
-	return generateName(r.Name, constants.ReplDbName)
+	return generateName(r.Name, constants.ReplCtlName)
 }
 
 // GetReplicationDbName returns the name for Replication Db ressources

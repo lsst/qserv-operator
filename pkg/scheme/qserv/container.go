@@ -3,6 +3,7 @@ package qserv
 import (
 	"fmt"
 	"path/filepath"
+	"strconv"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
@@ -10,48 +11,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
-
-func getMariadbImage(cr *qservv1alpha1.Qserv, component string) string {
-	spec := cr.Spec
-	var image string
-	if component == constants.ReplName {
-		image = spec.Replication.DbImage
-	} else {
-		image = spec.Worker.Image
-	}
-	return image
-}
-
-func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
-	spec := cr.Spec
-
-	container := v1.Container{
-		Name:    constants.ReplCtlName,
-		Image:   spec.Replication.Image,
-		Command: constants.Command,
-		Env: []v1.EnvVar{
-			{
-				Name:  "WORKER_COUNT",
-				Value: string(spec.Worker.Replicas),
-			},
-			{
-				Name:  "REPL_DB_DN",
-				Value: util.GetReplicationDbName(cr),
-			},
-		},
-		VolumeMounts: []v1.VolumeMount{
-			getEtcVolumeMount(constants.ReplCtlName),
-			getStartVolumeMount(constants.ReplCtlName),
-		},
-	}
-
-	var volumes VolumeSet
-	volumes.make(nil)
-
-	volumes.addEtcStartVolumes(constants.ReplCtlName)
-
-	return container, volumes
-}
 
 func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, VolumeSet) {
 	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
@@ -83,6 +42,10 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component string) (v1.Container, 
 				ReadOnly:  false,
 			},
 		},
+	}
+
+	if component == constants.ReplName {
+		container.Env = append(container.Env, getXrootdRedirectorDn(cr))
 	}
 
 	var volumes VolumeSet
@@ -139,6 +102,17 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component string) (v1.Containe
 	return container, volumes
 }
 
+func getMariadbImage(cr *qservv1alpha1.Qserv, component string) string {
+	spec := cr.Spec
+	var image string
+	if component == constants.ReplName {
+		image = spec.Replication.DbImage
+	} else {
+		image = spec.Worker.Image
+	}
+	return image
+}
+
 func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	container := v1.Container{
@@ -174,6 +148,75 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	volumes.make(nil)
 
 	volumes.addEtcStartVolumes(constants.ProxyName)
+
+	return container, volumes
+}
+
+func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
+	spec := cr.Spec
+
+	container := v1.Container{
+		Name:    constants.ReplCtlName,
+		Image:   spec.Replication.Image,
+		Command: constants.Command,
+		Env: []v1.EnvVar{
+			{
+				Name:  "WORKER_COUNT",
+				Value: strconv.FormatInt(int64(spec.Worker.Replicas), 10),
+			},
+			{
+				Name:  "REPL_DB_DN",
+				Value: util.GetReplicationDbName(cr),
+			},
+			getXrootdRedirectorDn(cr),
+		},
+		VolumeMounts: []v1.VolumeMount{
+			getEtcVolumeMount(constants.ReplCtlName),
+			getStartVolumeMount(constants.ReplCtlName),
+		},
+	}
+
+	var volumes VolumeSet
+	volumes.make(nil)
+
+	volumes.addEtcStartVolumes(constants.ReplCtlName)
+
+	return container, volumes
+}
+
+func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
+	spec := cr.Spec
+
+	var runAsUser int64 = 1000
+
+	container := v1.Container{
+		Name:    constants.ReplWrkName,
+		Image:   spec.Replication.Image,
+		Command: constants.Command,
+		Env: []v1.EnvVar{
+			{
+				Name:  "CZAR_DN",
+				Value: util.GetCzarName(cr),
+			},
+			{
+				Name:  "REPL_DB_DN",
+				Value: util.GetReplicationDbName(cr),
+			},
+		},
+		SecurityContext: &v1.SecurityContext{
+			RunAsUser: &runAsUser,
+		},
+		VolumeMounts: []v1.VolumeMount{
+			getDataVolumeMount(),
+			getEtcVolumeMount(constants.ReplWrkName),
+			getStartVolumeMount(constants.ReplWrkName),
+		},
+	}
+
+	var volumes VolumeSet
+	volumes.make(nil)
+
+	volumes.addEtcStartVolumes(constants.ReplWrkName)
 
 	return container, volumes
 }
@@ -240,6 +283,13 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	return container, volumes
 }
 
+func getXrootdRedirectorDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
+	return v1.EnvVar{
+		Name:  "XROOTD_RDR_DN",
+		Value: util.GetXrootdRedirectorName(cr),
+	}
+}
+
 func getXrootdContainers(cr *qservv1alpha1.Qserv, component string) ([]v1.Container, VolumeSet) {
 
 	const (
@@ -248,11 +298,6 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component string) ([]v1.Contai
 	)
 
 	spec := cr.Spec
-
-	envRedirector := v1.EnvVar{
-		Name:  "XROOTD_RDR_DN",
-		Value: util.GetXrootdRedirectorName(cr),
-	}
 
 	volumeMounts := getXrootdVolumeMounts(component)
 
@@ -263,7 +308,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component string) ([]v1.Contai
 			Command: constants.Command,
 			Args:    []string{"-S", "cmsd"},
 			Env: []v1.EnvVar{
-				envRedirector,
+				getXrootdRedirectorDn(cr),
 			},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
@@ -286,7 +331,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component string) ([]v1.Contai
 			},
 			Command: constants.Command,
 			Env: []v1.EnvVar{
-				envRedirector,
+				getXrootdRedirectorDn(cr),
 			},
 			LivenessProbe:  getLivenessProbe(constants.XrootdName),
 			ReadinessProbe: getReadinessProbe(constants.XrootdName),
