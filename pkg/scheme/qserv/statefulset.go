@@ -15,7 +15,7 @@ import (
 var log = logf.Log.WithName("qserv")
 
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-" + constants.CzarName
+	name := cr.Name + "-" + string(constants.CzarName)
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
@@ -66,7 +66,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: getPersistentVolumeClaimName(constants.QservName),
+						Name: GetVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -86,10 +86,10 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 }
 
 func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-" + constants.ReplCtlName
+	name := cr.Name + "-" + string(constants.ReplCtlName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtlName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
 
 	var replicas int32 = 1
 
@@ -132,10 +132,10 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[strin
 }
 
 func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-" + constants.ReplDbName
+	name := cr.Name + "-" + string(constants.ReplDbName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDbName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
 
 	var replicas int32 = 1
 	storageClass := "standard"
@@ -179,7 +179,7 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: getPersistentVolumeClaimName(constants.QservName),
+						Name: GetVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -198,12 +198,12 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 	return ss
 }
 
-func getPersistentVolumeClaimName(componentName string) string {
-	return componentName + "-data"
+func GetVolumeClaimTemplateName() string {
+	return constants.QservName + "-data"
 }
 
 func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
-	name := cr.Name + "-" + constants.WorkerName
+	name := cr.Name + "-" + string(constants.WorkerName)
 	namespace := cr.Namespace
 
 	const (
@@ -266,7 +266,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: getPersistentVolumeClaimName(constants.QservName),
+						Name: GetVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -286,7 +286,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
 	namespace := cr.Namespace
-	name := util.GetXrootdRedirectorName(cr)
+	name := util.GetName(cr, string(constants.XrootdRedirectorName))
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
 

@@ -23,11 +23,10 @@ if ! id 1000 > /dev/null 2>&1
 then
     useradd qserv --uid 1000 --no-create-home
 fi
-##
-##
 
 if [ "$COMPONENT_NAME" = "repl" ]; then
     MYSQL_INSTALL_DB="mysql_install_db"
+    . /secret-repl-db/repl-db.secret.sh
 else
     # Source pathes to eups packages
     . /qserv/run/etc/sysconfig/qserv
@@ -37,7 +36,6 @@ fi
 DATA_DIR="/qserv/data"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
-
 
 # Load mariadb secrets
 . /secret-mariadb/mariadb.secret.sh
@@ -88,8 +86,10 @@ then
         sql_file_name="/tmp/out.sql"
         if [ "$basename" = 'privileges.tpl.sql' ]; then
             sed "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name" > "$sql_file_name"
+            sed "s/<MYSQL_REPLICA_PASSWORD>/${MYSQL_REPLICA_PASSWORD}/g" "$file_name" > "$sql_file_name"
         elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
             sed "s/<XROOTD_RDR_DN>/${XROOTD_RDR_DN}/g" "$file_name" > "$sql_file_name"
+        elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
         else
             sql_file_name="$file_name"
         fi

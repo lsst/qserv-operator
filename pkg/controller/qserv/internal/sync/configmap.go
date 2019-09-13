@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lsst/qserv-operator/pkg/constants"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -12,9 +13,9 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-func NewMicroserviceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, microservice string, subpath string) syncer.Interface {
+func NewMicroserviceConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, microservice constants.ContainerName, subpath string) syncer.Interface {
 	cm := qserv.GenerateMicroserviceConfigMap(r, controllerLabels, microservice, subpath)
-	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(microservice), strings.Title(subpath))
+	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(string(microservice)), strings.Title(subpath))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
@@ -27,9 +28,9 @@ func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme 
 	})
 }
 
-func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db string) syncer.Interface {
+func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.ComponentName) syncer.Interface {
 	cm := qserv.GenerateSqlConfigMap(r, controllerLabels, db)
-	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(db))
+	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(string(db)))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
 		return nil
 	})
