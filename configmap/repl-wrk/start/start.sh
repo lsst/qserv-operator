@@ -5,6 +5,7 @@
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
+# WARN: password are displayed in debug logs
 set -x
 
 REPL_DB_PORT="3306"
@@ -14,6 +15,8 @@ DATA_DIR="/qserv/data"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 MYSQLD_USER_QSERV="qsmaster"
+
+. /secret-repl-db/repl-db.secret.sh
 
 # Wait for local mysql to be started
 while true; do
@@ -27,7 +30,7 @@ while true; do
     sleep 2
 done
 
- # Retrieve worker id
+ # Retrieve worker id on local mysql
 WORKER_ID=$(mysql --socket "$MYSQLD_SOCKET" --batch \
     --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
 if [ -z "$WORKER_ID" ]; then
@@ -37,10 +40,10 @@ fi
 
 HOST_DN=$(hostname --fqdn)
 
-# Wait for repl-db started
-# and contactable
+# Wait for remote repl-db started and contactable
 while true; do
-    if mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" --skip-column-names \
+    if mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
+    --password="${MYSQL_REPLICA_PASSWORD}" --skip-column-names \
         "${REPL_DB}" -e "SELECT CONCAT('Mariadb is up: ', version())"
     then
         break
@@ -54,12 +57,12 @@ done
 SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
     NULL, '${HOST_DN}',  NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
     svc_host='${HOST_DN}', fs_host='${HOST_DN}';"
-mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" -vv \
-    "${REPL_DB}" -e "$SQL"
+mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
+--password="${MYSQL_REPLICA_PASSWORD}" -vv "${REPL_DB}" -e "$SQL"
 
 LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
-CONFIG="mysql://${REPL_DB_USER}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
+CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
 qserv-replica-worker ${WORKER_ID} --config=${CONFIG}
 
 # For debug purpose

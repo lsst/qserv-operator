@@ -21,7 +21,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 		Name:  string(constants.InitDbName),
 		Image: getMariadbImage(cr, component),
 		Command: []string{
-			"/config-start/init.sh",
+			"/config-start/initdb.sh",
 		},
 		Env: []v1.EnvVar{
 			{
@@ -184,6 +184,7 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		VolumeMounts: []v1.VolumeMount{
 			getEtcVolumeMount(constants.ReplCtlName),
 			getStartVolumeMount(constants.ReplCtlName),
+			getSecretVolumeMount(constants.ReplDbName),
 		},
 	}
 
@@ -191,6 +192,7 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 	volumes.make(nil)
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
+	volumes.addSecretVolume(constants.ReplDbName)
 
 	return container, volumes
 }
@@ -221,6 +223,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 			getDataVolumeMount(),
 			getEtcVolumeMount(constants.ReplWrkName),
 			getStartVolumeMount(constants.ReplWrkName),
+			getSecretVolumeMount(constants.ReplDbName),
 		},
 	}
 
@@ -228,6 +231,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 	volumes.make(nil)
 
 	volumes.addEtcStartVolumes(constants.ReplWrkName)
+	volumes.addSecretVolume(constants.ReplDbName)
 
 	return container, volumes
 }
@@ -280,9 +284,8 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.WmgrName)
 	volumes.addEmptyDirVolume("tmp-volume")
-	volumes.addEtcStartVolumes("wmgr")
+	volumes.addEtcStartVolumes(constants.WmgrName)
 
-	// TODO Add volumes
 	return container, volumes
 }
 

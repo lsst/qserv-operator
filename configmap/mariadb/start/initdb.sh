@@ -9,7 +9,8 @@
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
-set -x
+# WARN: password are displayed in debug logs
+# set -x
 
 # Require root privileges
 ##
@@ -87,9 +88,9 @@ then
         if [ "$basename" = 'privileges.tpl.sql' ]; then
             sed "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name" > "$sql_file_name"
             sed "s/<MYSQL_REPLICA_PASSWORD>/${MYSQL_REPLICA_PASSWORD}/g" "$file_name" > "$sql_file_name"
+            cat "$sql_file_name"
         elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
             sed "s/<XROOTD_RDR_DN>/${XROOTD_RDR_DN}/g" "$file_name" > "$sql_file_name"
-        elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
         else
             sql_file_name="$file_name"
         fi
