@@ -10,7 +10,7 @@ A qserv-operator based on operator-sdk
 
 ### Deploy sample qserv cluster
 
-A valid `KUBECONFIG` is required as a pre-requisite.
+A valid `KUBECONFIG` and access to a Kubernetes v1.14.2+ cluster are required as a pre-requisite.
 
 ```sh
 # Install qserv-operator
