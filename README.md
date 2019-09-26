@@ -10,13 +10,15 @@ A qserv-operator based on operator-sdk
 
 ### Deploy sample qserv cluster
 
+A valid `KUBECONFIG` is required as a pre-requisite.
+
 ```sh
 # Install qserv-operator
 git clone https://github.com/kube-incubator/qserv-operator.git
 cd qserv-operator
 ./deploy.sh
 
-# Install a qserv instance
+# OPTIONAL: Install your own qserv instance
 # Edit file below to customize this qserv instance
 kubectl apply -f deploy/crds/qserv_v1alpha1_qserv_cr.yaml
 ```
