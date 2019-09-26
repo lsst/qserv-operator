@@ -18,7 +18,7 @@ git clone https://github.com/kube-incubator/qserv-operator.git
 cd qserv-operator
 ./deploy.sh
 
-# OPTIONAL: Install your own qserv instance
+# OPTIONAL: Install a custom qserv instance
 # Edit file below to customize this qserv instance
 kubectl apply -f deploy/crds/qserv_v1alpha1_qserv_cr.yaml
 ```
