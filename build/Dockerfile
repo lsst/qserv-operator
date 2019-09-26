@@ -8,6 +8,7 @@ ENV OPERATOR=/usr/local/bin/qserv-operator \
 COPY build/_output/bin/qserv-operator ${OPERATOR}
 
 COPY build/bin /usr/local/bin
+COPY configmap /configmap
 RUN  /usr/local/bin/user_setup
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
