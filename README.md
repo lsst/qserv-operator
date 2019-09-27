@@ -1,6 +1,6 @@
 # qserv-operator
 
-A qserv-operator based on operator-sdk
+A qserv operator for Kubernetes based on [operator-framework](https://github.com/operator-framework). You may be familiar with Operators from the concept’s [introduction in 2016](https://coreos.com/blog/introducing-operators.html). An Operator is a method of packaging, deploying and managing a Kubernetes application.
 
 *operator-sdk version: v0.8.1, commit: 33b3bfe10176f8647f5354516fff29dea42b6342*
 
@@ -16,7 +16,7 @@ A qserv-operator based on operator-sdk
 [kind]:https://kind.sigs.k8s.io/
 [kind-travis-ci]:https://github.com/k8s-school/kind-travis-ci
 
-### Deploy qserv-operator and a sample qserv-instance 
+### Deploy qserv-operator and a sample qserv instance 
 
 ```sh
 # Install qserv-operator
@@ -29,13 +29,13 @@ cd qserv-operator
 kubectl apply -f deploy/crds/qserv_v1alpha1_qserv_cr.yaml
 ```
 
-### Connect to the qserv cluster
+### Connect to the qserv instance
 
 ```sh
 ./run-integration-tests.sh
 ```
 
-## Build
+## Build qserv-operator
 
 ### Prerequisites
 
@@ -51,7 +51,7 @@ kubectl apply -f deploy/crds/qserv_v1alpha1_qserv_cr.yaml
 [docker_tool]:https://docs.docker.com/install/
 [kubectl_tool]:https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
-### Build qserv-operator
+### Build
 
 ```sh
 git clone https://github.com/kube-incubator/qserv-operator.git
