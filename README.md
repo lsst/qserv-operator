@@ -6,10 +6,7 @@ A qserv-operator based on operator-sdk
 
 [![Build Status](https://travis-ci.org/lsst/qserv-operator.svg?branch=master)](https://travis-ci.org/lsst/qserv-operator)
 
-## Deploy
-
-
-### Deploy sample qserv cluster
+## Deploy qserv
 
 ### Prerequisites
 
@@ -18,6 +15,8 @@ A qserv-operator based on operator-sdk
 
 [kind]:https://kind.sigs.k8s.io/
 [kind-travis-ci]:https://github.com/k8s-school/kind-travis-ci
+
+### Deploy qserv-operator and a sample qserv-instance 
 
 ```sh
 # Install qserv-operator
