@@ -70,7 +70,7 @@ Default settings below are recommended for development purpose, or continuous in
 .. code:: sh
 
     # Install a qserv instance with default settings inside default namespace
-    kubectl apply -k https://github.com/lsst/qserv-operator/overlays/dev --namespace='default'
+    kubectl apply -k https://github.com/lsst/qserv-operator/manifests/dev --namespace='default'
 
 with custom settings
 --------------------
@@ -87,7 +87,7 @@ Example are available, see below:
 .. code:: sh
 
     # Install a qserv instance with custom settings
-    kubectl apply -k https://github.com/lsst/qserv-operator/overlays/ncsa_dev --namespace='qserv-prod'
+    kubectl apply -k https://github.com/lsst/qserv-operator/manifests/ncsa_dev --namespace='qserv-prod'
 
 In order to create a customized Qserv instance, create a ``Kustomize``
 overlay using instructions below:
@@ -96,10 +96,10 @@ overlay using instructions below:
 
     git clone https://github.com/lsst/qserv-operator.git
     cd qserv-operator
-    cp -r overlays/dev/ overlays/<customized-overlay>
+    cp -r manifests/dev/ manifests/<customized-overlay>
 
 Then add custom setting, for example container image versions, by
-editing ``overlays/<customized-overlay>/qserv.yaml``:
+editing ``manifests/<customized-overlay>/qserv.yaml``:
 
 ::
 
@@ -127,7 +127,7 @@ And finally create customized Qserv instance:
 
 .. code:: sh
 
-    kubectl apply -k overlays/my-qserv/ --namespace='<namespace>'
+    kubectl apply -k manifests/my-qserv/ --namespace='<namespace>'
 
 Run Qserv integration tests
 ===========================

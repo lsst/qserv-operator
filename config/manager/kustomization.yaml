@@ -5,4 +5,20 @@ kind: Kustomization
 images:
 - name: controller
   newName: qserv/qserv-operator
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
   newTag: 2021.6.3-rc1
+=======
+  newTag: 2021.6.1-rc2-5-g81032d6-dirty
+>>>>>>> 1aecd1e... upd
+=======
+  newTag: 2021.6.1-rc2
+>>>>>>> f699864... upd
+=======
+  newTag: 2021.6.1-rc2-2-g9c5b821
+>>>>>>> fe785b3... upd
+=======
+  newTag: 2021.6.1-rc2
+>>>>>>> f23a537... upd
