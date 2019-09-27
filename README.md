@@ -1,7 +1,8 @@
 # qserv-operator
 
 A qserv-operator based on operator-sdk
-(operator-sdk version operator-sdk version: v0.8.1, commit: 33b3bfe10176f8647f5354516fff29dea42b6342)
+
+*operator-sdk version: v0.8.1, commit: 33b3bfe10176f8647f5354516fff29dea42b6342*
 
 [![Build Status](https://travis-ci.org/lsst/qserv-operator.svg?branch=master)](https://travis-ci.org/lsst/qserv-operator)
 
@@ -10,7 +11,13 @@ A qserv-operator based on operator-sdk
 
 ### Deploy sample qserv cluster
 
-A valid `KUBECONFIG` and access to a Kubernetes v1.14.2+ cluster are required as a pre-requisite.
+### Prerequisites
+
+- A valid `KUBECONFIG` and access to a Kubernetes v1.14.2+ cluster
+- Dynamic volume provisionning need to be available on the Kubernetes cluster (for example [kind] for or GKE). [kind-travis-ci] provide a one-liner to install [kind] on your workstation.
+
+[kind]:https://kind.sigs.k8s.io/
+[kind-travis-ci]:https://github.com/k8s-school/kind-travis-ci
 
 ```sh
 # Install qserv-operator
