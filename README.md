@@ -20,8 +20,7 @@ A qserv operator for Kubernetes based on [operator-framework](https://github.com
 
 ```sh
 # Install qserv-operator
-git clone https://github.com/kube-incubator/qserv-operator.git
-cd qserv-operator
+git clone https://github.com/lsst/qserv-operator.git
 ./deploy.sh
 
 # OPTIONAL: Install a custom qserv instance
