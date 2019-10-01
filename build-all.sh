@@ -10,4 +10,4 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/env.sh"
 
 operator-sdk generate k8s
-"$DIR"/build-image.sh
+"$DIR"/build.sh
