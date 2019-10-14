@@ -89,8 +89,8 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentN
 			},
 		},
 		Command:        constants.Command,
-		LivenessProbe:  getLivenessProbe(mariadbPortName),
-		ReadinessProbe: getReadinessProbe(mariadbPortName),
+		LivenessProbe:  getProbe(constants.MariadbPortName, 10, tcpAction),
+		ReadinessProbe: getProbe(constants.MariadbPortName, 5, tcpAction),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
 			getEtcVolumeMount(uservice),
@@ -136,8 +136,8 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		LivenessProbe:  getLivenessProbe(constants.ProxyPortName),
-		ReadinessProbe: getReadinessProbe(constants.ProxyPortName),
+		LivenessProbe:  getProbe(constants.ProxyPortName, 10, tcpAction),
+		ReadinessProbe: getProbe(constants.ProxyPortName, 5, tcpAction),
 		Command:        constants.Command,
 		Env: []v1.EnvVar{
 			{
@@ -255,8 +255,8 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Value: util.GetName(cr, string(constants.CzarName)),
 			},
 		},
-		LivenessProbe:  getLivenessProbe(constants.WmgrPortName),
-		ReadinessProbe: getReadinessProbe(constants.WmgrPortName),
+		LivenessProbe:  getProbe(constants.WmgrPortName, 10, tcpAction),
+		ReadinessProbe: getProbe(constants.WmgrPortName, 5, tcpAction),
 		VolumeMounts: []v1.VolumeMount{
 			{
 				MountPath: filepath.Join("/", "config-dot-qserv"),
@@ -340,8 +340,8 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 			Env: []v1.EnvVar{
 				getXrootdRedirectorDn(cr),
 			},
-			LivenessProbe:  getLivenessProbe(xrootdPortName),
-			ReadinessProbe: getReadinessProbe(xrootdPortName),
+			LivenessProbe:  getProbe(constants.XrootdPortName, 10, tcpAction),
+			ReadinessProbe: getProbe(constants.XrootdPortName, 5, tcpAction),
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{
@@ -363,8 +363,8 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 				Protocol:      v1.ProtocolTCP,
 			},
 		}
-		containers[0].LivenessProbe = getLivenessProbe(constants.CmsdPortName)
-		containers[0].ReadinessProbe = getReadinessProbe(constants.CmsdPortName)
+		containers[0].LivenessProbe = getProbe(constants.CmsdPortName, 10, tcpAction)
+		containers[0].ReadinessProbe = getProbe(constants.CmsdPortName, 5, tcpAction)
 	}
 
 	// Volumes
@@ -377,26 +377,31 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	return containers, volumes
 }
 
-func getLivenessProbe(portName string) *v1.Probe {
-	return &v1.Probe{
-		Handler: v1.Handler{
-			TCPSocket: &v1.TCPSocketAction{
-				Port: intstr.FromString(portName),
-			},
-		},
-		InitialDelaySeconds: 10,
-		PeriodSeconds:       10,
-	}
-}
+type NetworkAction string
 
-func getReadinessProbe(portName string) *v1.Probe {
-	return &v1.Probe{
-		Handler: v1.Handler{
+const (
+	httpAction NetworkAction = "http"
+	tcpAction  NetworkAction = "tcp"
+)
+
+func getProbe(portName string, periodSeconds int32, action NetworkAction) *v1.Probe {
+	var handler *v1.Handler
+	if action == httpAction {
+		handler = &v1.Handler{
+			HTTPGet: &v1.HTTPGetAction{
+				Port: intstr.FromString(portName),
+			},
+		}
+	} else {
+		handler = &v1.Handler{
 			TCPSocket: &v1.TCPSocketAction{
 				Port: intstr.FromString(portName),
 			},
-		},
+		}
+	}
+	return &v1.Probe{
+		Handler:             *handler,
 		InitialDelaySeconds: 10,
-		PeriodSeconds:       5,
+		PeriodSeconds:       periodSeconds,
 	}
 }

@@ -21,8 +21,8 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
 
 	var replicas int32 = 1
-	storageClass := "standard"
-	storageSize := "1G"
+	storageClass := cr.Spec.StorageClass
+	storageSize := cr.Spec.StorageCapacity
 
 	initContainer, initVolumes := getInitContainer(cr, constants.CzarName)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.CzarName)
@@ -138,8 +138,8 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
 
 	var replicas int32 = 1
-	storageClass := "standard"
-	storageSize := "1G"
+	storageClass := cr.Spec.StorageClass
+	storageSize := cr.Spec.StorageCapacity
 
 	initContainer, initVolumes := getInitContainer(cr, constants.ReplName)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.ReplName)
@@ -216,8 +216,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
 
 	replicas := cr.Spec.Worker.Replicas
-	storageClass := "standard"
-	storageSize := "1G"
+	storageClass := cr.Spec.StorageClass
+	storageSize := cr.Spec.StorageCapacity
 
 	initContainer, initVolumes := getInitContainer(cr, constants.WorkerName)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.WorkerName)

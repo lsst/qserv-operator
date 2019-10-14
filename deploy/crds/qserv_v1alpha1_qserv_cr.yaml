@@ -4,6 +4,7 @@ metadata:
   name: example-qserv
 spec:
   storageclass: "standard"
+  storagecapacity: "500M"
   worker:
     replicas: 3
     image: "qserv/qserv:9701693"

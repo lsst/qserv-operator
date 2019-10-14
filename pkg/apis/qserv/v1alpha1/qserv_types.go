@@ -15,7 +15,8 @@ type QservSpec struct {
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// Common settings
-	StorageClass string `json:"storageclass,omitempty"`
+	StorageClass    string `json:"storageclass,omitempty"`
+	StorageCapacity string `json:"storagecapacity,omitempty"`
 
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`

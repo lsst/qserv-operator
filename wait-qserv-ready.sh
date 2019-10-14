@@ -20,7 +20,7 @@
 # the GNU General Public License along with this program.  If not, 
 # see <http://www.lsstcorp.org/LegalNotices/>.
 
-# Wait Qserv statefulset to be in running state
+# Wait Qserv pods to be in ready state
 
 # @author Fabrice Jammes SLAC/IN2P3
 
@@ -30,42 +30,14 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 . "$DIR/env.sh"
 
-echo "Wait for Qserv statefulsets to be in running state"
+SHELL_POD="${INSTANCE}-shell"
 
-
-GO_TPL="{{if .status.readyReplicas}}\
-    .status.readyReplicas is set \
-    {{end}}"
-
-for sf in "${INSTANCE}-czar" "${INSTANCE}-worker" "${INSTANCE}-xrootd-redirector"
-do
-    echo -n "Wait for statefulset '$sf' to exist"
-    until kubectl get statefulset/"$sf" > /dev/null 2>&1 
-    do
-        sleep 2
-        echo -n '.'
-    done
-    echo
-
-    echo -n "Wait for statefulset '$sf' to start first pod"
-    until [ -n "$READY" ]
-    do
-        READY=$(kubectl get statefulset "$sf" -o go-template --template "$GO_TPL")
-        sleep 2
-	echo -n '.'
-    done
-    echo
-
-    echo -n "Wait for statefulset '$sf' to start all pods"
-    GO_TPL="{{if and (eq .spec.replicas .status.replicas) \
-        (eq .status.replicas .status.readyReplicas) \
-        (eq .status.currentRevision .status.updateRevision)}}true{{end}}"
-    until [ -n "$STARTED" ]
-    do
-        STARTED=$(kubectl get statefulset "$sf" -o go-template --template "$GO_TPL")
-        sleep 2
-	echo -n '.'
-    done
-    echo
-    echo "Statefulset '$sf' ready"
-done
+echo "Wait for Qserv pods to be ready"
+kubectl run "${INSTANCE}-shell" --image=alpine  --restart=Never sleep 3600
+kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
+kubectl wait pod --for=condition=Ready --timeout="-1s" -l "app=qserv,instance=$INSTANCE"
+kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/root
+kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh example-qserv-worker-0.example-qserv-worker
+kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh example-qserv-worker-1.example-qserv-worker
+kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh example-qserv-worker-2.example-qserv-worker
+kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"
