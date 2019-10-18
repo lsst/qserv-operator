@@ -1,44 +1,64 @@
 package constants
 
+// All constants ending with 'Name' might have their value hard-coded in configmap/ directory
+// Do not change their value.
 const (
 	BaseName = "lsst"
 	AppLabel = "qserv"
 
-	CzarName = "czar"
-
-	CmsdName     = "cmsd"
 	CmsdPort     = 2131
-	CmsdPortName = "cmsd"
+	CmsdPortName = string(CmsdName)
 
-	InitDbName = "initdb"
+	MariadbPort     = 3306
+	MariadbPortName = string(MariadbName)
 
-	MariadbName = "mariadb"
-	MariadbPort = 3306
+	ProxyPort     = 4040
+	ProxyPortName = string(ProxyName)
 
-	ProxyName = "proxy"
-	ProxyPort = 4040
+	QservName = "qserv"
 
-	WmgrName = "wmgr"
-	WmgrPort = 5012
-
-	WorkerName = "worker"
+	WmgrPort     = 5012
+	WmgrPortName = string(WmgrName)
 
 	XrootdAdminPathVolumeName = "xrootd-adminpath"
-	XrootdName                = "xrootd"
 	XrootdPort                = 1094
-	XrootdPortName            = XrootdName
-	XrootdRedirectorName      = "xrootd-redirector"
+	XrootdPortName            = string(XrootdName)
 
 	GraceTime = 30
-
-	CZAR         = "czar-0"
-	REPL_CTL     = "repl-ctl"
-	REPL_DB      = "repl-db-0"
-	QSERV_DOMAIN = "qserv"
 )
 
-var MicroserviceConfigmaps = []string{MariadbName, XrootdName, ProxyName, WmgrName}
-var MicroserviceSecrets = []string{MariadbName, WmgrName}
-var Databases = []string{"czar", "repl", "worker"}
+type ContainerName string
 
+const (
+	CmsdName    ContainerName = "cmsd"
+	InitDbName  ContainerName = "initdb"
+	MariadbName ContainerName = "mariadb"
+	ProxyName   ContainerName = "proxy"
+	XrootdName  ContainerName = "xrootd"
+	ReplCtlName ContainerName = "repl-ctl"
+	ReplDbName  ContainerName = "repl-db"
+	WmgrName    ContainerName = "wmgr"
+	ReplWrkName ContainerName = "repl-wrk"
+)
+
+type ComponentName string
+
+const (
+	CzarName             ComponentName = "czar"
+	ReplName             ComponentName = "repl"
+	WorkerName           ComponentName = "worker"
+	XrootdRedirectorName ComponentName = "xrootd-redirector"
+)
+
+// MicroserviceConfigmaps contains names of all micro-services which require configmaps named:
+// 'config-<microservice-name>-etc' and 'config-<microservice-name>-start'
+var MicroserviceConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
+
+// MicroserviceSecrets contains names of all micro-services which require secrets
+var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
+
+// Databases contains names of all Qserv components which have a database
+var Databases = []ComponentName{CzarName, ReplName, WorkerName}
+
+// Command contains the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}

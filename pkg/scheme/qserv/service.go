@@ -35,40 +35,8 @@ import (
 // 	}
 // }
 
-func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetWorkerName(cr)
-	namespace := cr.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
-
-	return &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: v1.ServiceSpec{
-			Type:      v1.ServiceTypeClusterIP,
-			ClusterIP: v1.ClusterIPNone,
-			Ports: []v1.ServicePort{
-				{
-					Port:     constants.WmgrPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.WmgrName,
-				},
-				{
-					Port:     constants.XrootdPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.XrootdName,
-				},
-			},
-			Selector: labels,
-		},
-	}
-}
-
 func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetCzarName(cr)
+	name := util.GetName(cr, string(constants.CzarName))
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
@@ -86,7 +54,93 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 				{
 					Port:     constants.ProxyPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.ProxyName,
+					Name:     constants.ProxyPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
+func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, string(constants.ReplCtlName))
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.MariadbPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.MariadbPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
+func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, string(constants.ReplDbName))
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.MariadbPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.MariadbPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
+func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, string(constants.WorkerName))
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.WmgrPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.WmgrPortName,
+				},
+				{
+					Port:     constants.XrootdPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.XrootdPortName,
 				},
 			},
 			Selector: labels,
@@ -95,7 +149,7 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 }
 
 func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetXrootdRedirectorName(cr)
+	name := util.GetName(cr, string(constants.XrootdRedirectorName))
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
@@ -113,12 +167,12 @@ func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]
 				{
 					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.XrootdName,
+					Name:     constants.XrootdPortName,
 				},
 				{
 					Port:     constants.CmsdPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.CmsdName,
+					Name:     constants.CmsdPortName,
 				},
 			},
 			Selector: labels,

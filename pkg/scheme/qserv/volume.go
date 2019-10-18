@@ -61,15 +61,16 @@ func (vs *VolumeSet) addEmptyDirVolume(name string) {
 	(*vs)[name] = volume
 }
 
-func (vs *VolumeSet) addSecretVolume(name string) {
+func (vs *VolumeSet) addSecretVolume(containerName constants.ContainerName) {
+	secretName := GetSecretName(containerName)
 	volume := v1.Volume{
-		Name: name,
+		Name: secretName,
 		VolumeSource: v1.VolumeSource{
 			Secret: &v1.SecretVolumeSource{
-				SecretName: name,
+				SecretName: secretName,
 			},
 		}}
-	(*vs)[name] = volume
+	(*vs)[secretName] = volume
 }
 
 func (vs VolumeSet) toSlice() []v1.Volume {
@@ -80,7 +81,7 @@ func (vs VolumeSet) toSlice() []v1.Volume {
 	return volumes
 }
 
-func (vs *VolumeSet) addEtcStartVolumes(microservice string) {
+func (vs *VolumeSet) addEtcStartVolumes(microservice constants.ContainerName) {
 
 	configName := fmt.Sprintf("config-%s-etc", microservice)
 	(*vs).addConfigMapVolume(configName)
@@ -93,7 +94,7 @@ func (vs *VolumeSet) addEtcStartVolumes(microservice string) {
 func getDataVolumeMount() v1.VolumeMount {
 	return v1.VolumeMount{
 		MountPath: filepath.Join("/", "qserv", "data"),
-		Name:      "qserv-data",
+		Name:      GetVolumeClaimTemplateName(),
 		ReadOnly:  false,
 	}
 }
@@ -106,17 +107,17 @@ func getAdminPathMount() v1.VolumeMount {
 	}
 }
 
-func getEtcVolumeMount(microservice string) v1.VolumeMount {
+func getEtcVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-etc", microservice)
 	return v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"}
 }
 
-func getStartVolumeMount(microservice string) v1.VolumeMount {
+func getStartVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-start", microservice)
 	return v1.VolumeMount{Name: volumeName, MountPath: "/config-start"}
 }
 
-func getXrootdVolumeMounts(component string) []v1.VolumeMount {
+func getXrootdVolumeMounts(component constants.ComponentName) []v1.VolumeMount {
 	volumeMounts := []v1.VolumeMount{
 		getAdminPathMount(),
 		getEtcVolumeMount(constants.XrootdName),

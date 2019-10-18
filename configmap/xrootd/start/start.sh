@@ -39,13 +39,13 @@ fi
 
 if hostname | egrep "^${XROOTD_RDR_DN}-[0-9]+$"
 then
-    INSTANCE_NAME='manager'
+    COMPONENT_NAME='manager'
 else
-    INSTANCE_NAME='worker'
+    COMPONENT_NAME='worker'
 fi
-export INSTANCE_NAME
+export COMPONENT_NAME
 
-if [ "$service" = "xrootd" -a "$INSTANCE_NAME" = 'worker' ]; then
+if [ "$service" = "xrootd" -a "$COMPONENT_NAME" = 'worker' ]; then
 
     # Increase limit for locked-in-memory size
     MLOCK_AMOUNT=$(grep MemTotal /proc/meminfo | awk '{printf("%.0f\n", $2 - 1000000)}')

@@ -19,14 +19,27 @@ func MergeLabels(allLabels ...map[string]string) map[string]string {
 }
 
 // GetLabels returns the labels for the component with specific role
-func GetLabels(component, role string) map[string]string {
-	return generateLabels(component, role)
+func GetLabels(component constants.ComponentName, role string) map[string]string {
+	return generateComponentLabels(component, role)
 }
 
-func generateLabels(component, role string) map[string]string {
+func generateComponentLabels(component constants.ComponentName, role string) map[string]string {
+	componentStr := string(component)
 	return map[string]string{
 		"app":       constants.AppLabel,
-		"component": component,
-		component:   role,
+		"component": componentStr,
+		"instance":  role,
+	}
+}
+
+func GetContainerLabels(container constants.ContainerName, role string) map[string]string {
+	return generateContainerLabels(container, role)
+}
+
+func generateContainerLabels(container constants.ContainerName, role string) map[string]string {
+	return map[string]string{
+		"app":       constants.AppLabel,
+		"container": string(container),
+		"instance":  role,
 	}
 }

@@ -9,7 +9,8 @@
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
-set -x
+# WARN: password are displayed in debug logs
+# set -x
 
 # Require root privileges
 ##
@@ -23,11 +24,10 @@ if ! id 1000 > /dev/null 2>&1
 then
     useradd qserv --uid 1000 --no-create-home
 fi
-##
-##
 
-if [ "$HOSTNAME" = "$REPL_DB" ]; then
+if [ "$COMPONENT_NAME" = "repl" ]; then
     MYSQL_INSTALL_DB="mysql_install_db"
+    . /secret-repl-db/repl-db.secret.sh
 else
     # Source pathes to eups packages
     . /qserv/run/etc/sysconfig/qserv
@@ -37,7 +37,6 @@ fi
 DATA_DIR="/qserv/data"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
-
 
 # Load mariadb secrets
 . /secret-mariadb/mariadb.secret.sh
@@ -82,14 +81,21 @@ then
 
     echo "-- "
     echo "-- Initializing Qserv database"
-    for file_name in "${SQL_DIR}/${INSTANCE_NAME}"/*; do
+    for file_name in "${SQL_DIR}/${COMPONENT_NAME}"/*; do
         echo "-- Loading ${file_name} in MySQL"
         basename=$(basename "$file_name")
-        if [ $basename == 'privileges.tpl.sql']; then
-            sed -i "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name"
+        sql_file_name="/tmp/out.sql"
+        if [ "$basename" = 'privileges.tpl.sql' ]; then
+            sed "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name" > "$sql_file_name"
+            sed "s/<MYSQL_REPLICA_PASSWORD>/${MYSQL_REPLICA_PASSWORD}/g" "$file_name" > "$sql_file_name"
+            cat "$sql_file_name"
+        elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
+            sed "s/<XROOTD_RDR_DN>/${XROOTD_RDR_DN}/g" "$file_name" > "$sql_file_name"
+        else
+            sql_file_name="$file_name"
         fi
         if mysql -vvv --user="root" --password="${MYSQL_ROOT_PASSWORD}" \
-            < "${file_name}"
+            < "${sql_file_name}"
         then
             echo "-- -> success"
         else
@@ -98,7 +104,7 @@ then
         fi
     done
 
-    if [ "$HOSTNAME" != "$REPL_DB" ]; then
+    if [ "$COMPONENT_NAME" != "repl" ]; then
         echo "-- "
         echo "-- Deploy scisql plugin"
         # WARN: SciSQL shared library (libcisql*.so) deployed by command

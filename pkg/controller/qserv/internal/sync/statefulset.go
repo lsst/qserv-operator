@@ -15,6 +15,18 @@ func NewCzarStatefulSetSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *r
 	return syncer.NewObjectSyncer("CzarStatefulSet", r, statefulSet, c, scheme, noFunc)
 }
 
+// NewReplicationCtlStatefulSetSyncer returns a new sync.Interface for reconciling Qserv replication controller StatefulSet
+func NewReplicationCtlStatefulSetSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	statefulSet := qserv.GenerateReplicationCtlStatefulSet(r, controllerLabels)
+	return syncer.NewObjectSyncer("ReplicationCtlStatefulSet", r, statefulSet, c, scheme, noFunc)
+}
+
+// NewReplicationDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv replication Db StatefulSet
+func NewReplicationDbStatefulSetSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	statefulSet := qserv.GenerateReplicationDbStatefulSet(r, controllerLabels)
+	return syncer.NewObjectSyncer("ReplicationDbStatefulSet", r, statefulSet, c, scheme, noFunc)
+}
+
 // NewWorkerStatefulSetSyncer returns a new sync.Interface for reconciling Qserv Worker StatefulSet
 func NewWorkerStatefulSetSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	statefulSet := qserv.GenerateWorkerStatefulSet(r, controllerLabels)
