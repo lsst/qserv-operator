@@ -121,10 +121,6 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 		}
 	}
 
-	for _, secretClass := range constants.MicroserviceSecrets {
-		syncers = append(syncers, sync.NewSecretSyncer(qserv, r.client, r.scheme, secretClass))
-	}
-
 	for _, db := range constants.Databases {
 		syncers = append(syncers, sync.NewSqlConfigMapSyncer(qserv, r.client, r.scheme, db))
 	}

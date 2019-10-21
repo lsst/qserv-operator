@@ -5,6 +5,7 @@
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -29,7 +30,7 @@ func (in *Qserv) DeepCopyInto(out *Qserv) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
+	in.Spec.DeepCopyInto(&out.Spec)
 	out.Status = in.Status
 	return
 }
@@ -90,6 +91,13 @@ func (in *QservSpec) DeepCopyInto(out *QservSpec) {
 	*out = *in
 	out.Czar = in.Czar
 	out.Replication = in.Replication
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	out.Worker = in.Worker
 	out.Xrootd = in.Xrootd
 	return

@@ -32,12 +32,22 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 SHELL_POD="${INSTANCE}-shell"
 
-echo "Wait for Qserv pods to be ready"
 kubectl run "${INSTANCE}-shell" --image=alpine  --restart=Never sleep 3600
 kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
-kubectl wait pod --for=condition=Ready --timeout="-1s" -l "app=qserv,instance=$INSTANCE"
-kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/root
-kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh example-qserv-worker-0.example-qserv-worker
-kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh example-qserv-worker-1.example-qserv-worker
-kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh example-qserv-worker-2.example-qserv-worker
+while ! kubectl wait pod --for=condition=Ready --timeout="10s" -l "app=qserv,instance=$INSTANCE"
+do
+  echo "Wait for Qserv pods to be ready:"
+  kubectl get pod -l "app=qserv,instance=$INSTANCE"
+done
+
+echo "Qserv pods are ready:"
+kubectl get all -l "app=qserv,instance=$INSTANCE"
+
+WORKER_COUNT=$(kubectl get qserv "$INSTANCE" -n  default --output=jsonpath="{.spec.worker.replicas}")
+for (( i=0; i<${WORKER_COUNT}; i++ ))
+do
+  kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/root
+  kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh "${INSTANCE}-worker-${i}.${INSTANCE}-worker"
+done
+
 kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"

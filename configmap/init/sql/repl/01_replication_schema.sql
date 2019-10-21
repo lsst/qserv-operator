@@ -52,10 +52,24 @@ CREATE TABLE IF NOT EXISTS `config_worker` (
 
   `data_dir`     VARCHAR(255)       DEFAULT NULL ,  -- a file system path to the databases
 
+  -- Connection parameters for the Qserv worker database
+
+  `db_host`      VARCHAR(255)       NOT NULL ,      -- the host name on which the worker database server runs
+  `db_port`      SMALLINT UNSIGNED  DEFAULT NULL ,  -- override for the global default
+  `db_user`      VARCHAR(255)       DEFAULT NULL ,  -- override for the global default
+
+  -- Ingest service
+
+  `loader_host`    VARCHAR(255)       NOT NULL ,        -- the host name on which the worker's ingest server runs
+  `loader_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
+  `loader_tmp_dir` VARCHAR(255)       DEFAULT NULL ,    -- a file system path to the temporary folder
+
   PRIMARY KEY (`name`) ,
 
   UNIQUE  KEY (`svc_host`, `svc_port`) ,
-  UNIQUE  KEY (`fs_host`,  `fs_port`)
+  UNIQUE  KEY (`fs_host`,  `fs_port`) ,
+  UNIQUE  KEY (`db_host`,  `db_port`) ,
+  UNIQUE  KEY (`loader_host`, `loader_port`)
 )
 ENGINE = InnoDB;
 
@@ -104,6 +118,7 @@ CREATE TABLE IF NOT EXISTS `config_database_family` (
   `min_replication_level`  INT UNSIGNED  NOT NULL ,    -- minimum number of replicas per chunk
   `num_stripes`            INT UNSIGNED  NOT NULL ,
   `num_sub_stripes`        INT UNSIGNED  NOT NULL ,
+  `overlap`                DOUBLE        NOT NULL ,
 
   PRIMARY KEY (`name`)
 )
@@ -125,6 +140,11 @@ CREATE TABLE IF NOT EXISTS `config_database` (
 
   `database`     VARCHAR(255)  NOT NULL ,
   `family_name`  VARCHAR(255)  NOT NULL ,
+
+  `is_published` BOOLEAN DEFAULT TRUE ,
+
+  `chunk_id_key`     VARCHAR(255)  DEFAULT "" ,
+  `sub_chunk_id_key` VARCHAR(255)  DEFAULT "" ,
 
   -- Each database is allowed to belong to one family only
   --
@@ -154,12 +174,46 @@ CREATE TABLE IF NOT EXISTS `config_database_table` (
   `table`     VARCHAR(255)  NOT NULL ,
 
   `is_partitioned` BOOLEAN NOT NULL ,
+  `is_director`    BOOLEAN NOT NULL ,
+
+  `director_key`  VARCHAR(255) DEFAULT "" ,
+  `latitude_key`  VARCHAR(255) DEFAULT "" , -- Name for latitude (declination) column in this table
+  `longitude_key` VARCHAR(255) DEFAULT "" , -- Name for longitude (right ascension) column in this table
 
   PRIMARY KEY (`database`, `table`) ,
 
   CONSTRAINT `config_database_table_fk_1`
     FOREIGN KEY (`database` )
     REFERENCES `config_database` (`database` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `config_database_table_schema`
+-- -----------------------------------------------------
+--
+-- Database tables
+
+DROP TABLE IF EXISTS `config_database_table_schema` ;
+
+CREATE TABLE IF NOT EXISTS `config_database_table_schema` (
+
+  `database`  VARCHAR(255)  NOT NULL ,
+  `table`     VARCHAR(255)  NOT NULL ,
+
+  `col_position` INT NOT NULL ,             -- for preserving an order of columns in the table
+  `col_name`     VARCHAR(255)  NOT NULL ,
+  `col_type`     VARCHAR(255)  NOT NULL ,
+
+  UNIQUE KEY (`database`, `table`, `col_position`) ,
+  UNIQUE KEY (`database`, `table`, `col_name`) ,
+
+  CONSTRAINT `config_database_table_schema_fk_1`
+    FOREIGN KEY (`database`, `table`)
+    REFERENCES `config_database_table` (`database`, `table`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 )
@@ -379,6 +433,103 @@ CREATE TABLE IF NOT EXISTS `replica_file` (
   CONSTRAINT `replica_file_fk_1`
     FOREIGN KEY (`replica_id` )
     REFERENCES `replica` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `controller_log`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `controller_log` ;
+
+CREATE TABLE IF NOT EXISTS `controller_log` (
+
+  `id`            INT             NOT NULL AUTO_INCREMENT ,
+  `controller_id` VARCHAR(255)    NOT NULL ,
+  `time`          BIGINT UNSIGNED NOT NULL ,  -- 64-bit timestamp: seconds and nanoseconds when
+                                              -- an event was posted
+
+  `task`          VARCHAR(255)    NOT NULL ,  -- the name of a task which runs within Controllers
+  `operation`     VARCHAR(255)    NOT NULL ,  -- the name of a request, a jobs or some other action launched
+                                              -- in a scope of the corresponding task
+  `status`        VARCHAR(255)    NOT NULL ,  -- status of the operation (STARTED, COMPLETED, CANCELLED,
+                                              -- FAILED, etc.). Can be an empty string.
+
+  `request_id`    VARCHAR(255) DEFAULT NULL ,  -- (optional) depends on an operation
+  `job_id`        VARCHAR(255) DEFAULT NULL ,  -- (optional) depends on an operation
+
+  PRIMARy KEY (`id`) ,
+
+  CONSTRAINT `controller_log_fk_1`
+    FOREIGN KEY (`controller_id` )
+    REFERENCES `controller` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE ,
+
+  CONSTRAINT `controller_log_fk_2`
+    FOREIGN KEY (`request_id` )
+    REFERENCES `request` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE ,
+
+  CONSTRAINT `controller_log_fk_3`
+    FOREIGN KEY (`job_id` )
+    REFERENCES `job` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `controller_log_ext`
+-- -----------------------------------------------------
+--
+-- This table is for adding extra notes on the logged events.
+--
+DROP TABLE IF EXISTS `controller_log_ext` ;
+
+CREATE TABLE IF NOT EXISTS `controller_log_ext` (
+
+  `controller_log_id`  INT NOT NULL ,
+
+  `key` VARCHAR(255) NOT NULL ,
+  `val` TEXT         NOT NULL ,
+
+  CONSTRAINT `controller_log_ext_fk_1`
+    FOREIGN KEY (`controller_log_id` )
+    REFERENCES `controller_log` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `transaction`
+-- -----------------------------------------------------
+--
+-- This table registers "super-transactions" used by the Ingest
+--
+DROP TABLE IF EXISTS `transaction` ;
+
+CREATE TABLE IF NOT EXISTS `transaction` (
+
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+
+  `database` VARCHAR(255) NOT NULL ,
+  `state`    VARCHAR(255) NOT NULL ,
+
+  `begin_time` BIGINT UNSIGNED NOT NULL ,
+  `end_time`   BIGINT UNSIGNED DEFAULT 0 ,
+
+  PRIMARY KEY (`id`,`database`) ,
+
+  CONSTRAINT `transaction_fk_1`
+    FOREIGN KEY (`database` )
+    REFERENCES `config_database` (`database`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 )

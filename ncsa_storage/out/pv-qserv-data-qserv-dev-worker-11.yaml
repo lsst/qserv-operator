@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    pvc_name: qserv-data-qserv-dev-worker-11
+  name: pv-qserv-data-qserv-dev-worker-11
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 100Gi
+  local:
+    path: /qserv/qserv-dev/qserv
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - lsst-qserv-db12
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: qserv-local-storage
+  volumeMode: Filesystem
