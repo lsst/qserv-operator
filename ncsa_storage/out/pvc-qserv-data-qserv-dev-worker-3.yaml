@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qserv-data-qserv-dev-worker-3
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      pvc_name: qserv-data-qserv-dev-worker-3
+  storageClassName: qserv-local-storage
+  volumeMode: Filesystem
