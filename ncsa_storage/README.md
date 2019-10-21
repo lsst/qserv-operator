@@ -14,7 +14,7 @@ git checkout tickets/DM-21824
 
 Create `/qserv/qserv-dev/qserv` on each nodes, including master.
 
-Create `/qserv/qserv-dev/repl` on master node only
+Create `/qserv/qserv-dev/repl` on master node only.
 
 ## 2 - Create StorageClass, PersistentVolumes and PersistentVolumesClaims
 
