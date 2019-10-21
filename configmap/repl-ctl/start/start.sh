@@ -17,6 +17,7 @@ REPL_DB_PORT="3306"
 REPL_DB_USER="qsreplica"
 REPL_DB="qservReplica"
 
+. /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
 
 echo "Start replication controller pod: ${HOSTNAME}"
@@ -66,15 +67,15 @@ fi
 WORK_DIR="/tmp"
 cd "${WORK_DIR}"
 
-LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
+export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
 PARAMETERS="--worker-evict-timeout=3600 --health-probe-interval=120 --replication-interval=1200"
 MALLOC_CONF=${OPT_MALLOC_CONF} LD_PRELOAD=${OPT_LD_PRELOAD} \
-qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}"
+qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}" --qserv-db-password="${MYSQL_ROOT_PASSWORD}"
 
 # For debug purpose
 #while true;
 #do
-#    sleep 5
+#    sleep 3600
 #done

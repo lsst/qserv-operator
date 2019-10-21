@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,6 +24,9 @@ type QservSpec struct {
 
 	// Replication defines the settings for the replication framework
 	Replication ReplicationSettings `json:"replication,omitempty"`
+
+	// Tolerations defines the settings for adding custom tolerations to all pods
+	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
 
 	// Worker defines the settings for worker cluster
 	Worker WorkerSettings `json:"worker,omitempty"`

@@ -62,7 +62,6 @@ VALG=""
 #VALG="valgrind --leak-check=no"
 #VALG="valgrind --tool=callgrind"
 
-
 # WARNING : can only use the --user switch if running as root
 proxy_user_option=""
 if [ "$USER" = "root" ]; then

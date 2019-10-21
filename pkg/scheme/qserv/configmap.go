@@ -35,34 +35,6 @@ func getFileContent(path string) string {
 	return fmt.Sprintf("%s", b)
 }
 
-// TODO manage secret cleanly, outside of operator in a kubectl command for example
-func getSecretData(r *qservv1alpha1.Qserv, service constants.ContainerName) map[string][]byte {
-	files := make(map[string][]byte)
-	if service == "mariadb" {
-		files["mariadb.secret.sh"] = []byte(`MYSQL_ROOT_PASSWORD="CHANGEME"
-		MYSQL_MONITOR_PASSWORD="CHANGEMEMON"`)
-	} else if service == "wmgr" {
-		files["wmgr.secret"] = []byte(`USER:CHANGEMEWMGR`)
-	} else if service == "repl-db" {
-		files["repl-db.secret.sh"] = []byte(`MYSQL_REPLICA_PASSWORD="CHANGEMEREPL"`)
-	}
-	return files
-}
-
-func GenerateSecret(r *qservv1alpha1.Qserv, labels map[string]string, containerName constants.ContainerName) *v1.Secret {
-	name := GetSecretName(containerName)
-	namespace := r.Namespace
-
-	return &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: getSecretData(r, containerName),
-	}
-}
-
 func GetSecretName(containerName constants.ContainerName) string {
 	return fmt.Sprintf("secret-%s", containerName)
 }
@@ -84,14 +56,14 @@ func scanDir(root string, reqLogger logr.Logger) map[string]string {
 	return files
 }
 
-func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service constants.ContainerName, subdir string) *v1.ConfigMap {
+func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 
-	name := fmt.Sprintf("config-%s-%s", service, subdir)
+	name := util.PrefixConfigmap(r, fmt.Sprintf("%s-%s", container, subdir))
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetContainerLabels(service, r.Name))
-	root := filepath.Join("/", "configmap", string(service), subdir)
+	labels = util.MergeLabels(labels, util.GetContainerLabels(container, r.Name))
+	root := filepath.Join("/", "configmap", string(container), subdir)
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -103,13 +75,13 @@ func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]str
 	}
 }
 
-func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := fmt.Sprintf("config-sql-%s", db)
-	namespace := r.Namespace
+	name := util.PrefixConfigmap(cr, fmt.Sprintf("sql-%s", db))
+	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(db, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(db, cr.Name))
 	root := filepath.Join("/", "configmap", "init", "sql", string(db))
 
 	return &v1.ConfigMap{
@@ -122,13 +94,13 @@ func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 	}
 }
 
-func GenerateDotQservConfigMap(r *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := "config-dot-qserv"
-	namespace := r.Namespace
+	name := util.PrefixConfigmap(cr, "dot-qserv")
+	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, r.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
 	root := filepath.Join("/", "configmap", "dot-qserv")
 
 	return &v1.ConfigMap{

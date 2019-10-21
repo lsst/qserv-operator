@@ -8,6 +8,33 @@ A qserv operator for Kubernetes based on [operator-framework](https://github.com
 
 ## Deploy qserv
 
+### Quick start for Ubuntu LTS
+
+```
+sudo apt-get update
+sudo apt-get install curl docker.io git vim
+# then add current user to docker group and restart gnome session
+sudo usermod -a -G docker $(id -nu)
+
+WORKDIR="$HOME/src"
+mkdir -p "$WORKDIR"
+
+# Create single node k8s cluster with kind
+cd "$WORKDIR"
+git clone --depth 1 -b "v0.6.0" --single-branch https://github.com/k8s-school/kind-travis-ci
+cd kind-travis-ci
+./kind/k8s-create.sh -s
+
+cd "$WORKDIR"
+git clone  https://github.com/lsst/qserv-operator
+cd qserv-operator
+./deploy.sh
+./wait-operator-ready.sh
+kubectl apply -k base
+./wait-qserv-ready.sh
+./run-integration-tests.sh
+```
+
 ### Prerequisites
 
 - A valid `KUBECONFIG` and access to a Kubernetes v1.14.2+ cluster

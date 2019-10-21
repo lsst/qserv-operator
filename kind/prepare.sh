@@ -1,12 +1,14 @@
 #!/bin/sh
 
-set -e
-set -x
+set -eux
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
-. "$DIR"/../env.sh
 
-docker pull "$QSERV_IMAGE" 
+IMAGES="qserv/qserv:4d93c1e qserv/replica:tools-w.2018.16-1150-gb8871b6 \
+        qserv/qserv-operator:v0.0.3 mariadb:10.2.16"
 
-kind  load docker-image "$OP_IMAGE" 
-kind load docker-image "$QSERV_IMAGE"
+for img in $IMAGES
+do
+  docker pull "$img"
+  kind load docker-image "$img" 
+done

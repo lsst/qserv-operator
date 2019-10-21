@@ -1,12 +1,12 @@
 apiVersion: qserv.lsst.org/v1alpha1
 kind: Qserv
 metadata:
-  name: example-qserv
+  name: qserv
 spec:
   storageclass: "standard"
-  storagecapacity: "500M"
+  storagecapacity: "1Gi"
   worker:
-    replicas: 3
+    replicas: 2
     image: "qserv/qserv:9701693"
   replication:
       image: "qserv/replica:tools-w.2018.16-556-g62efc42-dirty"

@@ -1,1 +1,3 @@
-Is tmp-volume useful on worker pods?
+- Add CZAR_DN env var to repl-wkr
+- Use kubectl get qserv ... to get qserv instance name in multinode test and crash if more than one instance exists
+- Is tmp-volume useful on worker pods?

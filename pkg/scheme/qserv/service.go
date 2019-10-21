@@ -8,33 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// func GenerateSentinelService(r *qservv1alpha1.Qserv, labels map[string]string) *corev1.Service {
-// 	name := util.GetSentinelName(r)
-// 	namespace := r.Namespace
-
-// 	sentinelTargetPort := intstr.FromInt(26379)
-// 	labels = util.MergeLabels(labels, util.GetLabels(constants.SentinelRoleName, r.Name))
-
-// 	return &corev1.Service{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      name,
-// 			Namespace: namespace,
-// 			Labels:    labels,
-// 		},
-// 		Spec: corev1.ServiceSpec{
-// 			Selector: labels,
-// 			Ports: []corev1.ServicePort{
-// 				{
-// 					Name:       "sentinel",
-// 					Port:       26379,
-// 					TargetPort: sentinelTargetPort,
-// 					Protocol:   "TCP",
-// 				},
-// 			},
-// 		},
-// 	}
-// }
-
 func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetName(cr, string(constants.CzarName))
 	namespace := cr.Namespace
@@ -63,7 +36,7 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 }
 
 func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.ReplCtlName))
+	name := util.GetReplCtlServiceName(cr)
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
@@ -116,8 +89,9 @@ func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]str
 	}
 }
 
+// GenerateWorkerService generates headless service for Qserv workers StatefulSet
 func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.WorkerName))
+	name := util.GetWorkerServiceName(cr)
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
