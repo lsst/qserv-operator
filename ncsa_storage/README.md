@@ -7,6 +7,7 @@ Clone qserv operator repository and go to storage management directory
 ```shell
 git clone https://github.com/lsst/qserv-operator.git
 cd qserv-operator/ncsa_storage
+git checkout tickets/DM-21824
 ```
 
 ## Create data directories
