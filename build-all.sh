@@ -10,4 +10,5 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/env.sh"
 
 operator-sdk generate k8s
+operator-sdk generate crds
 "$DIR"/build.sh

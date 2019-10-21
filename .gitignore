@@ -1,3 +1,4 @@
+/test*.go
 /env.sh
 # Temporary Build Files
 build/_output

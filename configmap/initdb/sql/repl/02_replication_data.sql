@@ -26,7 +26,7 @@ INSERT INTO `config` VALUES ('controller', 'empty_chunks_dir',    '/qserv/data/q
 -- Database service-specific parameters
 
 INSERT INTO `config` VALUES ('database', 'services_pool_size', '32');
-INSERT INTO `config` VALUES ('database', 'qserv_master_host',               '<CZAR_DN>');
+INSERT INTO `config` VALUES ('database', 'qserv_master_host',               '{{.CzarDn}}');
 INSERT INTO `config` VALUES ('database', 'qserv_master_port',                    '3306');
 INSERT INTO `config` VALUES ('database', 'qserv_master_user',                'qsmaster');
 INSERT INTO `config` VALUES ('database', 'qserv_master_name',               'qservMeta');
@@ -36,7 +36,7 @@ INSERT INTO `config` VALUES ('database', 'qserv_master_tmp_dir',   '/qserv/data/
 -- Connection parameters for the Qserv Management Services
 
 INSERT INTO `config` VALUES ('xrootd', 'auto_notify',         '1');
-INSERT INTO `config` VALUES ('xrootd', 'host',                '<XROOTD_RDR_DN>');
+INSERT INTO `config` VALUES ('xrootd', 'host',                '{{.XrootdRedirectorDn}}');
 INSERT INTO `config` VALUES ('xrootd', 'port',                '1094');
 INSERT INTO `config` VALUES ('xrootd', 'request_timeout_sec', '600');
 

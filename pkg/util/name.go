@@ -17,6 +17,11 @@ func GetName(r *qservv1alpha1.Qserv, typeName string) string {
 	return fmt.Sprintf("%s-%s", r.Name, typeName)
 }
 
+// GetCzarServiceName returns name of Qserv czar headless service
+func GetCzarServiceName(cr *qservv1alpha1.Qserv) string {
+	return GetName(cr, string(constants.CzarName))
+}
+
 // GetWorkerServiceName returns name of Qserv workers headless service
 func GetWorkerServiceName(cr *qservv1alpha1.Qserv) string {
 	return GetName(cr, string(constants.WorkerName))
@@ -39,6 +44,11 @@ func GetWorkerNameFilter(cr *qservv1alpha1.Qserv) string {
 func GetReplCtlNameFilter(cr *qservv1alpha1.Qserv) string {
 	filter := cr.Name + "-" + string(constants.ReplCtlName) + "-%." + GetReplCtlServiceName(cr) + "." + cr.GetNamespace() + ".svc" + getClusterDomain()
 	return filter
+}
+
+// GetXrootdRedirectorServiceName returns name of Xrootd redirector headless service
+func GetXrootdRedirectorServiceName(cr *qservv1alpha1.Qserv) string {
+	return GetName(cr, string(constants.XrootdRedirectorName))
 }
 
 // GetClusterDomain returns Kubernetes cluster domain, default to "cluster.local"

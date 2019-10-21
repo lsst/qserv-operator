@@ -35,7 +35,7 @@ import os.path
 import sys
 import yaml
 
-def _build_yaml(data_path, pvc_name, hostname, output_dir, template_dir):
+def _build_yaml(data_path, pvc_name, hostname, instance, output_dir, template_dir):
 
     # yaml for persistent volume
     #
@@ -47,6 +47,7 @@ def _build_yaml(data_path, pvc_name, hostname, output_dir, template_dir):
 
     yaml_data['metadata']['name'] = "pv-{}".format(pvc_name)
     yaml_data['metadata']['labels']['pvc_name'] = pvc_name
+    yaml_data['metadata']['labels']['instance'] = instance
 
     node_name = yaml_data['spec']['nodeAffinity']['required']['nodeSelectorTerms'][0]['matchExpressions'][0]['values']
     node_name[0] = hostname
@@ -64,6 +65,7 @@ def _build_yaml(data_path, pvc_name, hostname, output_dir, template_dir):
         yaml_data = yaml.load(f, yaml.SafeLoader)
 
     yaml_data['metadata']['name'] = "{}".format(pvc_name)
+    yaml_data['metadata']['labels']['instance'] = instance
     yaml_data['spec']['selector']['matchLabels']['pvc_name'] = pvc_name
 
     yaml_fname = "pvc-{}.yaml".format(pvc_name)
@@ -95,10 +97,13 @@ if __name__ == "__main__":
         parser.add_argument('-o', '--outputDir', dest='output_dir',
                             required=True, metavar='<outputDir>',
                             help='Output directory for generated yaml files')
+        parser.add_argument('-i', '--instance', dest='instance',
+                            required=True, metavar='<instance>',
+                            help='Name of qserv instance')
 
         args = parser.parse_args()
 
-        _build_yaml(args.data_path, args.pvc_name, args.hostname, args.output_dir, args.template_dir)
+        _build_yaml(args.data_path, args.pvc_name, args.hostname, args.instance, args.output_dir, args.template_dir)
 
     except Exception as e:
         print(e)

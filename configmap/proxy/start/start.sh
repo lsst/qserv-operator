@@ -43,15 +43,7 @@ else
     exit 1
 fi
 
-QSERV_CONFIG_IN="/config-etc/qserv-czar.cnf"
-QSERV_CONFIG="/tmp/qserv-czar.cnf"
-if [ ! -e "$QSERV_CONFIG_IN" ]; then
-    log_failure_msg "Unable to find qserv-czar configuration file"
-    exit 1
-else
-    sed "s/<ENV_XROOTD_RDR_DN>/${XROOTD_RDR_DN}/" "$QSERV_CONFIG_IN" \
-        > "$QSERV_CONFIG"
-fi
+QSERV_CONF="/config-etc/qserv-czar.cnf"
 
 # Set default mysql-proxy configuration.
 PROXY_OPTIONS="--proxy-lua-script=${QSERV_DIR}/share/lua/qserv/mysqlProxy.lua \
@@ -69,6 +61,6 @@ if [ "$USER" = "root" ]; then
     proxy_user_option="--user=$proxy_user"
 fi
 
-QSERV_CONFIG=${QSERV_CONFIG} ${VALG} mysql-proxy \
+QSERV_CONFIG=${QSERV_CONF} ${VALG} mysql-proxy \
     $PROXY_OPTIONS $proxy_user_option \
     --defaults-file=${MYPROXY_CONF}

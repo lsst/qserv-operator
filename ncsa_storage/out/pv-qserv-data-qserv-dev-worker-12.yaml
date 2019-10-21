@@ -2,6 +2,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   labels:
+    app: qserv
+    instance: qserv-dev
     pvc_name: qserv-data-qserv-dev-worker-12
   name: pv-qserv-data-qserv-dev-worker-12
 spec:
@@ -10,7 +12,7 @@ spec:
   capacity:
     storage: 100Gi
   local:
-    path: /qserv/qserv-dev/qserv
+    path: /qserv/qserv-dev/data
   nodeAffinity:
     required:
       nodeSelectorTerms:

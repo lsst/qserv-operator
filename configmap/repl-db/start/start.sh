@@ -5,7 +5,7 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -e
+set -eux
 
 # Require root privileges
 ##

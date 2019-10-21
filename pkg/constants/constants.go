@@ -17,6 +17,9 @@ const (
 
 	QservName = "qserv"
 
+	ReplicationControllerPort     = 25080
+	ReplicationControllerPortName = string(ReplCtlName)
+
 	WmgrPort     = 5012
 	WmgrPortName = string(WmgrName)
 
@@ -50,9 +53,9 @@ const (
 	XrootdRedirectorName ComponentName = "xrootd-redirector"
 )
 
-// MicroserviceConfigmaps contains names of all micro-services which require configmaps named:
+// ContainerConfigmaps contains names of all micro-services which require configmaps named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var MicroserviceConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
+var ContainerConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
 
 // MicroserviceSecrets contains names of all micro-services which require secrets
 var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}

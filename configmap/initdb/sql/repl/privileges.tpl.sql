@@ -3,7 +3,6 @@
 --   2. problem with DNS registration (is the pod registered inside DNS when it tries to connect to repl-db)
 --   3. problem with @worker_dn_filter too long:
 --      ERROR 1470 (HY000) at line 5: String 'qserv-dev-worker-%.qserv-dev-worker.qserv-dev.svc.cluster.local' is too long for host name (should be no longer than 60)
---   4. Try to create secrets using Kustomize
 
 -- SET @worker_dn_filter := '<WORKER_DN_FILTER>';
 -- SET @replctl_dn_filter := '<REPLCTL_DN_FILTER>';

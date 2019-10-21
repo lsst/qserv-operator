@@ -5,7 +5,7 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -e
+set -eux
 
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
@@ -19,6 +19,6 @@ fi
 echo "-- Start mariadb server."
 mysqld
 if [ $? -ne 0 ]; then
-    >&2 echo "ERROR: failed to start the replication database"
+    >&2 echo "ERROR: failed to start the Qserv database"
     exit 1
 fi

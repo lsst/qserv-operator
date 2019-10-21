@@ -1,6 +1,6 @@
 [frontend]
 
-xrootd=<ENV_XROOTD_RDR_DN>:1094
+xrootd={{.XrootdRedirectorDn}}:1094
 
 #[mgmtdb]
 #db=qservMeta
@@ -34,6 +34,18 @@ host =
 user = qsmaster
 port = 0
 
+# database connection for QStatusData
+# Using qmeta for now. May move this qservResult or make its own instance
+# databse based on what happens with multiple czars.
+[qstatus]
+passwd =
+#db = qservStatusData
+db = qservMeta
+user = qsmaster
+# host = {{.QstatusMysqldHost}}
+host = 127.0.0.1
+port = 3306
+
 [partitioner]
 # emptyChunkPath is used to check existence of empty_$DBNAME.txt
 emptyChunkPath = /qserv/data/qserv
@@ -49,6 +61,9 @@ largeResultConcurrentMerges = 6
 # xrootdCBThreadsInit must be less than xrootdCBThreadsMax
 xrootdCBThreadsMax = 500
 xrootdCBThreadsInit = 50
+# Seconds between updates the czar sends to qmeta for completed chunks.
+# This is per user query and important milestones ignore this limit.
+qMetaSecsBetweenChunkCompletionUpdates = 59
 
 #[debug]
 #chunkLimit = -1

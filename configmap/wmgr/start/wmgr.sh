@@ -22,7 +22,6 @@ fi
 mkdir /qserv/etc
 WMGR_CONFIG="/qserv/etc/wmgr.cnf"
 cp "/config-etc/wmgr.cnf" "$WMGR_CONFIG"
-sed -i "s/<ENV_CZAR_DN>/${CZAR_DN}/" "$WMGR_CONFIG"
 sed -i "s/<ENV_MYSQL_ROOT_PASSWORD>/${MYSQL_ROOT_PASSWORD}/" "$WMGR_CONFIG"
 
 # Czar only, Useful for multinode integration test

@@ -14,6 +14,7 @@ import (
 
 var log = logf.Log.WithName("qserv")
 
+// GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.CzarName)
 	namespace := cr.Namespace
@@ -69,7 +70,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 						Name: GetVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
-						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
 						StorageClassName: &storageClass,
 						Resources: v1.ResourceRequirements{
 							Requests: v1.ResourceList{

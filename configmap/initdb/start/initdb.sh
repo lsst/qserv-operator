@@ -8,17 +8,13 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -eux
+set -eu
 
 # WARN: password are displayed in debug logs
 # set -x
 
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
-CZAR_DN=${CZAR_DN:-''}
-REPLCTL_DN_FILTER=${REPLCTL_DN_FILTER:-''}
-WORKER_DN_FILTER=${WORKER_DN_FILTER:-''}
-XROOTD_RDR_DN=${XROOTD_RDR_DN:-''}
 
 # Require root privileges
 ##
@@ -97,16 +93,8 @@ then
             awk \
                 -v VAR1=${MYSQL_MONITOR_PASSWORD} \
                 -v VAR2=${MYSQL_REPLICA_PASSWORD} \
-                -v VAR3=${CZAR_DN} \
-                -v VAR4=${REPLCTL_DN_FILTER} \
-                -v VAR5=${WORKER_DN_FILTER} \
-                -v VAR6=${XROOTD_RDR_DN} \
                 '{gsub(/<MYSQL_MONITOR_PASSWORD>/, VAR1);
                 gsub(/<MYSQL_REPLICA_PASSWORD>/, VAR2);
-                gsub(/<CZAR_DN>/, VAR3);
-                gsub(/<REPLCTL_DN_FILTER>/, VAR4);
-                gsub(/<WORKER_DN_FILTER>/, VAR5);
-                gsub(/<XROOTD_RDR_DN>/, VAR6);
                 print}' "$file_name" > "$sql_file_name"
         else
             sql_file_name="$file_name"

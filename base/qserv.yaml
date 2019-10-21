@@ -5,11 +5,13 @@ metadata:
 spec:
   storageclass: "standard"
   storagecapacity: "1Gi"
+  czar:
+    image: "qserv/qserv:dcbfff7"
   worker:
     replicas: 2
-    image: "qserv/qserv:4d93c1e"
+    image: "qserv/qserv:dcbfff7"
   replication:
-      image: "qserv/replica:tools-w.2018.16-1150-gb8871b6"
+      image: "qserv/replica:tools-w.2018.16-1171-gcbabd53"
       dbimage: "mariadb:10.2.16"
   xrootd:
-    image: "qserv/qserv:4d93c1e"
+    image: "qserv/qserv:dcbfff7"
