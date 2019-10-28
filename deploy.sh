@@ -4,8 +4,7 @@ set -e
 set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
-
-NS="default"
+. "$DIR/env.sh"
 
 kubectl apply -f "$DIR"/deploy/crds/qserv_v1alpha1_qserv_crd.yaml --namespace="$NS"
 kubectl apply -f "$DIR"/deploy/service_account.yaml --namespace="$NS"
