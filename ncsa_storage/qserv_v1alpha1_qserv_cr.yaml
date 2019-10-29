@@ -1,7 +1,7 @@
 apiVersion: qserv.lsst.org/v1alpha1
 kind: Qserv
 metadata:
-  name: qserv
+  name: qserv-dev
 spec:
   storageclass: "qserv-local-storage"
   storagecapacity: "100Gi"
