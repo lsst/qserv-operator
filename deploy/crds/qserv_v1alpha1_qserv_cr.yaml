@@ -6,7 +6,7 @@ spec:
   storageclass: "standard"
   storagecapacity: "500M"
   worker:
-    replicas: 3
+    replicas: 2
     image: "qserv/qserv:9701693"
   replication:
       image: "qserv/replica:tools-w.2018.16-556-g62efc42-dirty"
