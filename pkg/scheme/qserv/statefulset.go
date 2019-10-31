@@ -82,6 +82,15 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 		},
 	}
 
+	toleration := v1.Toleration{
+		Key:      cr.Spec.Toleration.Key,
+		Operator: cr.Spec.Toleration.Operator,
+		Value:    cr.Spec.Toleration.Value,
+		Effect:   cr.Spec.Toleration.Effect,
+	}
+
+	ss.Spec.Template.Spec.Tolerations = []v1.Toleration{toleration}
+
 	return ss
 }
 

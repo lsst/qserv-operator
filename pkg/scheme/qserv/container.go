@@ -118,8 +118,10 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.ComponentName)
 	var image string
 	if component == constants.ReplName {
 		image = spec.Replication.DbImage
-	} else {
+	} else if component == constants.WorkerName {
 		image = spec.Worker.Image
+	} else if component == constants.CzarName {
+		image = spec.Czar.Image
 	}
 	return image
 }
