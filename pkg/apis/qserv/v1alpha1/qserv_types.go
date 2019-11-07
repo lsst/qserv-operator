@@ -25,21 +25,14 @@ type QservSpec struct {
 	// Replication defines the settings for the replication framework
 	Replication ReplicationSettings `json:"replication,omitempty"`
 
-	// Toleration defines the settings for adding a custom toleration to all pods
-	Toleration TolerationSettings `json:"toleration,omitempty"`
+	// Tolerations defines the settings for adding custom tolerations to all pods
+	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
 
 	// Worker defines the settings for worker cluster
 	Worker WorkerSettings `json:"worker,omitempty"`
 
 	// Xrootd defines the settings for worker cluster
 	Xrootd XrootdSettings `json:"xrootd,omitempty"`
-}
-
-type TolerationSettings struct {
-	Key      string                `json:"key,omitempty"`
-	Operator v1.TolerationOperator `json:"operator,omitempty"`
-	Value    string                `json:"value,omitempty"`
-	Effect   v1.TaintEffect        `json:"effect,omitempty"`
 }
 
 // CzarSettings defines the specification of the czar cluster

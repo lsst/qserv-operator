@@ -13,3 +13,9 @@ spec:
       dbimage: "mariadb:10.2.16"
   xrootd:
     image: "qserv/qserv:9701693"
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "qserv"
+    effect: "NoSchedule"
+

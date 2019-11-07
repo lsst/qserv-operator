@@ -82,9 +82,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 		},
 	}
 
-	ss.Spec.Template.Spec.Tolerations = []v1.Toleration{
-		getToleration(cr),
-	}
+	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
 	return ss
 }
@@ -132,9 +130,7 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[strin
 		},
 	}
 
-	ss.Spec.Template.Spec.Tolerations = []v1.Toleration{
-		getToleration(cr),
-	}
+	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
 	return ss
 }
@@ -203,9 +199,7 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 		},
 	}
 
-	ss.Spec.Template.Spec.Tolerations = []v1.Toleration{
-		getToleration(cr),
-	}
+	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
 	return ss
 }
@@ -293,20 +287,9 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			},
 		}}
 
-	ss.Spec.Template.Spec.Tolerations = []v1.Toleration{
-		getToleration(cr),
-	}
+	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
 	return ss
-}
-
-func getToleration(cr *qservv1alpha1.Qserv) v1.Toleration {
-	return v1.Toleration{
-		Key:      cr.Spec.Toleration.Key,
-		Operator: cr.Spec.Toleration.Operator,
-		Value:    cr.Spec.Toleration.Value,
-		Effect:   cr.Spec.Toleration.Effect,
-	}
 }
 
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
@@ -347,9 +330,7 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 		},
 	}
 
-	ss.Spec.Template.Spec.Tolerations = []v1.Toleration{
-		getToleration(cr),
-	}
+	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
 	return ss
 }
