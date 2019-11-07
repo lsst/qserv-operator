@@ -37,7 +37,7 @@ kubectl run "${INSTANCE}-shell" --image=alpine  --restart=Never sleep 3600
 kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
 kubectl wait pod --for=condition=Ready --timeout="-1s" -l "app=qserv,instance=$INSTANCE"
 
-WORKER_COUNT=$(kubectl get qserv qserv -n  default --output=jsonpath="{.spec.worker.replicas}")
+WORKER_COUNT=$(kubectl get qserv "$INSTANCE" -n  default --output=jsonpath="{.spec.worker.replicas}")
 for (( i=0; i<${WORKER_COUNT}; i++ ))
 do
   kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/root
