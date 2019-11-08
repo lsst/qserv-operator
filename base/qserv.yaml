@@ -1,0 +1,15 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storageclass: "standard"
+  storagecapacity: "1Gi"
+  worker:
+    replicas: 2
+    image: "qserv/qserv:9701693"
+  replication:
+      image: "qserv/replica:tools-w.2018.16-556-g62efc42-dirty"
+      dbimage: "mariadb:10.2.16"
+  xrootd:
+    image: "qserv/qserv:9701693"
