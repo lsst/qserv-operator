@@ -32,10 +32,14 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 SHELL_POD="${INSTANCE}-shell"
 
-echo "Wait for Qserv pods to be ready"
 kubectl run "${INSTANCE}-shell" --image=alpine  --restart=Never sleep 3600
 kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
-kubectl wait pod --for=condition=Ready --timeout="-1s" -l "app=qserv,instance=$INSTANCE"
+while ! kubectl wait pod --for=condition=Ready --timeout="10s" -l "app=qserv,instance=$INSTANCE"
+do
+  echo "Wait for Qserv pods to be ready:"
+  kubectl get pod -l "app=qserv,instance=$INSTANCE"
+done
+
 
 WORKER_COUNT=$(kubectl get qserv "$INSTANCE" -n  default --output=jsonpath="{.spec.worker.replicas}")
 for (( i=0; i<${WORKER_COUNT}; i++ ))
