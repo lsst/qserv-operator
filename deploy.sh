@@ -13,5 +13,4 @@ kubectl apply -f "$DIR"/deploy/role_binding.yaml --namespace="$NS"
 kubectl apply -f "$DIR"/deploy/operator.yaml --namespace="$NS"
 
 echo "Run:"
-echo "kubectl apply -f $DIR/deploy/crds/qserv_v1alpha1_qserv_cr.yaml --namespace='$NS'"
-kubectl apply -f $DIR/deploy/crds/qserv_v1alpha1_qserv_cr.yaml --namespace="$NS"
+echo "kubectl apply -k $DIR/base --namespace='$NS'"

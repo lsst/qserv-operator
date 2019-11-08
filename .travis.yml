@@ -16,7 +16,7 @@ script:
   - ./build.sh
   - ./deploy.sh
   - ./wait-operator-ready.sh
-  - kubectl apply -f ./deploy/crds/qserv_v1alpha1_qserv_cr.yaml
+  - kubectl apply -k base
   - ./wait-qserv-ready.sh 
   - kubectl get all,endpoints,cm,pvc,pv -o wide
   - ./run-integration-tests.sh
