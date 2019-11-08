@@ -1,5 +1,0 @@
-tolerations:
-- key: "dedicated"
-  operator: "Equal"
-  value: "qserv"
-  effect: "NoSchedule"
