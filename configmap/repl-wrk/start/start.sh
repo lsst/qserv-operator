@@ -52,11 +52,12 @@ while true; do
     fi
     sleep 2
 done
+ NULL, NULL, 
 
 # Register repl-wrk on repl-db
 SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
-    NULL, '${HOST_DN}',  NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
-    svc_host='${HOST_DN}', fs_host='${HOST_DN}';"
+    NULL, '${HOST_DN}',  NULL, NULL, '127.0.0.1', NULL, NULL, '${HOST_DN}', NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
+    svc_host='${HOST_DN}', fs_host='${HOST_DN}', loader_host='${HOST_DN}';"
 mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
 --password="${MYSQL_REPLICA_PASSWORD}" -vv "${REPL_DB}" -e "$SQL"
 
