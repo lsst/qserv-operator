@@ -84,14 +84,14 @@ func scanDir(root string, reqLogger logr.Logger) map[string]string {
 	return files
 }
 
-func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, service constants.ContainerName, subdir string) *v1.ConfigMap {
+func GenerateMicroserviceConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 
-	name := fmt.Sprintf("config-%s-%s", service, subdir)
+	name := fmt.Sprintf("config-%s-%s", container, subdir)
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetContainerLabels(service, r.Name))
-	root := filepath.Join("/", "configmap", string(service), subdir)
+	labels = util.MergeLabels(labels, util.GetContainerLabels(container, r.Name))
+	root := filepath.Join("/", "configmap", string(container), subdir)
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
