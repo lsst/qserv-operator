@@ -52,7 +52,6 @@ while true; do
     fi
     sleep 2
 done
- NULL, NULL, 
 
 # Register repl-wrk on repl-db
 SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
