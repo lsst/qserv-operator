@@ -52,6 +52,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 
 	if component == constants.ReplName {
 		container.Env = append(container.Env, getXrootdRedirectorDn(cr))
+		container.Env = append(container.Env, getCzarDn(cr))
 		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(constants.ReplDbName))
 		volumes.addSecretVolume(constants.ReplDbName)
 	}
@@ -142,10 +143,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		ReadinessProbe: getProbe(constants.ProxyPortName, 5, tcpAction),
 		Command:        constants.Command,
 		Env: []v1.EnvVar{
-			{
-				Name:  "XROOTD_RDR_DN",
-				Value: util.GetName(cr, string(constants.XrootdRedirectorName)),
-			},
+			getXrootdRedirectorDn(cr),
 		},
 		VolumeMounts: []v1.VolumeMount{
 			// Used for mysql socket access
@@ -181,7 +179,6 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
 			},
-			getXrootdRedirectorDn(cr),
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getEtcVolumeMount(constants.ReplCtlName),
@@ -209,10 +206,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		Image:   spec.Replication.Image,
 		Command: constants.Command,
 		Env: []v1.EnvVar{
-			{
-				Name:  "CZAR_DN",
-				Value: util.GetName(cr, string(constants.CzarName)),
-			},
+			getCzarDn(cr),
 			{
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
@@ -252,10 +246,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		},
 		Command: constants.Command,
 		Env: []v1.EnvVar{
-			{
-				Name:  "CZAR_DN",
-				Value: util.GetName(cr, string(constants.CzarName)),
-			},
+			getCzarDn(cr),
 		},
 		LivenessProbe:  getProbe(constants.WmgrPortName, 10, tcpAction),
 		ReadinessProbe: getProbe(constants.WmgrPortName, 5, tcpAction),
@@ -295,6 +286,13 @@ func getXrootdRedirectorDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
 	return v1.EnvVar{
 		Name:  "XROOTD_RDR_DN",
 		Value: util.GetName(cr, string(constants.XrootdRedirectorName)),
+	}
+}
+
+func getCzarDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
+	return v1.EnvVar{
+		Name:  "CZAR_DN",
+		Value: util.GetName(cr, string(constants.CzarName)),
 	}
 }
 

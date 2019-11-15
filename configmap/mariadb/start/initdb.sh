@@ -90,6 +90,7 @@ then
             sed "s/<MYSQL_REPLICA_PASSWORD>/${MYSQL_REPLICA_PASSWORD}/g" "$file_name" > "$sql_file_name"
             cat "$sql_file_name"
         elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
+            sed "s/<CZAR_DN>/${CZAR_DN}/g" "$file_name" > "$sql_file_name"
             sed "s/<XROOTD_RDR_DN>/${XROOTD_RDR_DN}/g" "$file_name" > "$sql_file_name"
         else
             sql_file_name="$file_name"
