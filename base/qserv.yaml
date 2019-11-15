@@ -7,9 +7,9 @@ spec:
   storagecapacity: "1Gi"
   worker:
     replicas: 2
-    image: "qserv/qserv:f724c3cdf"
+    image: "qserv/qserv:4d93c1e"
   replication:
-      image: "qserv/replica:tools-w.2018.16-1120-g3904899"
+      image: "qserv/replica:tools-w.2018.16-1126-g1849b21"
       dbimage: "mariadb:10.2.16"
   xrootd:
     image: "qserv/qserv:9701693"
