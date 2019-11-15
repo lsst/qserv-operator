@@ -66,7 +66,7 @@ fi
 WORK_DIR="/tmp"
 cd "${WORK_DIR}"
 
-LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
+export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
 PARAMETERS="--worker-evict-timeout=3600 --health-probe-interval=120 --replication-interval=1200"

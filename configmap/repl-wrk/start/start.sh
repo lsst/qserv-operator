@@ -16,6 +16,7 @@ MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 MYSQLD_USER_QSERV="qsmaster"
 
+. /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
 
 # Wait for local mysql to be started
@@ -60,13 +61,13 @@ SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
 mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
 --password="${MYSQL_REPLICA_PASSWORD}" -vv "${REPL_DB}" -e "$SQL"
 
-LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
+export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
-qserv-replica-worker ${WORKER_ID} --config=${CONFIG}
+# qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-db-password="${MYSQL_ROOT_PASSWORD}"
 
 # For debug purpose
-#while true;
-#do
-#    sleep 5
-#done
+while true;
+do
+    sleep 5
+done

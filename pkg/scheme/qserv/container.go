@@ -219,6 +219,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 			getDataVolumeMount(),
 			getEtcVolumeMount(constants.ReplWrkName),
 			getStartVolumeMount(constants.ReplWrkName),
+			getSecretVolumeMount(constants.MariadbName),
 			getSecretVolumeMount(constants.ReplDbName),
 		},
 	}
@@ -227,6 +228,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 	volumes.make(nil)
 
 	volumes.addEtcStartVolumes(constants.ReplWrkName)
+	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.ReplDbName)
 
 	return container, volumes
