@@ -3,7 +3,7 @@ language: go
 dist: xenial
 
 go:
-- 1.12.7
+- 1.13.4
 
 before_script:
   - ./install-operator-sdk.sh
