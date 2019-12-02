@@ -36,7 +36,7 @@ WORKER_ID=$(mysql --socket "$MYSQLD_SOCKET" --batch \
     --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
 if [ -z "$WORKER_ID" ]; then
     >&2 echo "ERROR: unable to retrieve worker id for $HOSTNAME"
-    exit 1 
+    exit 1
 fi
 
 HOST_DN=$(hostname --fqdn)
@@ -69,5 +69,5 @@ CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_D
 # For debug purpose
 while true;
 do
-    sleep 5
+    sleep 3600
 done

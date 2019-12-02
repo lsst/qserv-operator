@@ -9,7 +9,7 @@ spec:
     replicas: 2
     image: "qserv/qserv:4d93c1e"
   replication:
-      image: "qserv/replica:tools-w.2018.16-1126-g1849b21"
+      image: "qserv/replica:tools-w.2018.16-1150-gb8871b6"
       dbimage: "mariadb:10.2.16"
   xrootd:
     image: "qserv/qserv:9701693"
