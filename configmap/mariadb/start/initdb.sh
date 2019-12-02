@@ -8,9 +8,15 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -e
+set -eux
+
 # WARN: password are displayed in debug logs
 # set -x
+
+MYSQL_REPLICA_PASSWORD=''
+MYSQL_MONITOR_PASSWORD=''
+CZAR_DN=${CZAR_DN:-''}
+XROOTD_RDR_DN=${XROOTD_RDR_DN:-''}
 
 # Require root privileges
 ##
@@ -83,15 +89,19 @@ then
     echo "-- Initializing Qserv database"
     for file_name in "${SQL_DIR}/${COMPONENT_NAME}"/*; do
         echo "-- Loading ${file_name} in MySQL"
-        basename=$(basename "$file_name")
         sql_file_name="/tmp/out.sql"
-        if [ "$basename" = 'privileges.tpl.sql' ]; then
-            sed "s/<MYSQL_MONITOR_PASSWORD>/${MYSQL_MONITOR_PASSWORD}/g" "$file_name" > "$sql_file_name"
-            sed "s/<MYSQL_REPLICA_PASSWORD>/${MYSQL_REPLICA_PASSWORD}/g" "$file_name" > "$sql_file_name"
-            cat "$sql_file_name"
-        elif [ "$basename" = '02_replication_data.tpl.sql' ]; then
-            sed "s/<CZAR_DN>/${CZAR_DN}/g" "$file_name" > "$sql_file_name"
-            sed "s/<XROOTD_RDR_DN>/${XROOTD_RDR_DN}/g" "$file_name" > "$sql_file_name"
+        file_ext="${file_name#*\.}"
+        if [ "${file_ext}" = "tpl.sql" ]; then
+            awk \
+                -v VAR1=${MYSQL_MONITOR_PASSWORD} \
+                -v VAR2=${MYSQL_REPLICA_PASSWORD} \
+                -v VAR3=${CZAR_DN} \
+                -v VAR4=${XROOTD_RDR_DN} \
+                '{gsub(/<MYSQL_MONITOR_PASSWORD>/, VAR1);
+                gsub(/<MYSQL_REPLICA_PASSWORD>/, VAR2);
+                gsub(/<CZAR_DN>/, VAR3);
+                gsub(/<XROOTD_RDR_DN>/, VAR4);
+                print}' "$file_name" > "$sql_file_name"
         else
             sql_file_name="$file_name"
         fi
