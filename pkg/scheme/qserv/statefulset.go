@@ -1,7 +1,7 @@
 package qserv
 
 import (
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,7 +14,7 @@ import (
 
 var log = logf.Log.WithName("qserv")
 
-func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.CzarName)
 	namespace := cr.Namespace
 
@@ -32,16 +32,16 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes, proxyVolumes, wmgrVolumes)
 
-	ss := &appsv1beta2.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1beta2.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			ServiceName: name,
 			Replicas:    &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{
@@ -87,7 +87,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	return ss
 }
 
-func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplCtlName)
 	namespace := cr.Namespace
 
@@ -100,17 +100,17 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[strin
 	var volumes VolumeSet
 	volumes.make(replCtlVolumes)
 
-	ss := &appsv1beta2.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1beta2.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			PodManagementPolicy: "Parallel",
 			ServiceName:         name,
 			Replicas:            &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{
@@ -135,7 +135,7 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[strin
 	return ss
 }
 
-func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplDbName)
 	namespace := cr.Namespace
 
@@ -151,16 +151,16 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes)
 
-	ss := &appsv1beta2.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1beta2.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			ServiceName: name,
 			Replicas:    &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{
@@ -208,7 +208,7 @@ func GetVolumeClaimTemplateName() string {
 	return constants.QservName + "-data"
 }
 
-func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.WorkerName)
 	namespace := cr.Namespace
 
@@ -235,17 +235,17 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes, replicationWrkVolumes, wmgrVolumes, xrootdVolumes)
 
-	ss := &appsv1beta2.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1beta2.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			PodManagementPolicy: "Parallel",
 			ServiceName:         name,
 			Replicas:            &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{
@@ -292,7 +292,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
-func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1beta2.StatefulSet {
+func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	namespace := cr.Namespace
 	name := util.GetName(cr, string(constants.XrootdRedirectorName))
 
@@ -302,17 +302,17 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	containers, volumes := getXrootdContainers(cr, constants.XrootdRedirectorName)
 
-	ss := &appsv1beta2.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: appsv1beta2.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			PodManagementPolicy: "Parallel",
 			ServiceName:         name,
 			Replicas:            &replicas,
-			UpdateStrategy: appsv1beta2.StatefulSetUpdateStrategy{
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
 			Selector: &metav1.LabelSelector{

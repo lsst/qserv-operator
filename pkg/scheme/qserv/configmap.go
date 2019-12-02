@@ -44,7 +44,7 @@ func getSecretData(r *qservv1alpha1.Qserv, service constants.ContainerName) map[
 	} else if service == "wmgr" {
 		files["wmgr.secret"] = []byte(`USER:CHANGEMEWMGR`)
 	} else if service == "repl-db" {
-		files["repl-db.secret.sh"] = []byte(`MYSQL_REPLICA_PASSWORD="CHANGEMEREPL"`)
+		files["repl-db.secret.sh"] = []byte(`MYSQL_REPLICA_PASSWORD=""`)
 	}
 	return files
 }

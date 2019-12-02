@@ -184,6 +184,7 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 			getEtcVolumeMount(constants.ReplCtlName),
 			getStartVolumeMount(constants.ReplCtlName),
 			getSecretVolumeMount(constants.ReplDbName),
+			getSecretVolumeMount(constants.MariadbName),
 		},
 	}
 
