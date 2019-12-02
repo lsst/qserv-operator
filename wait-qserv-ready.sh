@@ -40,6 +40,8 @@ do
   kubectl get pod -l "app=qserv,instance=$INSTANCE"
 done
 
+echo "Qserv pods are ready:"
+kubectl get all -l "app=qserv,instance=$INSTANCE"
 
 WORKER_COUNT=$(kubectl get qserv "$INSTANCE" -n  default --output=jsonpath="{.spec.worker.replicas}")
 for (( i=0; i<${WORKER_COUNT}; i++ ))
