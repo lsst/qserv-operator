@@ -116,8 +116,9 @@ func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]str
 	}
 }
 
+// GenerateWorkerService generates headless service for Qserv workers StatefulSet
 func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.WorkerName))
+	name := util.GetWorkerServiceName(cr)
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))

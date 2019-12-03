@@ -28,6 +28,10 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 				Name:  "COMPONENT_NAME",
 				Value: componentName,
 			},
+			{
+				Name:  "WORKER_SERVICE_DN",
+				Value: util.GetWorkerServiceName(cr),
+			},
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
@@ -193,6 +197,7 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
 	volumes.addSecretVolume(constants.ReplDbName)
+	volumes.addSecretVolume(constants.MariadbName)
 
 	return container, volumes
 }
