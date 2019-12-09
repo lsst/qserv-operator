@@ -9,7 +9,6 @@ before_script:
   - ./install-operator-sdk.sh
   - git clone --depth 1 -b "v0.6.0" --single-branch https://github.com/k8s-school/kind-travis-ci.git
   - ./kind-travis-ci/kind/k8s-create.sh -s
-  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
   - ./build.sh
@@ -19,6 +18,3 @@ script:
   - ./wait-qserv-ready.sh 
   - kubectl get all,endpoints,cm,pvc,pv -o wide
   - ./run-integration-tests.sh
-
-after_success:
-  - echo "Push qserv-operator image to Docker Hub"
