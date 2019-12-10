@@ -23,13 +23,11 @@
 
 # @author Fabrice Jammes SLAC/IN2P3
 
-set -e
-set -x
+set -eux
 
-DIR=$(cd "$(dirname "$0")"; pwd -P)
-. "$DIR"/env.sh
-
-WORKER_COUNT=2
+INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
+WORKER_COUNT=$(kubectl get qservs.qserv.lsst.org "$INSTANCE" -o=jsonpath='{.spec.worker.replicas}')
+CSS_INFO=""
 
 # Build CSS input data
 upper_id=$((WORKER_COUNT-1))

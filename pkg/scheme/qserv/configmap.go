@@ -35,10 +35,6 @@ func getFileContent(path string) string {
 	return fmt.Sprintf("%s", b)
 }
 
-func GetSecretName(containerName constants.ContainerName) string {
-	return fmt.Sprintf("secret-%s", containerName)
-}
-
 func scanDir(root string, reqLogger logr.Logger) map[string]string {
 	files := make(map[string]string)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))

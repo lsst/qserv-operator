@@ -6,13 +6,13 @@ resources:
 - qserv.yaml
 
 secretGenerator:
-- name: secret-mariadb
+- name: secret-mariadb-qserv
   files:
   - mariadb.secret.sh
-- name: secret-repl-db
+- name: secret-repl-db-qserv
   files:
   - repl-db.secret.sh
-- name: secret-wmgr
+- name: secret-wmgr-qserv
   files:
   - wmgr.secret
 generatorOptions:
