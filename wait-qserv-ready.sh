@@ -24,14 +24,16 @@
 
 # @author Fabrice Jammes SLAC/IN2P3
 
-set -e
+set -eux
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-. "$DIR/env.sh"
+INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
+WORKER_COUNT=$(kubectl get qservs.qserv.lsst.org "$INSTANCE" -o=jsonpath='{.spec.worker.replicas}')
 
 SHELL_POD="${INSTANCE}-shell"
 
+kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"
 kubectl run "${INSTANCE}-shell" --image=alpine  --restart=Never sleep 3600
 kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
 while ! kubectl wait pod --for=condition=Ready --timeout="10s" -l "app=qserv,instance=$INSTANCE"
@@ -43,7 +45,6 @@ done
 echo "Qserv pods are ready:"
 kubectl get all -l "app=qserv,instance=$INSTANCE"
 
-WORKER_COUNT=$(kubectl get qserv "$INSTANCE" -n  default --output=jsonpath="{.spec.worker.replicas}")
 for (( i=0; i<${WORKER_COUNT}; i++ ))
 do
   kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/root

@@ -84,9 +84,9 @@ func (vs *InstanceVolumeSet) addEmptyDirVolume(name string) {
 }
 
 func (vs *InstanceVolumeSet) addSecretVolume(containerName constants.ContainerName) {
-	secretName := GetSecretName(containerName)
+	secretName := util.GetSecretName(vs.cr, containerName)
 	volume := v1.Volume{
-		Name: secretName,
+		Name: util.GetSecretVolumeName(containerName),
 		VolumeSource: v1.VolumeSource{
 			Secret: &v1.SecretVolumeSource{
 				SecretName: secretName,

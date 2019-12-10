@@ -70,10 +70,10 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 }
 
 func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount {
-	secretName := GetSecretName(containerName)
+	secretVolumeName := util.GetSecretVolumeName(containerName)
 	return v1.VolumeMount{
-		MountPath: filepath.Join("/", secretName),
-		Name:      secretName,
+		MountPath: filepath.Join("/", secretVolumeName),
+		Name:      secretVolumeName,
 		ReadOnly:  false}
 }
 

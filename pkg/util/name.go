@@ -68,3 +68,13 @@ func PrefixConfigmap(r *qservv1alpha1.Qserv, name string) string {
 func GetConfigVolumeName(suffix string) string {
 	return fmt.Sprintf("config-%s", suffix)
 }
+
+// GetSecretName return the name of a secret for a given container and a given Qserv instance
+func GetSecretName(cr *qservv1alpha1.Qserv, containerName constants.ContainerName) string {
+	return fmt.Sprintf("%s-%s", GetSecretVolumeName(containerName), cr.Name)
+}
+
+// GetSecretVolumeName return the name of a volume for a given secret
+func GetSecretVolumeName(containerName constants.ContainerName) string {
+	return fmt.Sprintf("secret-%s", containerName)
+}
