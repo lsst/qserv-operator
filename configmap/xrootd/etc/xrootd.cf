@@ -70,7 +70,8 @@ xrd.network nodnr
 xrd.network dyndns
 xrd.network cache 0
 
-set xrootddn = $XROOTD_RDR_DN
+# TODO Generate xrootd redirector list using go template
+set xrootddn = {{.XrootdRedirectorDn}}
 all.manager ${xrootddn}-0.${xrootddn}:2131
 all.manager ${xrootddn}-1.${xrootddn}:2131
 

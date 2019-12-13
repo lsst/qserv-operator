@@ -45,7 +45,7 @@ PROXY_PASSWD = ''
 USE_CSS = True
 CSS_CONFIG = {
     'technology': 'mysql',
-    'hostname': '<ENV_CZAR_DN>',
+    'hostname': '{{.CzarDn}}',
     'port': '3306',
     'username': 'qsmaster',
     'database': 'qservCssData',

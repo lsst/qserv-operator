@@ -25,8 +25,7 @@
 # @author Benjamin Roziere, IN2P3
 # @author Fabrice Jammes, IN2P3
 
-set -e
-set -x
+set -eux
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -70,11 +69,17 @@ cp "$DIR/manifests/storageclass-qserv.yaml" "$YAML_OUT_DIR"
 
 PVC_PREFIX="qserv-data-${INSTANCE}"
 
-echo "Creating persistent volume and claim for Qserv czar"
-OPT_HOST="-H $MASTER"
-PVC_NAME="${PVC_PREFIX}-czar-0"
-DATA_PATH="$STORAGE_PATH/${INSTANCE}/qserv"
-"$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR"
+DATA_PATH="$STORAGE_PATH/${INSTANCE}/data"
+
+echo "Creating persistent volumes and claims for Qserv czars"
+COUNT=0
+for host in $MASTERS;
+do
+    OPT_HOST="-H $host"
+    PVC_NAME="${PVC_PREFIX}-czar-${COUNT}"
+    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
+    COUNT=$((COUNT+1))
+done
 
 echo "Creating persistent volumes and claims for Qserv"
 COUNT=0
@@ -82,12 +87,12 @@ for host in $WORKERS;
 do
     OPT_HOST="-H $host"
     PVC_NAME="${PVC_PREFIX}-worker-${COUNT}"
-    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR"
+    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
     COUNT=$((COUNT+1))
 done
 
 echo "Creating persistent volumes and claims for Replication Database"
-OPT_HOST="-H $MASTER"
+OPT_HOST="-H $REPL_DB_HOST"
 PVC_NAME="${PVC_PREFIX}-repl-db-0"
-DATA_PATH="$STORAGE_PATH/${INSTANCE}/repl"
-"$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR"
+DATA_PATH="$STORAGE_PATH/${INSTANCE}/replication"
+"$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"

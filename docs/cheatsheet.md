@@ -66,9 +66,10 @@ Update Qserv configuration by updating its related k8s configmaps.
 
 ## Launch commands directly on Qserv nodes
 
+### Check if pod worker-0 can connect to replication database and dump it configuration
+
 ```shell
 
-    # Check if pod worker-0 can connect to replication database and dump it configuration
     $ kubectl exec -it "$INSTANCE"-worker-0 -c repl-wrk -- mysql -h "$INSTANCE"-repl-db -u qsreplica -e "SELECT * FROM qservReplica.config;"
     +------------+---------------------------------+-----------------------------+
     | category   | param                           | value                       |
@@ -106,16 +107,22 @@ Update Qserv configuration by updating its related k8s configmaps.
     | xrootd     | port                            | 1094                        |
     | xrootd     | request_timeout_sec             | 600                         |
     +------------+---------------------------------+-----------------------------+
+```
 
-    # Launch a SQL query against local mariadb on worker qserv-10
+### Launch a SQL query against local mariadb on worker-0
+
+```shell
     $ kubectl exec -it "$INSTANCE"-worker-0 -c mariadb bash
     . /qserv/stack/loadLSST.bash
     setup qserv_distrib -t qserv-dev
     mysql --socket /qserv/data/mysql/mysql.sock --user=root --password="CHANGEME" -e "SHOW PROCESSLIST"
     exit
+```
 
-    # Install debug tools inside a Qserv container
-    # NOTE: tools will be removed at next Qserv restart
+### Install debug tools inside a Qserv pod
+
+```shell
+    # NOTE: tools will be removed when pod restart
     # WARN: being root inside a container is insecure but is useful for development mode
     $ kubectl exec -it "$INSTANCE"-worker-0 -c mariadb bash
     # Eventually define proxy if needed
@@ -127,12 +134,13 @@ Update Qserv configuration by updating its related k8s configmaps.
 ## Run a pod inside the Qserv network
 
 ```shell
+
     # Start a pod and install debugging tools inside it
     $ kubectl run shell  --image=ubuntu  --restart=Never -- sh -c "apt-get -y update && apt-get install -y curl && sleep 3600"
 
     # Open a shell inside the pod
-    $ kubectl exec -it pod shell
-    root@shell:/# curl http://qserv-dev-repl-ctl:8080
+    $ kubectl exec -it shell
+    root@shell:/$ curl http://qserv-dev-repl-ctl:8080
     <html>
     <head><title>404 Not Found</title></head>
     <body style="background-color:#E6E6FA">
@@ -142,6 +150,27 @@ Update Qserv configuration by updating its related k8s configmaps.
 
     # Delete the pod
     kubectl delete pod shell
+```
+
+## Run a Qserv client pod and launch SQL queries from it
+
+```shell
+
+    # Start a mysql pod
+    kubectl run qservclient --image=mariadb  --restart=Never -- sleep 3600
+
+    # Open a shell and launch a query from the pod
+    kubectl exec -it qservclient bash
+    root@qservclient:/$ mysql --host qserv-prod-czar --port 4040 --user qsmaster gaia_dr2_00 -e "SHOW TABLES;"
+    root@qservclient:/$ exit
+
+    # Launch a query from the pod
+    kubectl exec -it qservclient -- mysql --host qserv-prod-czar --port 4040 --user qsmaster -e "SELECT source_id FROM gaia_dr2_00.gaia_source WHERE source_id=4295806720;"
+    +------------+
+    | source_id  |
+    +------------+
+    | 4295806720 |
+    +------------+
 ```
 
 ## Interact with storage

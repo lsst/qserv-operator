@@ -115,11 +115,12 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 		sync.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),
 	}
 
-	for _, configmapClass := range constants.MicroserviceConfigmaps {
+	for _, configmapClass := range constants.ContainerConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {
-			syncers = append(syncers, sync.NewMicroserviceConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+			syncers = append(syncers, sync.NewContainerConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
 		}
 	}
+	syncers = append(syncers, sync.NewContainerConfigMapSyncer(qserv, r.client, r.scheme, constants.InitDbName, "start"))
 
 	for _, db := range constants.Databases {
 		syncers = append(syncers, sync.NewSqlConfigMapSyncer(qserv, r.client, r.scheme, db))

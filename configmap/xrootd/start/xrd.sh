@@ -5,7 +5,7 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -e
+set -eux
 # set -x
 
 usage() {
@@ -21,6 +21,8 @@ EOD
 }
 
 service=xrootd
+
+XROOTD_RDR_DN="{{.XrootdRedirectorDn}}"
 
 # get the options
 while getopts S: c ; do
@@ -41,6 +43,7 @@ fi
 
 CONFIG_DIR="/config-etc"
 XROOTD_CONFIG="$CONFIG_DIR/xrootd.cf"
+OPT_XRD_SSI=""
 
 # COMPONENT_NAME is required by xrdssi plugin to
 # choose which type of queries to launch against metadata

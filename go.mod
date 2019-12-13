@@ -3,6 +3,7 @@ module github.com/lsst/qserv-operator
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.4.9 // indirect
 	github.com/Azure/go-autorest v11.5.2+incompatible // indirect
+	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
 	github.com/coreos/prometheus-operator v0.26.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
@@ -14,7 +15,6 @@ require (
 	github.com/go-test/deep v1.0.1
 	github.com/golang/groupcache v0.0.0-20180924190550-6f2cf27854a4 // indirect
 	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
-	github.com/google/uuid v1.0.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20190318015731-ff9851476e98 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
@@ -27,6 +27,7 @@ require (
 	github.com/pborman/uuid v0.0.0-20180906182336-adf5a7427709 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/spf13/pflag v1.0.3
+	github.com/stretchr/testify v1.3.0
 	go.opencensus.io v0.19.2 // indirect
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
