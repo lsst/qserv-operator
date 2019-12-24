@@ -10,8 +10,8 @@ A qserv operator for Kubernetes based on [operator-framework](https://github.com
 
 ### Prerequisites
 
-- A valid `KUBECONFIG` and access to a Kubernetes v1.14.2+ cluster
-- Dynamic volume provisionning need to be available on the Kubernetes cluster (for example [kind] for or GKE). [kind-travis-ci] provide a one-liner to install [kind] on your workstation.
+- Access to a Kubernetes v1.14.2+ cluster via a valid `KUBECONFIG` file. [kind-travis-ci] provide a one-liner to install Kubernetes, using [kind], on your workstation.
+- Dynamic volume provisionning need to be available on the Kubernetes cluster (for example [kind] for or GKE).
 
 [kind]:https://kind.sigs.k8s.io/
 [kind-travis-ci]:https://github.com/k8s-school/kind-travis-ci
