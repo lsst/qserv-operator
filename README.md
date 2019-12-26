@@ -10,7 +10,29 @@ A qserv operator for Kubernetes based on [operator-framework](https://github.com
 
 ### Prerequisites
 
-- Access to a Kubernetes v1.14.2+ cluster via a valid `KUBECONFIG` file. [kind-travis-ci] provide a one-liner to install Kubernetes, using [kind], on your workstation.
+#### For a local workstation
+
+- Ubuntu LTS is recommended
+- 8 cores, 16 GB RAM, 30GB for the partition hosting docker entities (images, volumes, containers, etc). Use `df` command as below to find its size.
+```bash
+sudo df –sh /var/lib/docker # or /var/snap/docker/common/var-lib-docker/
+```
+- Internet access without proxy
+- `sudo` access
+- Install dependencies below:
+```bash
+sudo apt-get install curl docker.io git vim
+```
+- Add current user to docker group and restart gnome session
+```bash
+sudo usermod -a -G docker <USER>
+```
+- Depending on your linux distribution version, you might have to upgrade to docker-ce: https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce-1
+- Install Kubernetes locally using  [kind-travis-ci], a one-liner to install Kubernetes, based on [kind].
+
+#### Generic to all setups
+
+- Access to a Kubernetes v1.14.2+ cluster via a valid `KUBECONFIG` file.
 - Dynamic volume provisionning need to be available on the Kubernetes cluster (for example [kind] for or GKE).
 
 [kind]:https://kind.sigs.k8s.io/
