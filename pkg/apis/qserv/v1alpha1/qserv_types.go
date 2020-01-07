@@ -19,6 +19,8 @@ type QservSpec struct {
 	StorageClass    string `json:"storageclass,omitempty"`
 	StorageCapacity string `json:"storagecapacity,omitempty"`
 
+	NetworkPolicies bool `json:"networkpolicies,omitempty"`
+
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
 

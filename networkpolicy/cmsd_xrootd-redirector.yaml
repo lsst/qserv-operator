@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress-cmsd-redirector
+spec:
+  podSelector:
+    matchLabels:
+      component: worker 
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          component: xrootd-redirector
+    ports:
+    - port: 2131
+  policyTypes:
+  - Ingress

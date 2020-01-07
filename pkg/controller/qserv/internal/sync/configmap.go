@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/lsst/qserv-operator/pkg/constants"
+	"github.com/lsst/qserv-operator/pkg/util"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -13,7 +14,7 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-// NewContainerConfigMapSyncer generate configmap specification for a given container
+// NewContainerConfigMapSyncer generates configmap specification for a given container
 func NewContainerConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, container constants.ContainerName, subpath string) syncer.Interface {
 	cm := qserv.GenerateContainerConfigMap(r, controllerLabels, container, subpath)
 	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(string(container)), strings.Title(subpath))

@@ -27,7 +27,7 @@ type templateData struct {
 	XrootdRedirectorDn string
 }
 
-func applyTemplate(path string, tmplData templateData) string {
+func applyTemplate(path string, tmplData *templateData) string {
 
 	tmpl, err := template.ParseFiles(path)
 	if err != nil {
@@ -36,7 +36,7 @@ func applyTemplate(path string, tmplData templateData) string {
 
 	var buf bytes.Buffer
 
-	err = tmpl.Execute(&buf, tmplData)
+	err = tmpl.Execute(&buf, *tmplData)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Cannot apply template: %s", path))
 	}
@@ -57,7 +57,7 @@ func getFileContent(path string) string {
 	return fmt.Sprintf("%s", b)
 }
 
-func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[string]string {
+func scanDir(root string, reqLogger logr.Logger, tmplData *templateData) map[string]string {
 	files := make(map[string]string)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -75,19 +75,17 @@ func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[stri
 
 // GenerateContainerConfigMap generate 2 configmaps for Qserv containers
 // one with startup scripts and one with configuration files
-func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
-
+func GenerateContainerConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
 	tmplData := templateData{
-		CzarDn:             util.GetCzarServiceName(r),
-		QstatusMysqldHost:  util.GetCzarServiceName(r),
-		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(r)}
+		CzarDn:             util.GetCzarServiceName(cr),
+		QstatusMysqldHost:  util.GetCzarServiceName(cr),
+		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(cr)}
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+	name := util.PrefixConfigmap(cr, fmt.Sprintf("%s-%s", container, subdir))
+	namespace := cr.Namespace
 
-	name := util.PrefixConfigmap(r, fmt.Sprintf("%s-%s", container, subdir))
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetContainerLabels(container, r.Name))
+	labels = util.MergeLabels(labels, util.GetContainerLabels(container, cr.Name))
 	root := filepath.Join("/", "configmap", string(container), subdir)
 
 	return &v1.ConfigMap{
@@ -96,16 +94,14 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: scanDir(root, reqLogger, tmplData),
+		Data: scanDir(root, reqLogger, &tmplData),
 	}
 }
 
 func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
-
 	tmplData := templateData{
 		CzarDn:             util.GetCzarServiceName(cr),
 		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(cr)}
-
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
 	name := util.PrefixConfigmap(cr, fmt.Sprintf("sql-%s", db))
@@ -120,7 +116,7 @@ func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db 
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: scanDir(root, reqLogger, tmplData),
+		Data: scanDir(root, reqLogger, &tmplData),
 	}
 }
 
@@ -141,6 +137,6 @@ func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: scanDir(root, reqLogger, tmplData),
+		Data: scanDir(root, reqLogger, &tmplData),
 	}
 }
