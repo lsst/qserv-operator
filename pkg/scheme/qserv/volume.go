@@ -4,12 +4,20 @@ import (
 	"fmt"
 	"path/filepath"
 
+	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
+	"github.com/lsst/qserv-operator/pkg/util"
 	v1 "k8s.io/api/core/v1"
 )
 
 // VolumeSet contains a set of v1.Volume
 type VolumeSet map[string]v1.Volume
+
+// InstanceVolumeSet contains a set of v1.Volume for a given Qserv instance
+type InstanceVolumeSet struct {
+	volumeSet VolumeSet
+	cr        *qservv1alpha1.Qserv
+}
 
 func (vs *VolumeSet) make(volumeSets ...VolumeSet) {
 	*vs = VolumeSet(make(map[string]v1.Volume))
@@ -20,57 +28,71 @@ func (vs *VolumeSet) make(volumeSets ...VolumeSet) {
 	}
 }
 
+func (ivs *InstanceVolumeSet) make(cr *qservv1alpha1.Qserv) {
+	ivs.volumeSet = VolumeSet(make(map[string]v1.Volume))
+	ivs.cr = cr
+}
+
 func (vs *VolumeSet) add(vols VolumeSet) {
 	for k, v := range vols {
 		(*vs)[k] = v
 	}
 }
 
-func (vs *VolumeSet) addConfigMapExecVolume(name string, executeMode *int32) {
+func (vs *InstanceVolumeSet) addConfigMapExecVolume(container constants.ContainerName, executeMode *int32) {
+
+	suffix := fmt.Sprintf("%s-start", container)
+	configmapName := util.PrefixConfigmap(vs.cr, suffix)
+	volumeName := util.GetConfigVolumeName(suffix)
+
 	volume := v1.Volume{
-		Name: name,
+		Name: volumeName,
 		VolumeSource: v1.VolumeSource{
 			ConfigMap: &v1.ConfigMapVolumeSource{
 				LocalObjectReference: v1.LocalObjectReference{
-					Name: name,
+					Name: configmapName,
 				},
 				DefaultMode: executeMode,
 			}}}
-	(*vs)[name] = volume
+	vs.volumeSet[volumeName] = volume
 }
 
-func (vs *VolumeSet) addConfigMapVolume(name string) {
+func (vs *InstanceVolumeSet) addConfigMapVolume(suffix string) {
+
+	configmapName := util.PrefixConfigmap(vs.cr, suffix)
+	volumeName := util.GetConfigVolumeName(suffix)
+
 	volume := v1.Volume{
-		Name: name,
+		Name: volumeName,
 		VolumeSource: v1.VolumeSource{
 			ConfigMap: &v1.ConfigMapVolumeSource{
 				LocalObjectReference: v1.LocalObjectReference{
-					Name: name,
+					Name: configmapName,
 				},
 			}}}
-	(*vs)[name] = volume
+	vs.volumeSet[volumeName] = volume
 }
 
-func (vs *VolumeSet) addEmptyDirVolume(name string) {
+func (vs *InstanceVolumeSet) addEmptyDirVolume(name string) {
 	volume := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
 			EmptyDir: &v1.EmptyDirVolumeSource{},
 		},
 	}
-	(*vs)[name] = volume
+	vs.volumeSet[name] = volume
 }
 
-func (vs *VolumeSet) addSecretVolume(containerName constants.ContainerName) {
-	secretName := GetSecretName(containerName)
+func (vs *InstanceVolumeSet) addSecretVolume(containerName constants.ContainerName) {
+	secretName := util.GetSecretName(vs.cr, containerName)
 	volume := v1.Volume{
-		Name: secretName,
+		Name: util.GetSecretVolumeName(containerName),
 		VolumeSource: v1.VolumeSource{
 			Secret: &v1.SecretVolumeSource{
 				SecretName: secretName,
 			},
 		}}
-	(*vs)[secretName] = volume
+	vs.volumeSet[secretName] = volume
 }
 
 func (vs VolumeSet) toSlice() []v1.Volume {
@@ -81,14 +103,13 @@ func (vs VolumeSet) toSlice() []v1.Volume {
 	return volumes
 }
 
-func (vs *VolumeSet) addEtcStartVolumes(microservice constants.ContainerName) {
+func (vs *InstanceVolumeSet) addEtcStartVolumes(containerName constants.ContainerName) {
 
-	configName := fmt.Sprintf("config-%s-etc", microservice)
-	(*vs).addConfigMapVolume(configName)
+	suffix := fmt.Sprintf("%s-etc", containerName)
+	vs.addConfigMapVolume(suffix)
 
-	configName = fmt.Sprintf("config-%s-start", microservice)
 	mode := int32(0555)
-	(*vs).addConfigMapExecVolume(configName, &mode)
+	vs.addConfigMapExecVolume(containerName, &mode)
 }
 
 func getDataVolumeMount() v1.VolumeMount {

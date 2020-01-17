@@ -15,16 +15,23 @@ INSERT INTO `config` VALUES ('common', 'request_retry_interval_sec', '5');
 
 -- Controller-specific parameters
 
-INSERT INTO `config` VALUES ('controller', 'num_threads',            '16');
+INSERT INTO `config` VALUES ('controller', 'num_threads',            '64');
 INSERT INTO `config` VALUES ('controller', 'http_server_port',       '8080');
 INSERT INTO `config` VALUES ('controller', 'http_server_threads',    '16');
 INSERT INTO `config` VALUES ('controller', 'request_timeout_sec', '57600');   -- 16 hours
 INSERT INTO `config` VALUES ('controller', 'job_timeout_sec',     '57600');   -- 16 hours
 INSERT INTO `config` VALUES ('controller', 'job_heartbeat_sec',       '0');   -- temporarily disabled
+INSERT INTO `config` VALUES ('controller', 'empty_chunks_dir',    '/qserv/data/qserv');
 
 -- Database service-specific parameters
 
 INSERT INTO `config` VALUES ('database', 'services_pool_size', '32');
+INSERT INTO `config` VALUES ('database', 'qserv_master_host',               '<CZAR_DN>');
+INSERT INTO `config` VALUES ('database', 'qserv_master_port',                    '3306');
+INSERT INTO `config` VALUES ('database', 'qserv_master_user',                'qsmaster');
+INSERT INTO `config` VALUES ('database', 'qserv_master_name',               'qservMeta');
+INSERT INTO `config` VALUES ('database', 'qserv_master_services_pool_size',         '4');
+INSERT INTO `config` VALUES ('database', 'qserv_master_tmp_dir',   '/qserv/data/injest');
 
 -- Connection parameters for the Qserv Management Services
 
@@ -43,6 +50,11 @@ INSERT INTO `config` VALUES ('worker', 'num_svc_processing_threads', '16');
 INSERT INTO `config` VALUES ('worker', 'num_fs_processing_threads',  '32');       -- double compared to the previous one to allow more elasticity
 INSERT INTO `config` VALUES ('worker', 'fs_buf_size_bytes',          '4194304');  -- 4 MB
 INSERT INTO `config` VALUES ('worker', 'data_dir',                   '/qserv/data/mysql');
+INSERT INTO `config` VALUES ('worker', 'db_port',                    '3306');
+INSERT INTO `config` VALUES ('worker', 'db_user',                    'root');
+INSERT INTO `config` VALUES ('worker', 'loader_port',                '25002');
+INSERT INTO `config` VALUES ('worker', 'loader_tmp_dir',             '/qserv/data/ingest');
+INSERT INTO `config` VALUES ('worker', 'num_loader_processing_threads', '16');
 
 SET SQL_MODE=@OLD_SQL_MODE ;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS ;

@@ -5,7 +5,7 @@ const (
 	defaultQservImage   = "qserv/qserv:11a6001"
 )
 
-// SetDefaults sets Redis field defaults
+// SetDefaults sets Qserv default fields
 func (r *Qserv) SetDefaults() {
 
 	if r.Spec.Worker.Replicas == 0 {
@@ -14,5 +14,9 @@ func (r *Qserv) SetDefaults() {
 
 	if len(r.Spec.Worker.Image) == 0 {
 		r.Spec.Worker.Image = defaultQservImage
+	}
+
+	if len(r.Spec.Czar.Image) == 0 {
+		r.Spec.Czar.Image = defaultQservImage
 	}
 }

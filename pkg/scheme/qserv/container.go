@@ -13,9 +13,9 @@ import (
 )
 
 func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName) (v1.Container, VolumeSet) {
-	sqlConfigMap := fmt.Sprintf("config-sql-%s", component)
-
 	componentName := string(component)
+
+	sqlConfigSuffix := fmt.Sprintf("sql-%s", component)
 
 	container := v1.Container{
 		Name:  string(constants.InitDbName),
@@ -37,33 +37,43 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 			getSecretVolumeMount(constants.MariadbName),
 			{
 				MountPath: filepath.Join("/", "config-sql", componentName),
-				Name:      sqlConfigMap,
+				Name:      util.GetConfigVolumeName(sqlConfigSuffix),
 				ReadOnly:  false,
 			},
 		},
 	}
 
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
-	volumes.addConfigMapVolume(sqlConfigMap)
+	volumes.addConfigMapVolume(sqlConfigSuffix)
 	volumes.addEtcStartVolumes(constants.MariadbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
 	if component == constants.ReplName {
-		container.Env = append(container.Env, getXrootdRedirectorDn(cr))
+		container.Env = append(container.Env,
+			getXrootdRedirectorDn(cr),
+			getCzarDn(cr),
+			v1.EnvVar{
+				Name:  "WORKER_DN_FILTER",
+				Value: util.GetWorkerNameFilter(cr),
+			},
+			v1.EnvVar{
+				Name:  "REPLCTL_DN_FILTER",
+				Value: util.GetReplCtlNameFilter(cr),
+			})
 		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(constants.ReplDbName))
 		volumes.addSecretVolume(constants.ReplDbName)
 	}
 
-	return container, volumes
+	return container, volumes.volumeSet
 }
 
 func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount {
-	secretName := GetSecretName(containerName)
+	secretVolumeName := util.GetSecretVolumeName(containerName)
 	return v1.VolumeMount{
-		MountPath: filepath.Join("/", secretName),
-		Name:      secretName,
+		MountPath: filepath.Join("/", secretVolumeName),
+		Name:      secretVolumeName,
 		ReadOnly:  false}
 }
 
@@ -104,13 +114,13 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	}
 
 	// Volumes
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
 	volumes.addEmptyDirVolume("tmp-volume")
 	volumes.addEtcStartVolumes(uservice)
 
-	return container, volumes
+	return container, volumes.volumeSet
 }
 
 func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.ComponentName) string {
@@ -118,8 +128,10 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.ComponentName)
 	var image string
 	if component == constants.ReplName {
 		image = spec.Replication.DbImage
-	} else {
+	} else if component == constants.WorkerName {
 		image = spec.Worker.Image
+	} else if component == constants.CzarName {
+		image = spec.Czar.Image
 	}
 	return image
 }
@@ -140,10 +152,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		ReadinessProbe: getProbe(constants.ProxyPortName, 5, tcpAction),
 		Command:        constants.Command,
 		Env: []v1.EnvVar{
-			{
-				Name:  "XROOTD_RDR_DN",
-				Value: util.GetName(cr, string(constants.XrootdRedirectorName)),
-			},
+			getXrootdRedirectorDn(cr),
 		},
 		VolumeMounts: []v1.VolumeMount{
 			// Used for mysql socket access
@@ -155,12 +164,12 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	}
 
 	// Volumes
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ProxyName)
 
-	return container, volumes
+	return container, volumes.volumeSet
 }
 
 func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
@@ -179,22 +188,23 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
 			},
-			getXrootdRedirectorDn(cr),
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getEtcVolumeMount(constants.ReplCtlName),
 			getStartVolumeMount(constants.ReplCtlName),
 			getSecretVolumeMount(constants.ReplDbName),
+			getSecretVolumeMount(constants.MariadbName),
 		},
 	}
 
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
 	volumes.addSecretVolume(constants.ReplDbName)
+	volumes.addSecretVolume(constants.MariadbName)
 
-	return container, volumes
+	return container, volumes.volumeSet
 }
 
 func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
@@ -207,10 +217,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		Image:   spec.Replication.Image,
 		Command: constants.Command,
 		Env: []v1.EnvVar{
-			{
-				Name:  "CZAR_DN",
-				Value: util.GetName(cr, string(constants.CzarName)),
-			},
+			getCzarDn(cr),
 			{
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
@@ -223,24 +230,27 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 			getDataVolumeMount(),
 			getEtcVolumeMount(constants.ReplWrkName),
 			getStartVolumeMount(constants.ReplWrkName),
+			getSecretVolumeMount(constants.MariadbName),
 			getSecretVolumeMount(constants.ReplDbName),
 		},
 	}
 
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ReplWrkName)
+	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.ReplDbName)
 
-	return container, volumes
+	return container, volumes.volumeSet
 }
 
 func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
-	spec := cr.Spec
+	dotQserv := "dot-qserv"
+	dotQservConfigVolume := util.GetConfigVolumeName(dotQserv)
 	container := v1.Container{
 		Name:  string(constants.WmgrName),
-		Image: spec.Worker.Image,
+		Image: cr.Spec.Worker.Image,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          constants.WmgrPortName,
@@ -250,17 +260,14 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		},
 		Command: constants.Command,
 		Env: []v1.EnvVar{
-			{
-				Name:  "CZAR_DN",
-				Value: util.GetName(cr, string(constants.CzarName)),
-			},
+			getCzarDn(cr),
 		},
 		LivenessProbe:  getProbe(constants.WmgrPortName, 10, tcpAction),
 		ReadinessProbe: getProbe(constants.WmgrPortName, 5, tcpAction),
 		VolumeMounts: []v1.VolumeMount{
 			{
-				MountPath: filepath.Join("/", "config-dot-qserv"),
-				Name:      "config-dot-qserv",
+				MountPath: filepath.Join("/", dotQservConfigVolume),
+				Name:      dotQservConfigVolume,
 				ReadOnly:  true,
 			},
 			{
@@ -277,22 +284,29 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	}
 
 	// Volumes
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
-	volumes.addConfigMapVolume("config-dot-qserv")
+	volumes.addConfigMapVolume(dotQserv)
 	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.WmgrName)
 	volumes.addEmptyDirVolume("tmp-volume")
 	volumes.addEtcStartVolumes(constants.WmgrName)
 
-	return container, volumes
+	return container, volumes.volumeSet
 }
 
 func getXrootdRedirectorDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
 	return v1.EnvVar{
 		Name:  "XROOTD_RDR_DN",
 		Value: util.GetName(cr, string(constants.XrootdRedirectorName)),
+	}
+}
+
+func getCzarDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
+	return v1.EnvVar{
+		Name:  "CZAR_DN",
+		Value: util.GetName(cr, string(constants.CzarName)),
 	}
 }
 
@@ -368,13 +382,13 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	}
 
 	// Volumes
-	var volumes VolumeSet
-	volumes.make(nil)
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.XrootdName)
 	volumes.addEmptyDirVolume(constants.XrootdAdminPathVolumeName)
 
-	return containers, volumes
+	return containers, volumes.volumeSet
 }
 
 type NetworkAction string

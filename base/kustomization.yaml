@@ -1,0 +1,21 @@
+commonLabels:
+  org: lsst
+  app: qserv
+
+resources:
+- qserv.yaml
+
+secretGenerator:
+- name: secret-mariadb-qserv
+  files:
+  - mariadb.secret.sh
+- name: secret-repl-db-qserv
+  files:
+  - repl-db.secret.sh
+- name: secret-wmgr-qserv
+  files:
+  - wmgr.secret
+generatorOptions:
+  labels:
+    kustomize.generated.resources: somevalue
+  disableNameSuffixHash: true

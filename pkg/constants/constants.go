@@ -51,7 +51,7 @@ const (
 )
 
 // MicroserviceConfigmaps contains names of all micro-services which require configmaps named:
-// 'config-<microservice-name>-etc' and 'config-<microservice-name>-start'
+// '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
 var MicroserviceConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
 
 // MicroserviceSecrets contains names of all micro-services which require secrets
