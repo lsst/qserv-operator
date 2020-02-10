@@ -28,6 +28,7 @@ cd kind-travis-ci
 cd "$WORKDIR"
 git clone  https://github.com/lsst/qserv-operator
 cd qserv-operator
+cp env.example.sh env.sh
 ./deploy.sh
 ./wait-operator-ready.sh
 kubectl apply -k base
