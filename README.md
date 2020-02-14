@@ -103,7 +103,7 @@ kubectl apply -f deploy/crds/qserv_v1alpha1_qserv_cr.yaml
 ### Build
 
 ```sh
-git clone https://github.com/kube-incubator/qserv-operator.git
+git clone https://github.com/lsst/qserv-operator.git
 cd qserv-operator
 ./build-all.sh
 ```
