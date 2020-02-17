@@ -1,3 +1,4 @@
+/operator-sdk-v
 /test*.go
 # Temporary Build Files
 build/_output

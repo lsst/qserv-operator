@@ -15,7 +15,7 @@ script:
   - ./build.sh
   - ./deploy.sh
   - ./wait-operator-ready.sh
-  - kubectl apply -k base
+  - kubectl apply -k overlays/ci-redis 
   - ./wait-qserv-ready.sh 
   - kubectl get all,endpoints,cm,pvc,pv -o wide
   - ./run-integration-tests.sh
