@@ -5,8 +5,7 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -e
-set -x
+set -eux
 
 usage() {
     cat << EOD
@@ -36,6 +35,8 @@ if [ $# -ne 0 ] ; then
     usage
     exit 2
 fi
+
+XROOTD_RDR_DN="{{.XrootdRedirectorDn}}"
 
 if hostname | egrep "^${XROOTD_RDR_DN}-[0-9]+$"
 then

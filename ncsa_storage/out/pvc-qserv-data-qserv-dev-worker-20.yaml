@@ -1,6 +1,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  labels:
+    app: qserv
+    instance: qserv-dev
   name: qserv-data-qserv-dev-worker-20
 spec:
   accessModes:

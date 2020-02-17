@@ -3,6 +3,13 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
+  storageclass: "standard"
   storagecapacity: "1Gi"
   worker:
     replicas: 3
+    image: "qserv/qserv:ad8405c"
+  replication:
+      image: "qserv/replica:tools-w.2018.16-1171-gcbabd53"
+      dbimage: "mariadb:10.2.16"
+  xrootd:
+    image: "qserv/qserv:ad8405c"

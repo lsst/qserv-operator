@@ -9,16 +9,15 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
-// NewCzarServiceSyncer returns a new sync.Interface for reconciling Czar Service
-func NewCzarServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := qserv.GenerateCzarService(r, controllerLabels)
-	return syncer.NewObjectSyncer("CzarService", r, svc, c, scheme, noFunc)
-}
+// NewQservServicesSyncer returns a new []sync.Interface for reconciling all Qserv services
+func NewQservServicesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
+	syncers := []syncer.Interface{
+		syncer.NewObjectSyncer("CzarProxyService", r, qserv.GenerateCzarProxyService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("CzarDatabase", r, qserv.GenerateCzarDatabaseService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("WorkerService", r, qserv.GenerateWorkerService(r, controllerLabels), c, scheme, noFunc),
+	}
 
-// NewWorkerServiceSyncer returns a new sync.Interface for reconciling Worker Service
-func NewWorkerServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := qserv.GenerateWorkerService(r, controllerLabels)
-	return syncer.NewObjectSyncer("WorkerService", r, svc, c, scheme, noFunc)
+	return syncers
 }
 
 // NewReplicationCtlServiceSyncer returns a new sync.Interface for reconciling Replication Controller Service

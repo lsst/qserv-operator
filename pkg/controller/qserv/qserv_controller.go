@@ -99,13 +99,10 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	r.scheme.Default(qserv)
-	qserv.SetDefaults()
 
 	syncers := []syncer.Interface{
-		sync.NewCzarServiceSyncer(qserv, r.client, r.scheme),
 		sync.NewCzarStatefulSetSyncer(qserv, r.client, r.scheme),
 		sync.NewDotQservConfigMapSyncer(qserv, r.client, r.scheme),
-		sync.NewWorkerServiceSyncer(qserv, r.client, r.scheme),
 		sync.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
 		sync.NewReplicationCtlServiceSyncer(qserv, r.client, r.scheme),
 		sync.NewReplicationCtlStatefulSetSyncer(qserv, r.client, r.scheme),
@@ -115,11 +112,14 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 		sync.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),
 	}
 
-	for _, configmapClass := range constants.MicroserviceConfigmaps {
+	syncers = append(sync.NewQservServicesSyncer(qserv, r.client, r.scheme), syncers...)
+
+	for _, configmapClass := range constants.ContainerConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {
-			syncers = append(syncers, sync.NewMicroserviceConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+			syncers = append(syncers, sync.NewContainerConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
 		}
 	}
+	syncers = append(syncers, sync.NewContainerConfigMapSyncer(qserv, r.client, r.scheme, constants.InitDbName, "start"))
 
 	for _, db := range constants.Databases {
 		syncers = append(syncers, sync.NewSqlConfigMapSyncer(qserv, r.client, r.scheme, db))

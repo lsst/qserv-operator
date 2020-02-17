@@ -1,3 +1,4 @@
+// +kubebuilder:validation:Required
 package v1alpha1
 
 import (
@@ -26,6 +27,7 @@ type QservSpec struct {
 	Replication ReplicationSettings `json:"replication,omitempty"`
 
 	// Tolerations defines the settings for adding custom tolerations to all pods
+	// +kubebuilder:validation:Optional
 	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
 
 	// Worker defines the settings for worker cluster
@@ -37,8 +39,9 @@ type QservSpec struct {
 
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
-	Image    string `json:"image,omitempty"`
-	Replicas int32  `json:"replicas,omitempty"`
+	Image string `json:"image,omitempty"`
+	// + kubebuilder:default:=1
+	Replicas int32 `json:"replicas,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster

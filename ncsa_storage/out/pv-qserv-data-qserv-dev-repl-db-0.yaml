@@ -2,6 +2,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   labels:
+    app: qserv
+    instance: qserv-dev
     pvc_name: qserv-data-qserv-dev-repl-db-0
   name: pv-qserv-data-qserv-dev-repl-db-0
 spec:
@@ -10,7 +12,7 @@ spec:
   capacity:
     storage: 100Gi
   local:
-    path: /qserv/qserv-dev/repl
+    path: /qserv/qserv-dev/replication
   nodeAffinity:
     required:
       nodeSelectorTerms:

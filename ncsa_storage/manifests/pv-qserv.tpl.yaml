@@ -4,6 +4,7 @@ metadata:
     name: <PV_NAME>
     labels:
         pvc_name: <DATA_ID>
+        app: qserv
 spec:
     capacity:
         storage: 100Gi # Mandatory, muste be the same in PVC

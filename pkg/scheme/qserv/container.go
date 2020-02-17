@@ -17,6 +17,13 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 
 	sqlConfigSuffix := fmt.Sprintf("sql-%s", component)
 
+	var dbName constants.ContainerName
+	if component == constants.ReplName {
+		dbName = constants.ReplDbName
+	} else {
+		dbName = constants.MariadbName
+	}
+
 	container := v1.Container{
 		Name:  string(constants.InitDbName),
 		Image: getMariadbImage(cr, component),
@@ -31,14 +38,14 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			// db startup script, configuration and root passwords are shared
-			getEtcVolumeMount(constants.MariadbName),
-			getStartVolumeMount(constants.MariadbName),
+			getEtcVolumeMount(dbName),
+			// db startup script and root passwords are shared
+			getStartVolumeMount(constants.InitDbName),
 			getSecretVolumeMount(constants.MariadbName),
 			{
 				MountPath: filepath.Join("/", "config-sql", componentName),
 				Name:      util.GetConfigVolumeName(sqlConfigSuffix),
-				ReadOnly:  false,
+				ReadOnly:  true,
 			},
 		},
 	}
@@ -47,34 +54,16 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 	volumes.make(cr)
 
 	volumes.addConfigMapVolume(sqlConfigSuffix)
-	volumes.addEtcStartVolumes(constants.MariadbName)
+	volumes.addEtcVolume(dbName)
+	volumes.addStartVolume(constants.InitDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
-	if component == constants.ReplName {
-		container.Env = append(container.Env,
-			getXrootdRedirectorDn(cr),
-			getCzarDn(cr),
-			v1.EnvVar{
-				Name:  "WORKER_DN_FILTER",
-				Value: util.GetWorkerNameFilter(cr),
-			},
-			v1.EnvVar{
-				Name:  "REPLCTL_DN_FILTER",
-				Value: util.GetReplCtlNameFilter(cr),
-			})
-		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(constants.ReplDbName))
-		volumes.addSecretVolume(constants.ReplDbName)
+	if dbName == constants.ReplDbName {
+		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(dbName))
+		volumes.addSecretVolume(dbName)
 	}
 
 	return container, volumes.volumeSet
-}
-
-func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount {
-	secretVolumeName := util.GetSecretVolumeName(containerName)
-	return v1.VolumeMount{
-		MountPath: filepath.Join("/", secretVolumeName),
-		Name:      secretVolumeName,
-		ReadOnly:  false}
 }
 
 func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName) (v1.Container, VolumeSet) {
@@ -105,11 +94,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentN
 			getDataVolumeMount(),
 			getEtcVolumeMount(uservice),
 			getStartVolumeMount(uservice),
-			{
-				MountPath: "/qserv/run/tmp",
-				Name:      "tmp-volume",
-				ReadOnly:  false,
-			},
+			getTmpVolumeMount(),
 		},
 	}
 
@@ -140,7 +125,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	container := v1.Container{
 		Name:  string(constants.ProxyName),
-		Image: spec.Worker.Image,
+		Image: spec.Czar.Image,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          string(constants.ProxyName),
@@ -151,9 +136,6 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		LivenessProbe:  getProbe(constants.ProxyPortName, 10, tcpAction),
 		ReadinessProbe: getProbe(constants.ProxyPortName, 5, tcpAction),
 		Command:        constants.Command,
-		Env: []v1.EnvVar{
-			getXrootdRedirectorDn(cr),
-		},
 		VolumeMounts: []v1.VolumeMount{
 			// Used for mysql socket access
 			// TODO move mysql socket in emptyDir?
@@ -217,7 +199,6 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		Image:   spec.Replication.Image,
 		Command: constants.Command,
 		Env: []v1.EnvVar{
-			getCzarDn(cr),
 			{
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
@@ -258,10 +239,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		Command: constants.Command,
-		Env: []v1.EnvVar{
-			getCzarDn(cr),
-		},
+		Command:        constants.Command,
 		LivenessProbe:  getProbe(constants.WmgrPortName, 10, tcpAction),
 		ReadinessProbe: getProbe(constants.WmgrPortName, 5, tcpAction),
 		VolumeMounts: []v1.VolumeMount{
@@ -270,11 +248,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Name:      dotQservConfigVolume,
 				ReadOnly:  true,
 			},
-			{
-				MountPath: "/qserv/run/tmp",
-				Name:      "tmp-volume",
-				ReadOnly:  false,
-			},
+			getTmpVolumeMount(),
 			getSecretVolumeMount(constants.MariadbName),
 			getSecretVolumeMount(constants.WmgrName),
 			getDataVolumeMount(),
@@ -296,20 +270,6 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	return container, volumes.volumeSet
 }
 
-func getXrootdRedirectorDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
-	return v1.EnvVar{
-		Name:  "XROOTD_RDR_DN",
-		Value: util.GetName(cr, string(constants.XrootdRedirectorName)),
-	}
-}
-
-func getCzarDn(cr *qservv1alpha1.Qserv) v1.EnvVar {
-	return v1.EnvVar{
-		Name:  "CZAR_DN",
-		Value: util.GetName(cr, string(constants.CzarName)),
-	}
-}
-
 func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentName) ([]v1.Container, VolumeSet) {
 
 	const (
@@ -328,9 +288,6 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 			Image:   spec.Worker.Image,
 			Command: constants.Command,
 			Args:    []string{"-S", "cmsd"},
-			Env: []v1.EnvVar{
-				getXrootdRedirectorDn(cr),
-			},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{
@@ -350,10 +307,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 					Protocol:      v1.ProtocolTCP,
 				},
 			},
-			Command: constants.Command,
-			Env: []v1.EnvVar{
-				getXrootdRedirectorDn(cr),
-			},
+			Command:        constants.Command,
 			LivenessProbe:  getProbe(constants.XrootdPortName, 10, tcpAction),
 			ReadinessProbe: getProbe(constants.XrootdPortName, 5, tcpAction),
 			SecurityContext: &v1.SecurityContext{
