@@ -134,7 +134,7 @@ In order to create a customized Qserv instance, create a `Kustomize` overlay usi
 cp -r overlays/local/ overlays/my-qserv/
 ```
 
-Then add custom setting, for example contaziner image versions, by editing `overlays/my-qserv/qserv.yaml`:
+Then add custom setting, for example container image versions, by editing `overlays/my-qserv/qserv.yaml`:
 
 ```
 apiVersion: qserv.lsst.org/v1alpha1

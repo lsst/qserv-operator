@@ -20,3 +20,4 @@ done
 
 kubectl delete -f "$DIR"/deploy/crds/qserv_v1alpha1_qserv_crd.yaml
 kubectl delete -f "$DIR"/deploy
+

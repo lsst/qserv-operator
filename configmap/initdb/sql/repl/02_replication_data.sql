@@ -26,7 +26,7 @@ INSERT INTO `config` VALUES ('controller', 'empty_chunks_dir',    '/qserv/data/q
 -- Database service-specific parameters
 
 INSERT INTO `config` VALUES ('database', 'services_pool_size', '32');
-INSERT INTO `config` VALUES ('database', 'qserv_master_host',               '{{.CzarDn}}');
+INSERT INTO `config` VALUES ('database', 'qserv_master_host',               '{{.CzarDomainName}}');
 INSERT INTO `config` VALUES ('database', 'qserv_master_port',                    '3306');
 INSERT INTO `config` VALUES ('database', 'qserv_master_user',                'qsmaster');
 INSERT INTO `config` VALUES ('database', 'qserv_master_name',               'qservMeta');

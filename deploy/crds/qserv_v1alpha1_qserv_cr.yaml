@@ -12,4 +12,5 @@ spec:
       image: "qserv/replica:tools-w.2018.16-556-g62efc42-dirty"
       dbimage: "mariadb:10.2.16"
   xrootd:
+    replicas: 3
     image: "qserv/qserv:9701693"

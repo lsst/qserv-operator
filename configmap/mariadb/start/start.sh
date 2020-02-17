@@ -19,6 +19,6 @@ fi
 echo "-- Start mariadb server."
 mysqld
 if [ $? -ne 0 ]; then
-    >&2 echo "ERROR: failed to start the Qserv database"
+    >&2 echo "ERROR: failed to start mariadb server"
     exit 1
 fi

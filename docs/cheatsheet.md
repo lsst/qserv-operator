@@ -122,7 +122,7 @@ Update Qserv configuration by updating its related k8s configmaps.
 ### Install debug tools inside a Qserv pod
 
 ```shell
-    # NOTE: tools will be removed when pod restart
+    # NOTE: tools will be removed when the pod restart
     # WARN: being root inside a container is insecure but is useful for development mode
     $ kubectl exec -it "$INSTANCE"-worker-0 -c mariadb bash
     # Eventually define proxy if needed

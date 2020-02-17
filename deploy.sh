@@ -11,7 +11,7 @@ Usage: `basename $0` [options]
 
   Available options:
     -n <namespace>  Target namespace
-    -h              Tthis message
+    -h              This message
 
   Install qserv-operator inside a given namespace
 

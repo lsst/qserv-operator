@@ -17,3 +17,4 @@ if [ -d "$SRC_DIR/mysql" ]; then
     sudo -u qserv -- mkdir -p "$DEST_DIR"
     sudo -u qserv -- rsync -avz --delete "$SRC_DIR" "$DEST_DIR"
 fi
+

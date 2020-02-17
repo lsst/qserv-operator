@@ -22,7 +22,7 @@ type filedesc struct {
 }
 
 type templateData struct {
-	CzarDn             string
+	CzarDomainName             string
 	QstatusMysqldHost  string
 	XrootdRedirectorDn string
 }
@@ -78,7 +78,7 @@ func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[stri
 func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
 
 	tmplData := templateData{
-		CzarDn:             util.GetCzarServiceName(r),
+		CzarDomainName:             util.GetCzarServiceName(r),
 		QstatusMysqldHost:  util.GetCzarServiceName(r),
 		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(r)}
 
@@ -103,7 +103,7 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
 
 	tmplData := templateData{
-		CzarDn:             util.GetCzarServiceName(cr),
+		CzarDomainName:             util.GetCzarServiceName(cr),
 		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(cr)}
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
