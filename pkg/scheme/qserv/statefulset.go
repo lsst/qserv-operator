@@ -299,8 +299,8 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
 
-	var replicas int32 = 2
-
+	var replicas int32 = cr.Spec.Xrootd.Replicas
+	
 	containers, volumes := getXrootdContainers(cr, constants.XrootdRedirectorName)
 
 	ss := &appsv1.StatefulSet{

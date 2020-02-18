@@ -14,3 +14,4 @@ spec:
   xrootd:
     replicas: 3
     image: "qserv/qserv:9701693"
+    replicas: 3

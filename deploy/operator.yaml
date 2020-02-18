@@ -16,7 +16,7 @@ spec:
       containers:
         - name: qserv-operator
           # Replace this with the built image name
-          image: qserv/qserv-operator:f54bb5c-dirty
+          image: gcr.io/poised-standard-268114/qserv/qserv-operator:updated-replicas-pushed
           command:
           - qserv-operator
           imagePullPolicy: Always
