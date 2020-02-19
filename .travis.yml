@@ -6,11 +6,11 @@ go:
 - 1.13.4
 
 before_script:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - ./install-operator-sdk.sh
   - git clone --depth 1 -b "v0.6.0" --single-branch https://github.com/k8s-school/kind-travis-ci.git
   - ./kind-travis-ci/kind/k8s-create.sh -s
   - cp env.example.sh env.sh
-  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
   - ./build.sh
