@@ -70,7 +70,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 						Name: GetVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
-						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
 						StorageClassName: &storageClass,
 						Resources: v1.ResourceRequirements{
 							Requests: v1.ResourceList{
