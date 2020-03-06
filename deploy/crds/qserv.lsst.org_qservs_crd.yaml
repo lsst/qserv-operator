@@ -9,7 +9,7 @@ spec:
     listKind: QservList
     plural: qservs
     singular: qserv
-  scope: ""
+  scope: Namespaced
   subresources:
     status: {}
   validation:
