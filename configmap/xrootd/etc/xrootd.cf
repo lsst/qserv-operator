@@ -70,10 +70,10 @@ xrd.network nodnr
 xrd.network dyndns
 xrd.network cache 0
 
-# TODO Generate xrootd redirector list using go template
 set xrootddn = {{.XrootdRedirectorDn}}
-all.manager ${xrootddn}-0.${xrootddn}:2131
-all.manager ${xrootddn}-1.${xrootddn}:2131
+{{- range $val := Iterate .XrootdReplicas}}
+all.manager ${xrootddn}-{{$val}}.${xrootddn}:2131
+{{- end}}
 
 # - cmsd redirector runs on port 2131
 # - cmsd server does not open server socket
