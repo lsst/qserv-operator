@@ -80,7 +80,8 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 	tmplData := templateData{
 		CzarDomainName:             util.GetCzarServiceName(r),
 		QstatusMysqldHost:  util.GetCzarServiceName(r),
-		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(r)}
+		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(r)
+		XrootdReplicas: util.GetXrootdReplicas(r)}
 
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 

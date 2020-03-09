@@ -88,3 +88,8 @@ func GetSecretName(cr *qservv1alpha1.Qserv, containerName constants.ContainerNam
 func GetSecretVolumeName(containerName constants.ContainerName) string {
 	return fmt.Sprintf("secret-%s", containerName)
 }
+
+// GetXrootdReplicas returns num of Xrootd replicas defined in cr.Spec.Xrootd.Replicas
+func GetXrootdReplicas(cr *qservv1alpha1.Qserv) string {
+	return (cr, cr.Spec.Xrootd.Replicas)
+}
