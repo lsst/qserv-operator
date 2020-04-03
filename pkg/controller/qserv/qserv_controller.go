@@ -4,6 +4,7 @@ import (
 	"context"
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
+
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/controller/qserv/internal/sync"
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
@@ -11,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
+	kubedbscheme "kubedb.dev/apimachinery/client/clientset/versioned/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -99,6 +101,7 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	r.scheme.Default(qserv)
+	kubedbscheme.AddToScheme(r.scheme)
 
 	syncers := []syncer.Interface{
 		sync.NewCzarStatefulSetSyncer(qserv, r.client, r.scheme),
@@ -113,6 +116,12 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	syncers = append(sync.NewQservServicesSyncer(qserv, r.client, r.scheme), syncers...)
+
+	// Redis database: optional, stores secondary index data
+	if qserv.Spec.Redis != nil {
+		reqLogger.Info("Reconciling Redis")
+		syncers = append(syncers, sync.NewRedisSyncer(qserv, r.client, r.scheme))
+	}
 
 	for _, configmapClass := range constants.ContainerConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {

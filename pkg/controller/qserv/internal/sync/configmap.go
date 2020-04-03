@@ -17,14 +17,14 @@ import (
 func NewContainerConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, container constants.ContainerName, subpath string) syncer.Interface {
 	cm := qserv.GenerateContainerConfigMap(r, controllerLabels, container, subpath)
 	objectName := fmt.Sprintf("%s%sConfigMap", strings.Title(string(container)), strings.Title(subpath))
-	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
+	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func() error {
 		return nil
 	})
 }
 
 func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	cm := qserv.GenerateDotQservConfigMap(r, controllerLabels)
-	return syncer.NewObjectSyncer("DotQservConfigMap", r, cm, c, scheme, func(existing runtime.Object) error {
+	return syncer.NewObjectSyncer("DotQservConfigMap", r, cm, c, scheme, func() error {
 		return nil
 	})
 }
@@ -32,7 +32,7 @@ func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme 
 func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.ComponentName) syncer.Interface {
 	cm := qserv.GenerateSqlConfigMap(r, controllerLabels, db)
 	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(string(db)))
-	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func(existing runtime.Object) error {
+	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func() error {
 		return nil
 	})
 }

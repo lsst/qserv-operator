@@ -41,11 +41,17 @@ fi
 
 kapply="kubectl apply $NAMESPACE_OPT -f "
 
+echo "Install qserv-operator"
 $kapply "$DIR"/deploy/crds/qserv_v1alpha1_qserv_crd.yaml
 $kapply "$DIR"/deploy/service_account.yaml
 $kapply "$DIR"/deploy/role.yaml
 $kapply "$DIR"/deploy/role_binding.yaml
 $kapply "$DIR"/deploy/operator.yaml
+
+echo "Install kubedb"
+# See https://kubedb.com/docs/v0.13.0-rc.0/setup/install/, but installer is broken
+curl -fsSL https://raw.githubusercontent.com/kubedb/installer/89fab34cf2f5d9e0bcc3c2d5b0f0599f94ff0dca/deploy/kubedb.sh | bash
+kubectl  wait --for=condition=Ready pods -l app=kubedb --all-namespaces
 
 echo "----------------------------------"
 echo "Run command below to deploy Qserv:"
