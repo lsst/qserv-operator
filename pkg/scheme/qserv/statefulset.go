@@ -18,7 +18,6 @@ var log = logf.Log.WithName("qserv")
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.CzarName)
 	namespace := cr.Namespace
-
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
 
 	var replicas int32 = 1

@@ -17,6 +17,8 @@ const (
 
 	QservName = "qserv"
 
+	RedisName = "redis"
+
 	ReplicationControllerPort     = 25080
 	ReplicationControllerPortName = string(ReplCtlName)
 

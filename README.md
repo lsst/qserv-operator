@@ -4,7 +4,7 @@ A qserv operator for Kubernetes based on [operator-framework](https://github.com
 
 *operator-sdk version: v0.13.0*
 
-[![Build Status](https://travis-ci.org/lsst/qserv-operator.svg?branch=master)](https://travis-ci.org/lsst/qserv-operator)
+[![Build Status](https://travis-ci.com/lsst/qserv-operator.svg?branch=master)](https://travis-ci.com/lsst/qserv-operator)
 
 ## Deploy qserv
 
@@ -28,7 +28,6 @@ cd kind-travis-ci
 cd "$WORKDIR"
 git clone  https://github.com/lsst/qserv-operator
 cd qserv-operator
-cp env.example.sh env.sh
 ./deploy.sh
 ./wait-operator-ready.sh
 kubectl apply -k base
@@ -74,19 +73,26 @@ Command below deploy `qserv-operator`
 # Deploy qserv-operator
 git clone https://github.com/lsst/qserv-operator.git
 cd qserv-operator
-# Edit env.sh to set the namespace where qserv-operator will be deployed (TODO: replace with cmd-line option)
-cp env.example.sh env.sh
 ./deploy.sh
 ```
 
-### Deploy a qserv instance with default settings
+### Deploy a qserv instance
 
-This deployment is recommended for development purpose, or continuous integration.
+Deployments below are recommended for development purpose, or continuous integration.
 Qserv install customization is handled with [Kustomize](https://github.com/kubernetes-sigs/kustomize), which is a template engine allowing to customize kubernetes Yaml files. `Kustomize` is integrated with `kubectl` (`-k` option).
 
+#### with default settings
+
 ```sh
-# Install a qserv instance with default settings in default namespace
+# Install a qserv instance with default settings inside default namespace
 kubectl apply -k ./base --namespace='default'
+```
+
+#### with a Redis cluster
+
+```sh
+# Install a qserv instance plus a Redis cluster inside default namespace
+kubectl apply -k ./overlays/ci-redis --namespace='default'
 ```
 
 ### Undeploy a qserv instance
@@ -100,13 +106,13 @@ It will output something like:
 
 ```
 NAME            AGE
-example-qserv   59m
+qserv   59m
 ```
 
 Then delete this Qserv instance
 
 ```sh
-kubectl delete qserv example-qserv -n "<namespace>"
+kubectl delete qserv qserv -n "<namespace>"
 ```
 
 To delete all Qserv instances inside a namespace:

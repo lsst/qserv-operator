@@ -67,9 +67,10 @@ func (s *ObjectSyncer) Sync(ctx context.Context) (SyncResult, error) {
 // Given an ObjectSyncer, returns a controllerutil.MutateFn which also sets the
 // owner reference if the subject has one
 func (s *ObjectSyncer) mutateFn() controllerutil.MutateFn {
-	return func(existing runtime.Object) error {
+	return func() error {
+		existing := s.Obj
 		s.previousObject = existing.DeepCopyObject()
-		err := s.SyncFn(existing)
+		err := s.SyncFn()
 		if err != nil {
 			return err
 		}
