@@ -12,7 +12,9 @@ before_script:
   - ./kind-travis-ci/kind/k8s-create.sh -s
 
 script:
+  - . ./env.sh
   - ./build.sh
+  - kind load docker-image "$OP_IMAGE"
   - ./deploy.sh
   - ./wait-operator-ready.sh
   - kubectl apply -k overlays/ci-redis 

@@ -15,4 +15,4 @@ spec:
       dbimage: "mariadb:10.2.16"
   xrootd:
     image: "qserv/qserv:dcbfff7"
-    replicas: 4
+    replicas: 2
