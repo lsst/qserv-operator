@@ -25,10 +25,15 @@ git clone --depth 1 -b "v0.6.0" --single-branch https://github.com/k8s-school/ki
 cd kind-travis-ci
 ./kind/k8s-create.sh -s
 
+# Install Qserv in two lines
+curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/tickets\/DM-24372/deploy/qserv.sh | bash -s
+kubectl apply -k https://github.com/lsst/qserv-operator/base
+
+# Or include launch of integration tests
 cd "$WORKDIR"
 git clone  https://github.com/lsst/qserv-operator
 cd qserv-operator
-./deploy.sh
+./deploy/qserv.sh
 ./wait-operator-ready.sh
 kubectl apply -k base
 ./wait-qserv-ready.sh
@@ -67,13 +72,19 @@ sudo usermod -a -G docker <USER>
 
 ### Deploy qserv-operator
 
-Command below deploy `qserv-operator`
+#### For end-users
 
 ```sh
-# Deploy qserv-operator
+# Deploy qserv-operator in current namespace
+curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/tickets\/DM-24372/deploy/qserv.sh | bash -s
+```
+
+#### For qserv-operator developers
+
+```sh
 git clone https://github.com/lsst/qserv-operator.git
 cd qserv-operator
-./deploy.sh
+./deploy/qserv.sh -l
 ```
 
 ### Deploy a qserv instance
@@ -85,14 +96,14 @@ Qserv install customization is handled with [Kustomize](https://github.com/kuber
 
 ```sh
 # Install a qserv instance with default settings inside default namespace
-kubectl apply -k ./base --namespace='default'
+kubectl apply -k https://github.com/lsst/qserv-operator/overlays/local --namespace='default'
 ```
 
 #### with a Redis cluster
 
 ```sh
 # Install a qserv instance plus a Redis cluster inside default namespace
-kubectl apply -k ./overlays/ci-redis --namespace='default'
+kubectl apply -k https://github.com/lsst/qserv-operator/ci-redis --namespace='default'
 ```
 
 ### Undeploy a qserv instance
@@ -129,14 +140,13 @@ Example are available, see below:
 
 ```sh
 # Install a qserv instance with custom settings
-kubectl apply -k overlays/ncsa_dev/ --namespace='qserv-dev'
-
-# Install a qserv instance with custom settings
-kubectl apply -k overlays/ncsa_prod/ --namespace='qserv-prod'
+kubectl apply -k https://github.com/lsst/qserv-operator/overlays/ncsa_dev --namespace='qserv-prod'
 ```
 
-In order to create a customized Qserv instance, create a `Kustomize` overlay using instruction below:
+In order to create a customized Qserv instance, create a `Kustomize` overlay using instructions below:
 ```sh
+git clone https://github.com/lsst/qserv-operator.git
+cd qserv-operator
 cp -r overlays/local/ overlays/my-qserv/
 ```
 
@@ -169,7 +179,7 @@ kubectl apply -k overlays/my-qserv/ --namespace='<namespace>'
 ```
 
 
-### Connect to the qserv instance
+### Launch integration tests
 
 ```sh
 ./run-integration-tests.sh
