@@ -29,20 +29,17 @@ cd kind-travis-ci
 curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/tickets\/DM-24372/deploy/qserv.sh | bash -s
 kubectl apply -k https://github.com/lsst/qserv-operator/base
 
-# Or include launch of integration tests
+# Run integration tests
 cd "$WORKDIR"
 git clone  https://github.com/lsst/qserv-operator
 cd qserv-operator
-./deploy/qserv.sh
-./wait-operator-ready.sh
-kubectl apply -k base
 ./wait-qserv-ready.sh
 ./run-integration-tests.sh
 ```
 
 ### Prerequisites
 
-#### For a local workstation
+#### For a workstation
 
 - Ubuntu LTS is recommended
 - 8 cores, 16 GB RAM, 30GB for the partition hosting docker entities (images, volumes, containers, etc). Use `df` command as below to find its size.
@@ -76,15 +73,17 @@ sudo usermod -a -G docker <USER>
 
 ```sh
 # Deploy qserv-operator in current namespace
-curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/tickets\/DM-24372/deploy/qserv.sh | bash -s
+curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/tickets\/DM-24372/deploy/qserv.sh | bash -s --install-kubedb
 ```
+
+The `--install-kubedb` option enable `qserv-operator` to set-up a Redis cluster for managing its secondary index (OnjectID,ChunkId). It can be skipped for a regular Qserv installation.
 
 #### For qserv-operator developers
 
 ```sh
 git clone https://github.com/lsst/qserv-operator.git
 cd qserv-operator
-./deploy/qserv.sh -l
+./deploy/qserv.sh --dev --install-kubedb
 ```
 
 ### Deploy a qserv instance
@@ -96,13 +95,14 @@ Qserv install customization is handled with [Kustomize](https://github.com/kuber
 
 ```sh
 # Install a qserv instance with default settings inside default namespace
-kubectl apply -k https://github.com/lsst/qserv-operator/overlays/local --namespace='default'
+kubectl apply -k https://github.com/lsst/qserv-operator/overlays/dev --namespace='default'
 ```
 
 #### with a Redis cluster
 
 ```sh
 # Install a qserv instance plus a Redis cluster inside default namespace
+# This overlay is used on Travis-CI, o, top of kind
 kubectl apply -k https://github.com/lsst/qserv-operator/ci-redis --namespace='default'
 ```
 
@@ -147,10 +147,10 @@ In order to create a customized Qserv instance, create a `Kustomize` overlay usi
 ```sh
 git clone https://github.com/lsst/qserv-operator.git
 cd qserv-operator
-cp -r overlays/local/ overlays/my-qserv/
+cp -r overlays/dev/ overlays/<customized-overlay>
 ```
 
-Then add custom setting, for example container image versions, by editing `overlays/my-qserv/qserv.yaml`:
+Then add custom setting, for example container image versions, by editing `overlays/<customized-overlay>/qserv.yaml`:
 
 ```
 apiVersion: qserv.lsst.org/v1alpha1

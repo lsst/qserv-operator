@@ -11,9 +11,9 @@ Usage: `basename $0` [options] [cmd]
 
   Available options:
     -h, --help           This message
-    -l, --local          Install from local git repository
+    -d, --dev            Install from local git repository
     --n NAMESPACE        Specify namespace (default: kube-system)
-    --no-kubedb          Do not install KubeDB operator
+    --install-kubedb     Install KubeDB operator
     --uninstall          Uninstall Qserv-operator,
                          and related CustomResourceDefinition/CustomResource
 
@@ -33,8 +33,10 @@ kubectl config current-context || {
 }
 echo ""
 
-KUBE_DB=true
-LOCAL_INSTALL=false
+KUBEDB=false
+KUBEDB_URL="https://raw.githubusercontent.com/kubedb/installer/89fab34cf2f5d9e0bcc3c2d5b0f0599f94ff0dca/deploy/kubedb.sh"
+
+DEV_INSTALL=false
 UNINSTALL=false
 PURGE=true
 
@@ -50,8 +52,8 @@ while test $# -gt 0; do
       usage
       exit 0
       ;;
-    -l | --local)
-      LOCAL_INSTALL=true
+    -d | --dev)
+      DEV_INSTALL=true
       shift
       ;;
     -n)
@@ -59,8 +61,8 @@ while test $# -gt 0; do
       NAMESPACE="$1"
       shift
       ;;
-    --no-kubedb)
-      KUBE_DB=false
+    --install-kubedb)
+      KUBEDB=true
       shift
       ;;
       --uninstall)
@@ -88,15 +90,14 @@ if [ "$UNINSTALL" = true ]; then
   # Put KubeDB backup files (yaml CRDs) inside a temporary directory
   TMP_DIR=$(mktemp -d --suffix="-qserv-operator")
   cd "$TMP_DIR"
-  curl -fsSL https://raw.githubusercontent.com/kubedb/installer/89fab34cf2f5d9e0bcc3c2d5b0f0599f94ff0dca/deploy/kubedb.sh | \
-  bash -s -- -n "$NAMESPACE" --uninstall --purge
+  curl -fsSL "$KUBEDB_URL" | bash -s -- -n "$NAMESPACE" --uninstall --purge
   )
   echo
   echo "Successfully uninstall Qserv-operator"
   exit 0
 fi
 
-if [ "$LOCAL_INSTALL" = true ]; then
+if [ "$DEV_INSTALL" = true ]; then
   MANIFESTS_DIR=$(dirname "$DIR")
 else
   MANIFESTS_DIR="https://raw.githubusercontent.com/lsst/qserv-operator/master"
@@ -112,15 +113,14 @@ $kapply "$MANIFESTS_DIR"/deploy/role.yaml
 $kapply "$MANIFESTS_DIR"/deploy/role_binding.yaml
 $kapply "$MANIFESTS_DIR"/deploy/operator.yaml
 
-if [ "$KUBE_DB" = true ]; then
+if [ "$KUBEDB" = true ]; then
   (
   # Put KubeDB install files inside a temporary directory
   TMP_DIR=$(mktemp -d --suffix="-qserv-operator")
   cd "$TMP_DIR"
   echo "Install KubeDB"
   # See https://kubedb.com/docs/v0.13.0-rc.0/setup/install/, but installer is broken
-  curl -fsSL https://raw.githubusercontent.com/kubedb/installer/89fab34cf2f5d9e0bcc3c2d5b0f0599f94ff0dca/deploy/kubedb.sh | \
-  KUBEDB_CATALOG=redis bash -s -- -n "$NAMESPACE"
+  curl -fsSL "$KUBEDB_URL" | KUBEDB_CATALOG=redis bash -s -- -n "$NAMESPACE"
   kubectl wait --for=condition=Ready pods -l app=kubedb -n "$NAMESPACE"
   )
 fi

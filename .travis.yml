@@ -15,7 +15,7 @@ script:
   - . ./env.sh
   - ./build.sh
   - kind load docker-image "$OP_IMAGE"
-  - ./deploy/qserv.sh -l
+  - ./deploy/qserv.sh --dev --install-kubedb 
   - kubectl apply -k overlays/ci-redis 
   - ./wait-qserv-ready.sh 
   - kubectl get all,endpoints,cm,pvc,pv -o wide
