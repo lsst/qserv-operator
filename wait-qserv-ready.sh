@@ -50,5 +50,6 @@ do
   kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/root
   kubectl exec "$SHELL_POD" -it /root/wait-wmgr.sh "${INSTANCE}-worker-${i}.${INSTANCE}-worker"
 done
+echo "wmgr service is ready in all Qserv pods"
 
 kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"

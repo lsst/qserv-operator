@@ -11,12 +11,7 @@ sudo usermod -a -G docker $(id -nu)
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--docker --write-kubeconfig-mode 644" sh -
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-git clone  https://github.com/lsst/qserv-operator
-cd qserv-operator
-# FIXME: remove line below before merging PR
-git checkout tickets/DM-23435
-./deploy.sh
-./wait-operator-ready.sh
+curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/tickets\/DM-24372/deploy/qserv.sh | bash -s
 kubectl apply -k overlays/ci-redis-k3s 
 ./wait-qserv-ready.sh
 ./run-integration-tests.sh
