@@ -24,9 +24,9 @@ type filedesc struct {
 type templateData struct {
 	CzarDomainName            string
 	QstatusMysqldHost         string
-	ReplicationControllerPort int
+	ReplicationControllerPort uint
 	XrootdRedirectorDn        string
-	XrootdReplicas            int
+	XrootdReplicas            uint
 }
 
 func applyTemplate(path string, tmplData templateData) string {
@@ -38,6 +38,7 @@ func applyTemplate(path string, tmplData templateData) string {
 	var buf bytes.Buffer
 
 	err = tmpl.Execute(&buf, tmplData)
+
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Cannot apply template: %s", path))
 	}
@@ -74,16 +75,20 @@ func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[stri
 	return files
 }
 
-// GenerateContainerConfigMap generate 2 configmaps for Qserv containers
-// one with startup scripts and one with configuration files
-func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
-
-	tmplData := templateData{
+func generateTemplateData(r *qservv1alpha1.Qserv) templateData {
+	return templateData{
 		CzarDomainName:            util.GetCzarServiceName(r),
 		QstatusMysqldHost:         util.GetCzarServiceName(r),
 		ReplicationControllerPort: constants.ReplicationControllerPort,
 		XrootdRedirectorDn:        util.GetXrootdRedirectorServiceName(r),
-		XrootdReplicas:            int(r.Spec.Xrootd.Replicas)}
+		XrootdReplicas:            uint(r.Spec.Xrootd.Replicas)}
+}
+
+// GenerateContainerConfigMap generate 2 configmaps for Qserv containers
+// one with startup scripts and one with configuration files
+func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
+
+	tmplData := generateTemplateData(r)
 
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 
@@ -103,18 +108,16 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 	}
 }
 
-func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
+func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
 
-	tmplData := templateData{
-		CzarDomainName:     util.GetCzarServiceName(cr),
-		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(cr)}
+	tmplData := generateTemplateData(r)
 
-	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 
-	name := util.PrefixConfigmap(cr, fmt.Sprintf("sql-%s", db))
-	namespace := cr.Namespace
+	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", db))
+	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(db, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(db, r.Name))
 	root := filepath.Join("/", "configmap", "initdb", "sql", string(db))
 
 	return &v1.ConfigMap{

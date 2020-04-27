@@ -37,7 +37,7 @@ func GenerateQservNodePortService(cr *qservv1alpha1.Qserv, labels map[string]str
 
 // GenerateCzarService generate service specification for Qserv Czar database
 func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.CzarName))
+	name := util.GetCzarServiceName(cr)
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))

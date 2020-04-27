@@ -6,10 +6,10 @@ var TemplateFunctions = template.FuncMap{
 	"Iterate": IterateCount,
 }
 
-func IterateCount(count int) []int {
+func IterateCount(count uint) []int {
 	items := make([]int, count)
-	for i := 0; i < count; i++ {
-		items[i] = i
+	for i := uint(0); i < count; i++ {
+		items[i] = int(i)
 	}
 	return items
 }
