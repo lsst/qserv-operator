@@ -34,7 +34,7 @@ CREATE TABLE qservw_worker.Id (
 
 ) ENGINE=InnoDB;
 
-INSERT INTO qservw_worker.Id (`id`) VALUES (UUID());
+INSERT INTO qservw_worker.Id (`id`) VALUES ('<HOST>');
 
 CREATE TABLE IF NOT EXISTS qservw_worker.QMetadata (
 

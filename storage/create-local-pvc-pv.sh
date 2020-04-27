@@ -75,9 +75,8 @@ echo "Creating persistent volumes and claims for Qserv czars"
 COUNT=0
 for host in $MASTERS;
 do
-    OPT_HOST="-H $host"
     PVC_NAME="${PVC_PREFIX}-czar-${COUNT}"
-    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
+    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $host -o "$YAML_OUT_DIR" -i "$INSTANCE"
     COUNT=$((COUNT+1))
 done
 
@@ -85,14 +84,17 @@ echo "Creating persistent volumes and claims for Qserv"
 COUNT=0
 for host in $WORKERS;
 do
-    OPT_HOST="-H $host"
     PVC_NAME="${PVC_PREFIX}-worker-${COUNT}"
-    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
+    "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $host -o "$YAML_OUT_DIR" -i "$INSTANCE"
     COUNT=$((COUNT+1))
 done
 
 echo "Creating persistent volumes and claims for Replication Database"
-OPT_HOST="-H $REPL_DB_HOST"
 PVC_NAME="${PVC_PREFIX}-repl-db-0"
 DATA_PATH="$STORAGE_PATH/${NS}-${INSTANCE}/replication"
-"$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" $OPT_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
+"$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $REPL_DB_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
+
+echo "Creating persistent volumes and claims for Ingest Database"
+PVC_NAME="${PVC_PREFIX}-ingest-db-0"
+DATA_PATH="$STORAGE_PATH/${NS}-${INSTANCE}/ingest"
+"$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $INGEST_DB_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"

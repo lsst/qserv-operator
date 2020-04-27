@@ -64,12 +64,19 @@ CREATE TABLE IF NOT EXISTS `config_worker` (
   `loader_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
   `loader_tmp_dir` VARCHAR(255)       DEFAULT NULL ,    -- a file system path to the temporary folder
 
+  -- Data exporting service
+
+  `exporter_host`    VARCHAR(255)       NOT NULL ,        -- the host name on which the worker's data exporting server runs
+  `exporter_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
+  `exporter_tmp_dir` VARCHAR(255)       DEFAULT NULL ,    -- a file system path to the temporary folder
+
   PRIMARY KEY (`name`) ,
 
-  UNIQUE  KEY (`svc_host`, `svc_port`) ,
-  UNIQUE  KEY (`fs_host`,  `fs_port`) ,
+  UNIQUE  KEY (`exporter_host`, `exporter_port`) ,
   UNIQUE  KEY (`db_host`,  `db_port`) ,
-  UNIQUE  KEY (`loader_host`, `loader_port`)
+  UNIQUE  KEY (`fs_host`,  `fs_port`) ,
+  UNIQUE  KEY (`loader_host`, `loader_port`),
+  UNIQUE  KEY (`svc_host`, `svc_port`)
 )
 ENGINE = InnoDB;
 
@@ -159,6 +166,24 @@ CREATE TABLE IF NOT EXISTS `config_database` (
 )
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `database_ingest`
+-- -----------------------------------------------------
+--
+-- Store a parameters and a state of the catalog ingest.
+CREATE TABLE `database_ingest` (
+  `database` VARCHAR(255) NOT NULL ,
+  `category` VARCHAR(255) NOT NULL ,
+  `param`    VARCHAR(255) NOT NULL ,
+  `value`    TEXT NOT NULL ,
+  PRIMARY KEY (`database`, `category`, `param`) ,
+  CONSTRAINT `database_ingest_fk_1`
+    FOREIGN KEY (`database` )
+    REFERENCES `config_database` (`database` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB ;
 
 -- -----------------------------------------------------
 -- Table `config_database_table`

@@ -19,27 +19,13 @@ MYSQLD_USER_QSERV="qsmaster"
 . /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
 
-# Wait for local mysql to be started
-while true; do
-    if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
-        -e "SELECT CONCAT('Mariadb is up: ', version())"
-    then
-        break
-    else
-        echo "Wait for MySQL startup"
-    fi
-    sleep 2
-done
+# Source pathes to eups packages
+. /qserv/run/etc/sysconfig/qserv
 
- # Retrieve worker id on local mysql
-WORKER_ID=$(mysql --socket "$MYSQLD_SOCKET" --batch \
-    --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
-if [ -z "$WORKER_ID" ]; then
-    >&2 echo "ERROR: unable to retrieve worker id for $HOSTNAME"
-    exit 1
-fi
+WORKER_ID=$(hostname)
 
-HOST_DN=$(hostname --fqdn)
+# Required by dataloader
+mkdir -p "$DATA_DIR/ingest"
 
 # Wait for remote repl-db started and contactable
 while true; do
@@ -54,17 +40,26 @@ while true; do
     sleep 2
 done
 
-# Register repl-wrk on repl-db
-SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
-    NULL, '${HOST_DN}',  NULL, NULL, '127.0.0.1', NULL, NULL, '${HOST_DN}', NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
-    svc_host='${HOST_DN}', fs_host='${HOST_DN}', loader_host='${HOST_DN}';"
-mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
---password="${MYSQL_REPLICA_PASSWORD}" -vv "${REPL_DB}" -e "$SQL"
+# Wait for all repl-wrk to be registered inside repl-db
+while true; do
+    REGISTERED_WORKERS=$(mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" \
+    --user="$REPL_DB_USER" --password="$MYSQL_REPLICA_PASSWORD" \
+    --skip-column-names --batch "${REPL_DB}" -e "SELECT count(*) from config_worker")
+    if [ "$REGISTERED_WORKERS" -eq "$WORKER_COUNT" ]
+    then
+        echo "Replication workers all registered inside replication database: \
+        (${REGISTERED_WORKERS}/${WORKER_COUNT})"
+        break
+    else
+        echo "Wait for all replication workers to register inside replication database"
+    fi
+    sleep 2
+done
 
 export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
-qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-db-password="${MYSQL_ROOT_PASSWORD}"
+qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-db-password="${MYSQL_ROOT_PASSWORD}" --debug
 
 # For debug purpose
 #while true;

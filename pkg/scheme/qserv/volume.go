@@ -83,6 +83,20 @@ func (ivs *InstanceVolumeSet) addEmptyDirVolume(name string) {
 	ivs.volumeSet[name] = volume
 }
 
+func (ivs *InstanceVolumeSet) addDataVolume(cr *qservv1alpha1.Qserv) {
+	name := "data"
+	claimName := fmt.Sprintf("%s-%s-%s-0", GetDataVolumeClaimTemplateName(), cr.Name, constants.Czar)
+	volume := v1.Volume{
+		Name: name,
+		VolumeSource: v1.VolumeSource{
+			PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+				ClaimName: claimName,
+			},
+		},
+	}
+	ivs.volumeSet[name] = volume
+}
+
 func (ivs *InstanceVolumeSet) addSecretVolume(containerName constants.ContainerName) {
 	secretName := util.GetSecretName(ivs.cr, containerName)
 	volume := v1.Volume{
@@ -118,18 +132,18 @@ func (ivs *InstanceVolumeSet) addEtcStartVolumes(containerName constants.Contain
 	ivs.addStartVolume(containerName)
 }
 
-func getDataVolumeMount() v1.VolumeMount {
-	return v1.VolumeMount{
-		MountPath: filepath.Join("/", "qserv", "data"),
-		Name:      GetVolumeClaimTemplateName(),
-		ReadOnly:  false,
-	}
-}
-
 func getAdminPathMount() v1.VolumeMount {
 	return v1.VolumeMount{
 		MountPath: filepath.Join("/", "tmp", "xrd"),
 		Name:      constants.XrootdAdminPathVolumeName,
+		ReadOnly:  false,
+	}
+}
+
+func getDataVolumeMount() v1.VolumeMount {
+	return v1.VolumeMount{
+		MountPath: filepath.Join("/", "qserv", "data"),
+		Name:      GetDataVolumeClaimTemplateName(),
 		ReadOnly:  false,
 	}
 }
@@ -160,7 +174,7 @@ func getTmpVolumeMount() v1.VolumeMount {
 	}
 }
 
-func getXrootdVolumeMounts(component constants.ComponentName) []v1.VolumeMount {
+func getXrootdVolumeMounts(component constants.PodClass) []v1.VolumeMount {
 	volumeMounts := []v1.VolumeMount{
 		getAdminPathMount(),
 		getEtcVolumeMount(constants.XrootdName),
@@ -168,7 +182,7 @@ func getXrootdVolumeMounts(component constants.ComponentName) []v1.VolumeMount {
 	}
 
 	// xrootd/cmsd workers only
-	if component == constants.WorkerName {
+	if component == constants.Worker {
 		volumeMounts = append(volumeMounts, getDataVolumeMount())
 	}
 	return volumeMounts

@@ -1,7 +1,6 @@
 package qserv
 
 import (
-	"fmt"
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
@@ -9,13 +8,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GenerateCzarProxyService generate service specification for Qserv Czar proxy
-func GenerateCzarProxyService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	suffix := fmt.Sprintf("%s-%s", constants.CzarName, constants.ProxyName)
-	name := util.GetName(cr, suffix)
+// GenerateQservNodePortService generate NodePort service specification for Qserv Czar proxy
+func GenerateQservNodePortService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, constants.QservName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -37,13 +35,12 @@ func GenerateCzarProxyService(cr *qservv1alpha1.Qserv, labels map[string]string)
 	}
 }
 
-// GenerateCzarDatabaseService generate service specification for Qserv Czar database
-func GenerateCzarDatabaseService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	suffix := fmt.Sprintf("%s-%s", constants.CzarName, constants.MariadbName)
-	name := util.GetName(cr, suffix)
+// GenerateCzarService generate service specification for Qserv Czar database
+func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetCzarServiceName(cr)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -59,18 +56,23 @@ func GenerateCzarDatabaseService(cr *qservv1alpha1.Qserv, labels map[string]stri
 					Protocol: v1.ProtocolTCP,
 					Name:     constants.MariadbPortName,
 				},
+				{
+					Port:     constants.ProxyPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.ProxyPortName,
+				},
 			},
 			Selector: labels,
 		},
 	}
 }
 
-// GenerateReplicationCtlService generate service specification for Qserv Czar database
-func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetReplCtlServiceName(cr)
+// GenerateIngestDbService generate service specification for Qserv Ingest database
+func GenerateIngestDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, string(constants.IngestDb))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.IngestDb, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -79,7 +81,36 @@ func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]st
 			Labels:    labels,
 		},
 		Spec: v1.ServiceSpec{
-			Type: v1.ServiceTypeNodePort,
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.MariadbPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.MariadbPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+}
+
+// GenerateReplicationCtlService generate service specification for Qserv Replication Controller
+func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetReplCtlServiceName(cr)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtl, cr.Name))
+
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
 					Port:     constants.ReplicationControllerPort,
@@ -92,11 +123,12 @@ func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]st
 	}
 }
 
+// GenerateReplicationDbService generate service specification for Qserv Replication Controller database
 func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.ReplDbName))
+	name := util.GetName(cr, string(constants.ReplDb))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDb, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -124,7 +156,7 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v
 	name := util.GetWorkerServiceName(cr)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Worker, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -153,10 +185,10 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v
 }
 
 func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.XrootdRedirectorName))
+	name := util.GetName(cr, string(constants.XrootdRedirector))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirector, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{

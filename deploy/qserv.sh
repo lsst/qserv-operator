@@ -107,7 +107,7 @@ kapply="kubectl apply -n $NAMESPACE -f "
 
 echo "Install Qserv-operator"
 
-$kapply "$MANIFESTS_DIR"/deploy/crds/qserv_v1alpha1_qserv_crd.yaml
+$kapply "$MANIFESTS_DIR"/deploy/crds/qserv.lsst.org_qservs_crd.yaml
 $kapply "$MANIFESTS_DIR"/deploy/service_account.yaml
 $kapply "$MANIFESTS_DIR"/deploy/role.yaml
 $kapply "$MANIFESTS_DIR"/deploy/role_binding.yaml
@@ -125,11 +125,13 @@ if [ "$KUBEDB" = true ]; then
   )
 fi
 
-while ! kubectl wait --for=condition=Ready pods -l name=qserv-operator -n "$NAMESPACE"
+while [ -z "$(kubectl get pods -l name=qserv-operator -o 'jsonpath={.items..metadata.name}')" ]
 do
-  echo "Waiting for operator to be ready..."
-  kubectl describe pod -l name=qserv-operator -n "$NAMESPACE"
+  echo "Wait for qserv-operator pod creation"
+  sleep 1
 done
+
+kubectl wait --for=condition=Ready pods -l name=qserv-operator -n "$NAMESPACE"
 
 echo
 echo "Successfully installed Qserv operator in '$NAMESPACE' namespace."

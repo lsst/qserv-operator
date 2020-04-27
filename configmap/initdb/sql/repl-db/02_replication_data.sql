@@ -16,7 +16,7 @@ INSERT INTO `config` VALUES ('common', 'request_retry_interval_sec', '5');
 -- Controller-specific parameters
 
 INSERT INTO `config` VALUES ('controller', 'num_threads',            '64');
-INSERT INTO `config` VALUES ('controller', 'http_server_port',       '8080');
+INSERT INTO `config` VALUES ('controller', 'http_server_port',       '{{.ReplicationControllerPort}}');
 INSERT INTO `config` VALUES ('controller', 'http_server_threads',    '16');
 INSERT INTO `config` VALUES ('controller', 'request_timeout_sec', '57600');   -- 16 hours
 INSERT INTO `config` VALUES ('controller', 'job_timeout_sec',     '57600');   -- 16 hours
@@ -31,7 +31,7 @@ INSERT INTO `config` VALUES ('database', 'qserv_master_port',                   
 INSERT INTO `config` VALUES ('database', 'qserv_master_user',                'qsmaster');
 INSERT INTO `config` VALUES ('database', 'qserv_master_name',               'qservMeta');
 INSERT INTO `config` VALUES ('database', 'qserv_master_services_pool_size',         '4');
-INSERT INTO `config` VALUES ('database', 'qserv_master_tmp_dir',   '/qserv/data/injest');
+INSERT INTO `config` VALUES ('database', 'qserv_master_tmp_dir',   '/qserv/data/ingest');
 
 -- Connection parameters for the Qserv Management Services
 
@@ -55,6 +55,20 @@ INSERT INTO `config` VALUES ('worker', 'db_user',                    'root');
 INSERT INTO `config` VALUES ('worker', 'loader_port',                '25002');
 INSERT INTO `config` VALUES ('worker', 'loader_tmp_dir',             '/qserv/data/ingest');
 INSERT INTO `config` VALUES ('worker', 'num_loader_processing_threads', '16');
+INSERT INTO `config` VALUES ('worker', 'exporter_port',              '25003');
+INSERT INTO `config` VALUES ('worker', 'exporter_tmp_dir',           '/qserv/data/export');
+INSERT INTO `config` VALUES ('worker', 'num_exporter_processing_threads', '16');
+
+-- qserv-worker-1.qserv-worker.default.svc.cluster.local {{.WorkerDn}} {{.WorkerReplicas}}
+-- {{- range $val := Iterate .WorkerReplicas}}
+-- INSERT INTO `config_worker` VALUES ({{$.WorkerDn}}-{{$val}});
+-- {{- end}}
+
+{{- range $val := Iterate .WorkerReplicas}}
+{{$workerId := print $.WorkerDn "-" $val}}
+{{$workerFqdn := print $workerId "." $.WorkerDn}}
+INSERT INTO `config_worker` VALUES ('{{$workerId}}', 1, 0, '{{$workerFqdn}}', NULL, '{{$workerFqdn}}', NULL, NULL, 'localhost', NULL, NULL, '{{$workerFqdn}}', NULL, NULL, '{{$workerFqdn}}', NULL, NULL) ON DUPLICATE KEY UPDATE name='{{$workerFqdn}}', svc_host='{{$workerFqdn}}', fs_host='{{$workerFqdn}}', loader_host='{{$workerFqdn}}', exporter_host='{{$workerFqdn}}';
+{{- end}}
 
 SET SQL_MODE=@OLD_SQL_MODE ;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS ;
