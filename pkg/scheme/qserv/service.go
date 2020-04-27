@@ -1,7 +1,6 @@
 package qserv
 
 import (
-	"fmt"
 	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
@@ -9,10 +8,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GenerateCzarProxyService generate service specification for Qserv Czar proxy
-func GenerateCzarProxyService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	suffix := fmt.Sprintf("%s-%s", constants.CzarName, constants.ProxyName)
-	name := util.GetName(cr, suffix)
+// GenerateQservNodePortService generate NodePort service specification for Qserv Czar proxy
+func GenerateQservNodePortService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, constants.QservName)
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
@@ -37,10 +35,9 @@ func GenerateCzarProxyService(cr *qservv1alpha1.Qserv, labels map[string]string)
 	}
 }
 
-// GenerateCzarDatabaseService generate service specification for Qserv Czar database
-func GenerateCzarDatabaseService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	suffix := fmt.Sprintf("%s-%s", constants.CzarName, constants.MariadbName)
-	name := util.GetName(cr, suffix)
+// GenerateCzarService generate service specification for Qserv Czar database
+func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+	name := util.GetName(cr, string(constants.CzarName))
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
@@ -59,13 +56,18 @@ func GenerateCzarDatabaseService(cr *qservv1alpha1.Qserv, labels map[string]stri
 					Protocol: v1.ProtocolTCP,
 					Name:     constants.MariadbPortName,
 				},
+				{
+					Port:     constants.ProxyPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.ProxyPortName,
+				},
 			},
 			Selector: labels,
 		},
 	}
 }
 
-// GenerateReplicationCtlService generate service specification for Qserv Czar database
+// GenerateReplicationCtlService generate service specification for Qserv Replication Controller
 func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetReplCtlServiceName(cr)
 	namespace := cr.Namespace
@@ -92,6 +94,7 @@ func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]st
 	}
 }
 
+// GenerateReplicationDbService generate service specification for Qserv Replication Controller database
 func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetName(cr, string(constants.ReplDbName))
 	namespace := cr.Namespace

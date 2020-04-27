@@ -16,7 +16,7 @@ INSERT INTO `config` VALUES ('common', 'request_retry_interval_sec', '5');
 -- Controller-specific parameters
 
 INSERT INTO `config` VALUES ('controller', 'num_threads',            '64');
-INSERT INTO `config` VALUES ('controller', 'http_server_port',       '8080');
+INSERT INTO `config` VALUES ('controller', 'http_server_port',       '{{.ReplicationControllerPort}}');
 INSERT INTO `config` VALUES ('controller', 'http_server_threads',    '16');
 INSERT INTO `config` VALUES ('controller', 'request_timeout_sec', '57600');   -- 16 hours
 INSERT INTO `config` VALUES ('controller', 'job_timeout_sec',     '57600');   -- 16 hours
