@@ -160,7 +160,7 @@ func getTmpVolumeMount() v1.VolumeMount {
 	}
 }
 
-func getXrootdVolumeMounts(component constants.ComponentName) []v1.VolumeMount {
+func getXrootdVolumeMounts(component constants.PodClass) []v1.VolumeMount {
 	volumeMounts := []v1.VolumeMount{
 		getAdminPathMount(),
 		getEtcVolumeMount(constants.XrootdName),
@@ -168,7 +168,7 @@ func getXrootdVolumeMounts(component constants.ComponentName) []v1.VolumeMount {
 	}
 
 	// xrootd/cmsd workers only
-	if component == constants.WorkerName {
+	if component == constants.Worker {
 		volumeMounts = append(volumeMounts, getDataVolumeMount())
 	}
 	return volumeMounts

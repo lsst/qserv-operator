@@ -22,6 +22,7 @@ func NewContainerConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme
 	})
 }
 
+// NewDotQservConfigMapSyncer generate configmap specification for Qserv clients
 func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	cm := qserv.GenerateDotQservConfigMap(r, controllerLabels)
 	return syncer.NewObjectSyncer("DotQservConfigMap", r, cm, c, scheme, func() error {
@@ -29,7 +30,7 @@ func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme 
 	})
 }
 
-func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.ComponentName) syncer.Interface {
+func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.PodClass) syncer.Interface {
 	cm := qserv.GenerateSqlConfigMap(r, controllerLabels, db)
 	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(string(db)))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func() error {

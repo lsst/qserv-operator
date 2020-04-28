@@ -108,7 +108,7 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 	}
 }
 
-func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
+func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
 
 	tmplData := generateTemplateData(r)
 
@@ -138,7 +138,7 @@ func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string
 	name := util.PrefixConfigmap(cr, "dot-qserv")
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
 	root := filepath.Join("/", "configmap", "dot-qserv")
 
 	return &v1.ConfigMap{

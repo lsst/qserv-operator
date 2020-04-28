@@ -16,6 +16,8 @@ set -eu
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
 
+REPL_DB="repl-db"
+
 # Require root privileges
 ##
 MARIADB_CONF="/config-etc/my.cnf"
@@ -29,7 +31,7 @@ then
     useradd qserv --uid 1000 --no-create-home
 fi
 
-if [ "$COMPONENT_NAME" = "repl" ]; then
+if [ "$COMPONENT_NAME" = "$REPL_DB" ]; then
     MYSQL_INSTALL_DB="mysql_install_db"
     . /secret-repl-db/repl-db.secret.sh
 else
@@ -109,7 +111,7 @@ then
         fi
     done
 
-    if [ "$COMPONENT_NAME" != "repl" ]; then
+    if [ "$COMPONENT_NAME" != "$REPL_DB" ]; then
         echo "-- "
         echo "-- Deploy scisql plugin"
         # WARN: SciSQL shared library (libcisql*.so) deployed by command

@@ -32,27 +32,37 @@ const (
 	GraceTime = 30
 )
 
+// ContainerName name all containers
 type ContainerName string
 
 const (
+	// CmsdName name cmsd containers
 	CmsdName    ContainerName = "cmsd"
 	InitDbName  ContainerName = "initdb"
 	MariadbName ContainerName = "mariadb"
 	ProxyName   ContainerName = "proxy"
-	XrootdName  ContainerName = "xrootd"
 	ReplCtlName ContainerName = "repl-ctl"
 	ReplDbName  ContainerName = "repl-db"
+	XrootdName  ContainerName = "xrootd"
 	WmgrName    ContainerName = "wmgr"
 	ReplWrkName ContainerName = "repl-wrk"
 )
 
-type ComponentName string
+// PodClass name all classes of pod
+// used to generate pod labels
+type PodClass string
 
 const (
-	CzarName             ComponentName = "czar"
-	ReplName             ComponentName = "repl"
-	WorkerName           ComponentName = "worker"
-	XrootdRedirectorName ComponentName = "xrootd-redirector"
+	// Czar name pods of class Czar
+	Czar PodClass = "czar"
+	// ReplCtl name pods of class Replication controller
+	ReplCtl PodClass = "repl-ctl"
+	// ReplDb name pods of class Replication database
+	ReplDb PodClass = "repl-db"
+	// Worker name pods of class Replication worker
+	Worker PodClass = "worker"
+	// XrootdRedirector name pods of class Xrootd redirector
+	XrootdRedirector PodClass = "xrootd-redirector"
 )
 
 // ContainerConfigmaps contains names of all micro-services which require configmaps named:
@@ -63,7 +73,7 @@ var ContainerConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, Wm
 var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
 
 // Databases contains names of all Qserv components which have a database
-var Databases = []ComponentName{CzarName, ReplName, WorkerName}
+var Databases = []PodClass{Czar, ReplDb, Worker}
 
 // Command contains the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}

@@ -12,13 +12,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName) (v1.Container, VolumeSet) {
+func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1.Container, VolumeSet) {
 	componentName := string(component)
 
 	sqlConfigSuffix := fmt.Sprintf("sql-%s", component)
 
 	var dbName constants.ContainerName
-	if component == constants.ReplName {
+	if component == constants.ReplDb {
 		dbName = constants.ReplDbName
 	} else {
 		dbName = constants.MariadbName
@@ -66,13 +66,13 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 	return container, volumes.volumeSet
 }
 
-func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName) (v1.Container, VolumeSet) {
+func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1.Container, VolumeSet) {
 
-	var uservice constants.ContainerName
-	if component == constants.ReplName {
-		uservice = constants.ReplDbName
+	var dbContainerName constants.ContainerName
+	if component == constants.ReplDb {
+		dbContainerName = constants.ReplDbName
 	} else {
-		uservice = constants.MariadbName
+		dbContainerName = constants.MariadbName
 	}
 
 	mariadbPortName := string(constants.MariadbName)
@@ -92,8 +92,8 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentN
 		ReadinessProbe: getProbe(constants.MariadbPortName, 5, tcpAction),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(uservice),
-			getStartVolumeMount(uservice),
+			getEtcVolumeMount(dbContainerName),
+			getStartVolumeMount(dbContainerName),
 			getTmpVolumeMount(),
 		},
 	}
@@ -103,19 +103,19 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	volumes.make(cr)
 
 	volumes.addEmptyDirVolume("tmp-volume")
-	volumes.addEtcStartVolumes(uservice)
+	volumes.addEtcStartVolumes(dbContainerName)
 
 	return container, volumes.volumeSet
 }
 
-func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.ComponentName) string {
+func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) string {
 	spec := cr.Spec
 	var image string
-	if component == constants.ReplName {
+	if component == constants.ReplDb {
 		image = spec.Replication.DbImage
-	} else if component == constants.WorkerName {
+	} else if component == constants.Worker {
 		image = spec.Worker.Image
-	} else if component == constants.CzarName {
+	} else if component == constants.Czar {
 		image = spec.Czar.Image
 	}
 	return image
@@ -270,7 +270,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	return container, volumes.volumeSet
 }
 
-func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentName) ([]v1.Container, VolumeSet) {
+func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.PodClass) ([]v1.Container, VolumeSet) {
 
 	const (
 		CMSD = iota
@@ -323,7 +323,7 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	}
 
 	// Cmsd port is only open on redirectors, not on workers
-	if component == constants.XrootdRedirectorName {
+	if component == constants.XrootdRedirector {
 		containers[0].Ports = []v1.ContainerPort{
 			{
 				Name:          string(constants.CmsdName),

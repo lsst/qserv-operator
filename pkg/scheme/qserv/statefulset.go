@@ -16,16 +16,16 @@ var log = logf.Log.WithName("qserv")
 
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
-	name := cr.Name + "-" + string(constants.CzarName)
+	name := cr.Name + "-" + string(constants.Czar)
 	namespace := cr.Namespace
-	labels = util.MergeLabels(labels, util.GetLabels(constants.CzarName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
 
 	var replicas int32 = 1
 	storageClass := cr.Spec.StorageClass
 	storageSize := cr.Spec.StorageCapacity
 
-	initContainer, initVolumes := getInitContainer(cr, constants.CzarName)
-	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.CzarName)
+	initContainer, initVolumes := getInitContainer(cr, constants.Czar)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Czar)
 	proxyContainer, proxyVolumes := getProxyContainer(cr)
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 
@@ -87,11 +87,12 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	return ss
 }
 
+// GenerateReplicationCtlStatefulSet generate statefulset specification for Qserv Replication Controller
 func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplCtlName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtl, cr.Name))
 
 	var replicas int32 = 1
 
@@ -135,18 +136,19 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[strin
 	return ss
 }
 
+// GenerateReplicationDbStatefulSet generate statefulset specification for Qserv Replication Database
 func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplDbName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDb, cr.Name))
 
 	var replicas int32 = 1
 	storageClass := cr.Spec.StorageClass
 	storageSize := cr.Spec.StorageCapacity
 
-	initContainer, initVolumes := getInitContainer(cr, constants.ReplName)
-	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.ReplName)
+	initContainer, initVolumes := getInitContainer(cr, constants.ReplDb)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.ReplDb)
 
 	var volumes VolumeSet
 	volumes.make(initVolumes, mariadbVolumes)
@@ -209,7 +211,7 @@ func GetVolumeClaimTemplateName() string {
 }
 
 func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
-	name := cr.Name + "-" + string(constants.WorkerName)
+	name := cr.Name + "-" + string(constants.Worker)
 	namespace := cr.Namespace
 
 	const (
@@ -219,15 +221,15 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 	const INIT = 0
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.WorkerName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Worker, cr.Name))
 
 	replicas := cr.Spec.Worker.Replicas
 	storageClass := cr.Spec.StorageClass
 	storageSize := cr.Spec.StorageCapacity
 
-	initContainer, initVolumes := getInitContainer(cr, constants.WorkerName)
-	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.WorkerName)
-	xrootdContainers, xrootdVolumes := getXrootdContainers(cr, constants.WorkerName)
+	initContainer, initVolumes := getInitContainer(cr, constants.Worker)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Worker)
+	xrootdContainers, xrootdVolumes := getXrootdContainers(cr, constants.Worker)
 	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 	replicationWrkContainer, replicationWrkVolumes := getReplicationWrkContainer(cr)
 
@@ -294,13 +296,13 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	namespace := cr.Namespace
-	name := util.GetName(cr, string(constants.XrootdRedirectorName))
+	name := util.GetName(cr, string(constants.XrootdRedirector))
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirectorName, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirector, cr.Name))
 
 	var replicas int32 = cr.Spec.Xrootd.Replicas
 
-	containers, volumes := getXrootdContainers(cr, constants.XrootdRedirectorName)
+	containers, volumes := getXrootdContainers(cr, constants.XrootdRedirector)
 
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
