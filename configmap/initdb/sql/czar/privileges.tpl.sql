@@ -14,7 +14,7 @@ GRANT ALL ON qservCssData.* TO 'qsmaster'@'localhost';
 GRANT ALL ON qservCssData.* TO 'qsmaster'@'%';
 
 -- Grant root access to replication controller pod
-GRANT ALL ON *.* TO 'root'@'qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local' IDENTIFIED BY 'CHANGEME';
+GRANT ALL ON *.* TO 'root'@'qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local' IDENTIFIED BY 'CHANGEME' WITH GRANT OPTION;
 
 -- Create user for external monitoring applications
 CREATE USER 'monitor'@'localhost' IDENTIFIED BY '<MYSQL_MONITOR_PASSWORD>';

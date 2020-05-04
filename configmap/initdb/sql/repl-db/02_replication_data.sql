@@ -31,7 +31,7 @@ INSERT INTO `config` VALUES ('database', 'qserv_master_port',                   
 INSERT INTO `config` VALUES ('database', 'qserv_master_user',                'qsmaster');
 INSERT INTO `config` VALUES ('database', 'qserv_master_name',               'qservMeta');
 INSERT INTO `config` VALUES ('database', 'qserv_master_services_pool_size',         '4');
-INSERT INTO `config` VALUES ('database', 'qserv_master_tmp_dir',   '/qserv/data/injest');
+INSERT INTO `config` VALUES ('database', 'qserv_master_tmp_dir',   '/qserv/data/ingest');
 
 -- Connection parameters for the Qserv Management Services
 
@@ -55,6 +55,9 @@ INSERT INTO `config` VALUES ('worker', 'db_user',                    'root');
 INSERT INTO `config` VALUES ('worker', 'loader_port',                '25002');
 INSERT INTO `config` VALUES ('worker', 'loader_tmp_dir',             '/qserv/data/ingest');
 INSERT INTO `config` VALUES ('worker', 'num_loader_processing_threads', '16');
+INSERT INTO `config` VALUES ('worker', 'exporter_port',              '25003');
+INSERT INTO `config` VALUES ('worker', 'exporter_tmp_dir',           '/qserv/data/export');
+INSERT INTO `config` VALUES ('worker', 'num_exporter_processing_threads', '16');
 
 SET SQL_MODE=@OLD_SQL_MODE ;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS ;

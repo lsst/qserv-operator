@@ -17,6 +17,9 @@ REPL_DB_PORT="3306"
 REPL_DB_USER="qsreplica"
 REPL_DB="qservReplica"
 
+# Add mysql client to path
+export PATH="/stack/stack/current/Linux64/mariadb/10.2.14.lsst3-1-g07c67f4/bin/:$PATH"
+
 . /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
 
@@ -35,7 +38,6 @@ while true; do
     fi
     sleep 2
 done
-
 
 # Wait for repl-wrk to register inside repl-db
 while true; do

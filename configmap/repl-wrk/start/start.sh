@@ -19,6 +19,9 @@ MYSQLD_USER_QSERV="qsmaster"
 . /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
 
+# Add mysql client to path
+export PATH="/stack/stack/current/Linux64/mariadb/10.2.14.lsst3-1-g07c67f4/bin/:$PATH"
+
 # Wait for local mysql to be started
 while true; do
     if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
@@ -56,8 +59,8 @@ done
 
 # Register repl-wrk on repl-db
 SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
-    NULL, '${HOST_DN}',  NULL, NULL, 'localhost', NULL, NULL, '${HOST_DN}', NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
-    svc_host='${HOST_DN}', fs_host='${HOST_DN}', loader_host='${HOST_DN}';"
+    NULL, '${HOST_DN}',  NULL, NULL, 'localhost', NULL, NULL, '${HOST_DN}', NULL, NULL, '${HOST_DN}', NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
+    svc_host='${HOST_DN}', fs_host='${HOST_DN}', loader_host='${HOST_DN}', exporter_host='${HOST_DN}';"
 mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
 --password="${MYSQL_REPLICA_PASSWORD}" -vv "${REPL_DB}" -e "$SQL"
 

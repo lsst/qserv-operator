@@ -11,7 +11,7 @@ spec:
     replicas: 2
     image: "qserv/qserv:dcbfff7"
   replication:
-      image: "qserv/replica:tools-w.2018.16-1171-gcbabd53"
+      image: "qserv/replica:tools-w.2018.16-1276-gadfc9eb"
       dbimage: "mariadb:10.2.16"
   xrootd:
     image: "qserv/qserv:dcbfff7"
