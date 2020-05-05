@@ -25,6 +25,8 @@ type templateData struct {
 	CzarDomainName            string
 	QstatusMysqldHost         string
 	ReplicationControllerPort uint
+	WorkerDn                  string
+	WorkerReplicas            uint
 	XrootdRedirectorDn        string
 	XrootdReplicas            uint
 }
@@ -80,6 +82,8 @@ func generateTemplateData(r *qservv1alpha1.Qserv) templateData {
 		CzarDomainName:            util.GetCzarServiceName(r),
 		QstatusMysqldHost:         util.GetCzarServiceName(r),
 		ReplicationControllerPort: constants.ReplicationControllerPort,
+		WorkerDn:                  util.GetWorkerServiceName(r),
+		WorkerReplicas:            uint(r.Spec.Worker.Replicas),
 		XrootdRedirectorDn:        util.GetXrootdRedirectorServiceName(r),
 		XrootdReplicas:            uint(r.Spec.Xrootd.Replicas)}
 }

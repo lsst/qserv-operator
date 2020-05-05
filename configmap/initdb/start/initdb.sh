@@ -65,6 +65,8 @@ if [ -f "$STATE_FILE" ]; then
     exit 1
 fi
 
+HOST="$(hostname)"
+
 if [ ! "$DATA_FILES" ]
 then
     touch "$STATE_FILE"
@@ -93,10 +95,12 @@ then
         file_ext="${file_name#*\.}"
         if [ "${file_ext}" = "tpl.sql" ]; then
             awk \
-                -v VAR1=${MYSQL_MONITOR_PASSWORD} \
-                -v VAR2=${MYSQL_REPLICA_PASSWORD} \
-                '{gsub(/<MYSQL_MONITOR_PASSWORD>/, VAR1);
-                gsub(/<MYSQL_REPLICA_PASSWORD>/, VAR2);
+                -v MON_PASS=${MYSQL_MONITOR_PASSWORD} \
+                -v REPL_PASS=${MYSQL_REPLICA_PASSWORD} \
+                -v HOST=${HOST} \
+                '{gsub(/<MYSQL_MONITOR_PASSWORD>/, MON_PASS);
+                gsub(/<MYSQL_REPLICA_PASSWORD>/, REPL_PASS);
+                gsub(/<HOST>/, HOST);
                 print}' "$file_name" > "$sql_file_name"
         else
             sql_file_name="$file_name"

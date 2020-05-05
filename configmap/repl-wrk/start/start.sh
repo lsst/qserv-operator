@@ -22,26 +22,6 @@ MYSQLD_USER_QSERV="qsmaster"
 # Add mysql client to path
 export PATH="/stack/stack/current/Linux64/mariadb/10.2.14.lsst3-1-g07c67f4/bin/:$PATH"
 
-# Wait for local mysql to be started
-while true; do
-    if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
-        -e "SELECT CONCAT('Mariadb is up: ', version())"
-    then
-        break
-    else
-        echo "Wait for MySQL startup"
-    fi
-    sleep 2
-done
-
- # Retrieve worker id on local mysql
-WORKER_ID=$(mysql --socket "$MYSQLD_SOCKET" --batch \
-    --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
-if [ -z "$WORKER_ID" ]; then
-    >&2 echo "ERROR: unable to retrieve worker id for $HOSTNAME"
-    exit 1
-fi
-
 HOST_DN=$(hostname --fqdn)
 
 # Wait for remote repl-db started and contactable
@@ -57,12 +37,21 @@ while true; do
     sleep 2
 done
 
-# Register repl-wrk on repl-db
-SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
-    NULL, '${HOST_DN}',  NULL, NULL, 'localhost', NULL, NULL, '${HOST_DN}', NULL, NULL, '${HOST_DN}', NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
-    svc_host='${HOST_DN}', fs_host='${HOST_DN}', loader_host='${HOST_DN}', exporter_host='${HOST_DN}';"
-mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
---password="${MYSQL_REPLICA_PASSWORD}" -vv "${REPL_DB}" -e "$SQL"
+# Wait for all repl-wrk to be registered inside repl-db
+while true; do
+    REGISTERED_WORKERS=$(mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" \
+    --user="$REPL_DB_USER" --password="$MYSQL_REPLICA_PASSWORD" \
+    --skip-column-names --batch "${REPL_DB}" -e "SELECT count(*) from config_worker")
+    if [ "$REGISTERED_WORKERS" -eq "$WORKER_COUNT" ]
+    then
+        echo "Replication workers all registered inside replication database: \
+        (${REGISTERED_WORKERS}/${WORKER_COUNT})"
+        break
+    else
+        echo "Wait for all replication workers to register inside replication database"
+    fi
+    sleep 2
+done
 
 export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 

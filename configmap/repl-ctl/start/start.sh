@@ -39,7 +39,7 @@ while true; do
     sleep 2
 done
 
-# Wait for repl-wrk to register inside repl-db
+# Wait for all repl-wrk to be registered inside repl-db
 while true; do
     REGISTERED_WORKERS=$(mysql --host="$REPL_DB_DN" --port="$REPL_DB_PORT" \
     --user="$REPL_DB_USER" --password="$MYSQL_REPLICA_PASSWORD" \
@@ -50,8 +50,7 @@ while true; do
         (${REGISTERED_WORKERS}/${WORKER_COUNT})"
         break
     else
-        echo "Wait for all replication workers to register inside replication database: \
-        (${REGISTERED_WORKERS}/${WORKER_COUNT})"
+        echo "Wait for all replication workers to register inside replication database"
     fi
     sleep 2
 done

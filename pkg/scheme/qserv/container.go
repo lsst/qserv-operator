@@ -200,6 +200,10 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		Command: constants.Command,
 		Env: []v1.EnvVar{
 			{
+				Name:  "WORKER_COUNT",
+				Value: strconv.FormatInt(int64(spec.Worker.Replicas), 10),
+			},
+			{
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
 			},
