@@ -60,15 +60,14 @@ INSERT INTO `config` VALUES ('worker', 'exporter_tmp_dir',           '/qserv/dat
 INSERT INTO `config` VALUES ('worker', 'num_exporter_processing_threads', '16');
 
 -- qserv-worker-1.qserv-worker.default.svc.cluster.local {{.WorkerDn}} {{.WorkerReplicas}}
-{{- range $val := Iterate .WorkerReplicas}}
-INSERT INTO `config_worker` VALUES ({{$.WorkerDn}}-{{$val}});
-{{- end}}
+-- {{- range $val := Iterate .WorkerReplicas}}
+-- INSERT INTO `config_worker` VALUES ({{$.WorkerDn}}-{{$val}});
+-- {{- end}}
 
-{{$workerDn := .WorkerDn}}
 {{- range $val := Iterate .WorkerReplicas}}
 {{$workerId := print $.WorkerDn "-" $val}}
-{{$workerFqdn := print $.WorkerId "." $.WorkerDn}}
-INSERT INTO `config_worker` VALUES ('{{$workerId}}', 1, 0, '{{.workerFqdn}}', NULL, '{{.workerFqdn}}', NULL, NULL, 'localhost', NULL, NULL, '{{.workerFqdn}}', NULL, NULL, '{{.workerFqdn}}', NULL, NULL) ON DUPLICATE KEY UPDATE name='{{.workerFqdn}}', svc_host='{{.workerFqdn}}', fs_host='{{.workerFqdn}}', loader_host='{{.workerFqdn}}', exporter_host='{{.workerFqdn}}';
+{{$workerFqdn := print $workerId "." $.WorkerDn}}
+INSERT INTO `config_worker` VALUES ('{{$workerId}}', 1, 0, '{{$workerFqdn}}', NULL, '{{$workerFqdn}}', NULL, NULL, 'localhost', NULL, NULL, '{{$workerFqdn}}', NULL, NULL, '{{$workerFqdn}}', NULL, NULL) ON DUPLICATE KEY UPDATE name='{{$workerFqdn}}', svc_host='{{$workerFqdn}}', fs_host='{{$workerFqdn}}', loader_host='{{$workerFqdn}}', exporter_host='{{$workerFqdn}}';
 {{- end}}
 
 SET SQL_MODE=@OLD_SQL_MODE ;
