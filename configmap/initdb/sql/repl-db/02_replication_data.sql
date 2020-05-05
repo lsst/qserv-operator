@@ -66,16 +66,9 @@ INSERT INTO `config_worker` VALUES ({{$.WorkerDn}}-{{$val}});
 
 {{$workerDn := .WorkerDn}}
 {{- range $val := Iterate .WorkerReplicas}}
-INSERT INTO `config_worker` VALUES {{$workerDn}}-{{$val}}
-{{- end}}
-
-
-{{- range $val := Iterate .WorkerReplicas}}
-INSERT INTO `config_worker` VALUES ('{{.WorkerDn}}-{{$val}}');
-{{- end}}
-
-{{- range $val := Iterate .WorkerReplicas}}
-INSERT INTO `config_worker` VALUES ('{{.WorkerDn}}-{{$val}}', 1, 0, '{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', NULL, '{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', NULL, NULL, 'localhost', NULL, NULL, '{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', NULL, NULL, '{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', NULL, NULL) ON DUPLICATE KEY UPDATE name='{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', svc_host='{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', fs_host='{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', loader_host='{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}', exporter_host='{{.WorkerDn}}-{{$val}}.{{.WorkerDn}}';
+{{$workerId := print $.WorkerDn "-" $val}}
+{{$workerFqdn := print $.WorkerId "." $.WorkerDn}}
+INSERT INTO `config_worker` VALUES ('{{$workerId}}', 1, 0, '{{.workerFqdn}}', NULL, '{{.workerFqdn}}', NULL, NULL, 'localhost', NULL, NULL, '{{.workerFqdn}}', NULL, NULL, '{{.workerFqdn}}', NULL, NULL) ON DUPLICATE KEY UPDATE name='{{.workerFqdn}}', svc_host='{{.workerFqdn}}', fs_host='{{.workerFqdn}}', loader_host='{{.workerFqdn}}', exporter_host='{{.workerFqdn}}';
 {{- end}}
 
 SET SQL_MODE=@OLD_SQL_MODE ;
