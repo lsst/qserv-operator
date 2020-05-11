@@ -6,4 +6,4 @@ A qserv operator for Kubernetes based on [operator-framework](https://github.com
 
 ## Documentation
 
-Access to [Qserv-operator documentation](https://qserv-operator.lsst.io/)
+Access to [Qserv-operator documentation at https://qserv-operator.lsst.io](https://qserv-operator.lsst.io/)

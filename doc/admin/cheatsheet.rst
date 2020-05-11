@@ -1,15 +1,15 @@
 Kubernetes cheat sheet for Qserv
-================================
+################################
 
-Check first the `official k8s cheat sheet`_ for examples of `kubectl` basic commands.
+Check first the `official k8s cheat sheet`_ for examples of ``kubectl`` basic commands.
 
 Prerequisites
--------------
+=============
 
 Get access to a Kubernetes cluster running Qserv, see :ref:`installation-label`.
 
 Interact with running pods
---------------------------
+==========================
 
 .. code:: shell
 
@@ -33,7 +33,7 @@ Interact with running pods
        $ kubectl exec -it "$INSTANCE"-worker-0 -c mariadb bash
 
 Access to log files
--------------------
+===================
 
 .. code:: shell
 
@@ -49,7 +49,7 @@ Access to log files
 `Stern`_ provides advanced logging management features.
 
 Update Qserv configuration
---------------------------
+==========================
 
 Update Qserv configuration by updating its related k8s configmaps.
 
@@ -69,7 +69,7 @@ Update Qserv configuration by updating its related k8s configmaps.
        $ kubectl get cm "$INSTANCE"-repl-ctl-etc -o yaml > "$INSTANCE".bck.yaml
 
 Launch commands directly on Qserv nodes
----------------------------------------
+=======================================
 
 Check if pod worker-0 can connect to replication database and dump it configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

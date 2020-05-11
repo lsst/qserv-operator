@@ -37,4 +37,4 @@ Documentation is automatically built and generated on each Travis-CI build. This
     
 .. code:: sh
 
-    curl -fsSL https://raw.githubusercontent.com/lsst/doc-container/master/run.sh | bash -s -- -p <LTD_PASSWORD> ~/src/qserv
+    curl -fsSL https://raw.githubusercontent.com/lsst-dm/qserv-doc-container/master/run.sh | bash -s -- -p <LTD_PASSWORD> ~/src/qserv

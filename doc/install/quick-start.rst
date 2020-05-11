@@ -1,15 +1,16 @@
+###########
 Quick start
------------
+###########
 
 Prerequisites
-~~~~~~~~~~~~~
+=============
 
 * An Ubuntu LTS workstation
 * Internet access without proxy
 * `sudo` access
 
 Install dependencies and add user to `docker` group
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------------
 
 .. code:: bash
 
@@ -22,10 +23,10 @@ Install dependencies and add user to `docker` group
     Restart session in order to take in account add to `docker` group.
 
 Create a single node k8s cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
 Option #1: kind
-###############
+^^^^^^^^^^^^^^^
 
 `kind <https://kind.sigs.k8s.io/>`__ is a tool for running local Kubernetes clusters using Docker container “nodes”.
 kind was primarily designed for testing Kubernetes itself, but may be used for local development or CI.
@@ -42,7 +43,7 @@ Script below uses a `simple install script for kind <https://github.com/k8s-scho
     ./kind/k8s-create.sh -s
 
 Option #2: k3s
-##############
+^^^^^^^^^^^^^^
 
 `k3s <https://k3s.io/>`__ is the certified Kubernetes distribution built for IoT & Edge computing. It may be used for local development or CI.
 
@@ -52,7 +53,7 @@ Option #2: k3s
     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 Install Qserv in two lines
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+==========================
 
 .. code:: bash
 
@@ -60,7 +61,7 @@ Install Qserv in two lines
     kubectl apply -k https://github.com/lsst/qserv-operator/base
 
 Run Qserv integration tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================
 
 .. code:: bash
 

@@ -1,18 +1,19 @@
+#######################
 Manage Qserv deployment
------------------------
+#######################
 
 Prerequisites
-~~~~~~~~~~~~~
+=============
 
 For all setups
-^^^^^^^^^^^^^^
+--------------
 
 -  Access to a Kubernetes v1.14.2+ cluster via a valid ``KUBECONFIG`` file.
 -  Dynamic volume provisionning need to be available on the Kubernetes cluster (for example `kind <https://kind.sigs.k8s.io/>`__ for or
    GKE).
 
 For a development workstation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
 -  Ubuntu LTS is recommended
 -  8 cores, 16 GB RAM, 30GB for the partition hosting docker entities
@@ -42,7 +43,7 @@ For a development workstation
 
 
 Deploy qserv-operator
-~~~~~~~~~~~~~~~~~~~~~
+=====================
 
 .. code:: sh
 
@@ -54,7 +55,7 @@ Redis cluster for managing its secondary index (OnjectID,ChunkId). It
 can be skipped for a regular Qserv installation.
 
 Deploy a qserv instance
-~~~~~~~~~~~~~~~~~~~~~~~
+=======================
 
 Deployments below are recommended for development purpose, or continuous
 integration. Qserv install customization is handled with
@@ -63,7 +64,7 @@ template engine allowing to customize kubernetes Yaml files.
 ``Kustomize`` is integrated with ``kubectl`` (``-k`` option).
 
 with default settings
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 .. code:: sh
 
@@ -71,7 +72,7 @@ with default settings
     kubectl apply -k https://github.com/lsst/qserv-operator/overlays/dev --namespace='default'
 
 with a Redis cluster
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 .. code:: sh
 
@@ -80,7 +81,7 @@ with a Redis cluster
     kubectl apply -k https://github.com/lsst/qserv-operator/ci-redis --namespace='default'
 
 Undeploy a qserv instance
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================
 
 First list all Qserv instances running in a given namespace
 
@@ -110,7 +111,7 @@ To delete all Qserv instances inside a namespace:
 All qserv storage will remain untouch by this operation.
 
 Deploy a qserv instance with custom settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+============================================
 
 Example are available, see below:
 
@@ -160,7 +161,7 @@ And finally create customized Qserv instance:
     kubectl apply -k overlays/my-qserv/ --namespace='<namespace>'
 
 Launch integration tests
-~~~~~~~~~~~~~~~~~~~~~~~~
+========================
 
 .. code:: sh
 
