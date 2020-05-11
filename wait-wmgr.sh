@@ -3,8 +3,7 @@
 # Check wmgr is reachable on WORKER_POD, a Qserv worker pod
 # WARN: this should be handled by wmgr readiness probe (TODO: check why probe check sometimes fails on CI)
 
-set -e
-set -x
+set -uxo pipefail
 
 usage() {
     cat << EOD
@@ -18,19 +17,28 @@ Usage: `basename $0` [WORKER_POD]
 EOD
 }
 
+WORKER_POD=""
 WMGR_PORT=5012
 
-if [ $# -ge 2 ] ; then
+if [ $# -ne 1 ] ; then
     usage
     exit 2
-elif [ $# -eq 1 ]; then
+else
     WORKER_POD=$1
 fi
 
-while ! wget http://"$WORKER_POD":5012 2>&1 | \
-    grep 'wget: server returned error: HTTP/1.0 401 UNAUTHORIZED' > /dev/null
+echo "Wait for wmgr on $WORKER_POD"
+READY=false
+while [ $READY = false ]
 do
-    echo "Waiting for wmgr to be up on $WORKER_POD"
-    sleep 2 
+    curl --output /dev/null --silent --head --fail http://$WORKER_POD:$WMGR_PORT
+    if [ $? == 22 ]
+    then
+        READY=true
+    else
+        printf '.'
+        sleep 5
+    fi
 done
+
 echo "wmgr ready on $WORKER_POD"
