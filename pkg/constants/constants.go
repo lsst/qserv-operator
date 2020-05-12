@@ -53,6 +53,7 @@ const (
 	ReplName             ComponentName = "repl"
 	WorkerName           ComponentName = "worker"
 	XrootdRedirectorName ComponentName = "xrootd-redirector"
+	NetworkPolicy        ComponentName = "network-policy"
 )
 
 // ContainerConfigmaps contains names of all micro-services which require configmaps named:
