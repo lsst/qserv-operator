@@ -5,6 +5,7 @@ metadata:
 spec:
   storageclass: "standard"
   storagecapacity: "1Gi"
+  securenetwork: true
   czar:
     image: "qserv/qserv:dcbfff7"
   worker:

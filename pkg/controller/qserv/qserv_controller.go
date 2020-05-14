@@ -135,7 +135,9 @@ func (r *ReconcileQserv) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	// Specify Network Policies
-	syncers = append(syncers, sync.NewNetworkPoliciesSyncer(qserv, r.client, r.scheme)...)
+	if qserv.Spec.SecureNetwork {
+		syncers = append(syncers, sync.NewNetworkPoliciesSyncer(qserv, r.client, r.scheme)...)
+	}
 
 	if err = r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
