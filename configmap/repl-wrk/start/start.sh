@@ -24,6 +24,8 @@ export PATH="/stack/stack/current/Linux64/mariadb/10.2.14.lsst3-1-g07c67f4/bin/:
 
 WORKER_ID=$(hostname)
 
+# Required by dataloader
+mkdir -p "$DATA_DIR/ingest"
 
 # Wait for remote repl-db started and contactable
 while true; do

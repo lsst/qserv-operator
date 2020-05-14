@@ -80,7 +80,8 @@ then
 
     echo "-- "
     echo "-- Start mariadb server."
-    mysqld &
+    # Skip networking so to prevent replication controller and workers startup
+    mysqld --skip-networking &
     sleep 5
 
     echo "-- "
