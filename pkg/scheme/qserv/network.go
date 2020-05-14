@@ -45,7 +45,7 @@ func GenerateCzarNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
-								IntVal: 3306,
+								IntVal: constants.MariadbPort,
 							},
 						},
 					},
@@ -63,7 +63,7 @@ func GenerateCzarNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
-								IntVal: 4040,
+								IntVal: constants.ProxyPort,
 							},
 						},
 					},
@@ -93,7 +93,7 @@ func GenerateReplDBNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
-								IntVal: 3306,
+								IntVal: constants.MariadbPort,
 							},
 						},
 					},
@@ -131,7 +131,7 @@ func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
-								IntVal: 3306,
+								IntVal: constants.MariadbPort,
 							},
 						},
 					},
@@ -149,7 +149,7 @@ func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
-								IntVal: 1094,
+								IntVal: constants.XrootdPort,
 							},
 						},
 					},
@@ -159,7 +159,45 @@ func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
-								IntVal: 5012,
+								IntVal: constants.WmgrPort,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.NetworkPolicy {
+	return &v1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "allow-xrootd-redirector-ingress",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: v1.NetworkPolicySpec{
+			PolicyTypes: []v1.PolicyType{
+				v1.PolicyTypeIngress,
+			},
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: util.GetLabels(constants.XrootdRedirectorName, cr.Name),
+			},
+			Ingress: []v1.NetworkPolicyIngressRule{
+				{
+					// DB port
+					Ports: []v1.NetworkPolicyPort{
+						{
+							Port: &intstr.IntOrString{
+								IntVal: constants.CmsdPort,
+							},
+						},
+					},
+					From: []v1.NetworkPolicyPeer{
+						{
+							// Only Xrootd workers can access the redirector CMSD
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: util.GetLabels(constants.WorkerName, cr.Name),
 							},
 						},
 					},

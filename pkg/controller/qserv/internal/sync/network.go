@@ -17,5 +17,6 @@ func NewNetworkPoliciesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *r
 		syncer.NewObjectSyncer("CzarNetworkPolicy", r, qserv.GenerateCzarNetworkPolicy(r, labels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("ReplDBNetworkPolicy", r, qserv.GenerateReplDBNetworkPolicy(r, labels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("WorkerNetworkPolicy", r, qserv.GenerateWorkerNetworkPolicy(r, labels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("XrootdRedirectoryNetworkPolicy", r, qserv.GenerateXrootdRedirectorNetworkPolicy(r, labels), c, scheme, noFunc),
 	}
 }
