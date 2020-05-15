@@ -185,7 +185,7 @@ func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[s
 			},
 			Ingress: []v1.NetworkPolicyIngressRule{
 				{
-					// DB port
+					// CMSD port
 					Ports: []v1.NetworkPolicyPort{
 						{
 							Port: &intstr.IntOrString{
@@ -198,6 +198,24 @@ func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[s
 							// Only Xrootd workers can access the redirector CMSD
 							PodSelector: &metav1.LabelSelector{
 								MatchLabels: util.GetLabels(constants.WorkerName, cr.Name),
+							},
+						},
+					},
+				},
+				{
+					// Xrootd port
+					Ports: []v1.NetworkPolicyPort{
+						{
+							Port: &intstr.IntOrString{
+								IntVal: constants.XrootdPort,
+							},
+						},
+					},
+					From: []v1.NetworkPolicyPeer{
+						{
+							// Only CZAR can access the redirector Xrootd port
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: util.GetLabels(constants.CzarName, cr.Name),
 							},
 						},
 					},
