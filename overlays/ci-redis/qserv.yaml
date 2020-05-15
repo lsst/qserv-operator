@@ -3,10 +3,10 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
+  securenetwork: true
   worker:
     replicas: 2
   redis:
     version: "5.0.3"
     master: 3
     replicas: 1
-
