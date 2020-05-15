@@ -36,16 +36,18 @@ const (
 type ContainerName string
 
 const (
-	// CmsdName name cmsd containers
-	CmsdName    ContainerName = "cmsd"
-	InitDbName  ContainerName = "initdb"
-	MariadbName ContainerName = "mariadb"
-	ProxyName   ContainerName = "proxy"
-	ReplCtlName ContainerName = "repl-ctl"
-	ReplDbName  ContainerName = "repl-db"
-	XrootdName  ContainerName = "xrootd"
-	WmgrName    ContainerName = "wmgr"
-	ReplWrkName ContainerName = "repl-wrk"
+	// CmsdName name for cmsd containers
+	CmsdName ContainerName = "cmsd"
+	// IngestDbName name for ingest database container
+	IngestDbName ContainerName = "ingest-db"
+	InitDbName   ContainerName = "initdb"
+	MariadbName  ContainerName = "mariadb"
+	ProxyName    ContainerName = "proxy"
+	ReplCtlName  ContainerName = "repl-ctl"
+	ReplDbName   ContainerName = "repl-db"
+	XrootdName   ContainerName = "xrootd"
+	WmgrName     ContainerName = "wmgr"
+	ReplWrkName  ContainerName = "repl-wrk"
 )
 
 // PodClass name all classes of pod
@@ -55,6 +57,8 @@ type PodClass string
 const (
 	// Czar name pods of class Czar
 	Czar PodClass = "czar"
+	// IngestDb name pods of class Ingest database
+	IngestDb PodClass = "ingest-db"
 	// ReplCtl name pods of class Replication controller
 	ReplCtl PodClass = "repl-ctl"
 	// ReplDb name pods of class Replication database
