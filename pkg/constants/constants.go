@@ -76,8 +76,8 @@ var ContainerConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, Wm
 // MicroserviceSecrets contains names of all micro-services which require secrets
 var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
 
-// Databases contains names of all Qserv components which have a database
-var Databases = []PodClass{Czar, ReplDb, Worker}
+// Databases contains names of all Qserv pods which have a database
+var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
 
 // Command contains the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}

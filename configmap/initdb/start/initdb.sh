@@ -17,6 +17,7 @@ MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
 
 REPL_DB="repl-db"
+INGEST_DB="ingest-db"
 
 # Require root privileges
 ##
@@ -31,7 +32,7 @@ then
     useradd qserv --uid 1000 --no-create-home
 fi
 
-if [ "$COMPONENT_NAME" = "$REPL_DB" ]; then
+if [ "$COMPONENT_NAME" = "$REPL_DB" ] || [ "$COMPONENT_NAME" = "$INGEST_DB" ]; then
     MYSQL_INSTALL_DB="mysql_install_db"
     . /secret-repl-db/repl-db.secret.sh
 else

@@ -24,6 +24,9 @@ type QservSpec struct {
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
 
+	// IngestSettings defines the settings for ingest workflow
+	Ingest IngestSettings `json:"ingest,omitempty"`
+
 	// Redis defines the settings for redis cluster
 	// +kubebuilder:validation:Optional
 	Redis *RedisSettings `json:"redis,omitempty"`
@@ -47,6 +50,11 @@ type CzarSettings struct {
 	Image string `json:"image,omitempty"`
 	// + kubebuilder:default:=1
 	Replicas int32 `json:"replicas,omitempty"`
+}
+
+// IngestSettings defines the specification of the ingest workflow
+type IngestSettings struct {
+	DbImage string `json:"dbimage,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster

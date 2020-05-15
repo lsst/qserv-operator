@@ -7,6 +7,8 @@ spec:
   storagecapacity: "1Gi"
   czar:
     image: "qserv/qserv:dcbfff7"
+  ingest:
+    dbimage: "mariadb:10.2.16"
   worker:
     replicas: 2
     image: "qserv/qserv:dcbfff7"

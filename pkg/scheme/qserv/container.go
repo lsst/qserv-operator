@@ -58,7 +58,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 	volumes.addStartVolume(constants.InitDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
-	if dbName == constants.ReplDbName {
+	if dbName == constants.ReplDbName || dbName == constants.IngestDbName {
 		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(dbName))
 		volumes.addSecretVolume(dbName)
 	}
@@ -113,6 +113,8 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) stri
 	var image string
 	if component == constants.ReplDb {
 		image = spec.Replication.DbImage
+	} else if component == constants.IngestDb {
+		image = spec.Ingest.DbImage
 	} else if component == constants.Worker {
 		image = spec.Worker.Image
 	} else if component == constants.Czar {

@@ -17,7 +17,7 @@ func NewCzarStatefulSetSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *r
 
 // NewIngestDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv ingest Db StatefulSet
 func NewIngestDbStatefulSetSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	statefulSet := qserv.GenerateReplicationDbStatefulSet(r, controllerLabels)
+	statefulSet := qserv.GenerateIngestDbStatefulSet(r, controllerLabels)
 	return syncer.NewObjectSyncer("IngestDbStatefulSet", r, statefulSet, c, scheme, noFunc)
 }
 

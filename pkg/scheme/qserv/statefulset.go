@@ -87,6 +87,76 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	return ss
 }
 
+// GenerateIngestDbStatefulSet generate statefulset specification for Qserv Ingest Database
+func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+	name := cr.Name + "-" + string(constants.IngestDb)
+	namespace := cr.Namespace
+
+	labels = util.MergeLabels(labels, util.GetLabels(constants.IngestDb, cr.Name))
+
+	var replicas int32 = 1
+	storageClass := cr.Spec.StorageClass
+	storageSize := cr.Spec.StorageCapacity
+
+	initContainer, initVolumes := getInitContainer(cr, constants.IngestDb)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.IngestDb)
+
+	var volumes VolumeSet
+	volumes.make(initVolumes, mariadbVolumes)
+
+	ss := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			ServiceName: name,
+			Replicas:    &replicas,
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+				Type: "RollingUpdate",
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: v1.PodSpec{
+					InitContainers: []v1.Container{
+						initContainer,
+					},
+					Containers: []v1.Container{
+						mariadbContainer,
+					},
+					Volumes: volumes.toSlice(),
+				},
+			},
+			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: GetVolumeClaimTemplateName(),
+					},
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						StorageClassName: &storageClass,
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								"storage": resource.MustParse(storageSize),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
+
+	return ss
+}
+
 // GenerateReplicationCtlStatefulSet generate statefulset specification for Qserv Replication Controller
 func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplCtlName)
