@@ -27,7 +27,7 @@ CREATE TABLE `task` (
   `timestamp`             TIMESTAMP ,
 
   PRIMARY KEY (`chunk_id`, `chunk_file_url`) ,
-  UNIQUE  KEY (`pod_name`, `pod_name`)
+  UNIQUE  KEY (`pod_name`)
 
 )
 ENGINE = InnoDB;

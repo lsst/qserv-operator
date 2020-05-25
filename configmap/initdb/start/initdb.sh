@@ -13,6 +13,7 @@ set -eu
 # WARN: password are displayed in debug logs
 # set -x
 
+MYSQL_INGEST_PASSWORD=''
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
 
