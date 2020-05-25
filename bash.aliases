@@ -1,1 +1,1 @@
-alias krq="kubectl delete qserv qserv && kubectl delete pvc -all && kubectl apply -k base"
+alias krq="kubectl delete pod -l name=qserv-operator && kubectl delete qserv -l app=qserv && kubectl delete pvc -l app=qserv && kubectl apply -k base"

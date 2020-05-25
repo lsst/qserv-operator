@@ -17,8 +17,15 @@ MYSQL_INGEST_PASSWORD=''
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
 
-REPL_DB="repl-db"
-INGEST_DB="ingest-db"
+# Used for Qserv czar and worker databases
+
+if [ "$COMPONENT_NAME" = "czar" ] || [ "$COMPONENT_NAME" = "worker" ]; then
+    EUPS_DB=true
+    INSTALL_SCISQL=true
+else
+    EUPS_DB=false
+    INSTALL_SCISQL=false
+fi
 
 # Require root privileges
 ##
@@ -33,13 +40,14 @@ then
     useradd qserv --uid 1000 --no-create-home
 fi
 
-if [ "$COMPONENT_NAME" = "$REPL_DB" ] || [ "$COMPONENT_NAME" = "$INGEST_DB" ]; then
-    MYSQL_INSTALL_DB="mysql_install_db"
-    . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
-else
+if [ "$EUPS_DB" = true ]; then
+
     # Source pathes to eups packages
     . /qserv/run/etc/sysconfig/qserv
     MYSQL_INSTALL_DB="${MYSQL_DIR}/scripts/mysql_install_db --basedir=$MYSQL_DIR"
+else
+    MYSQL_INSTALL_DB="mysql_install_db"
+    . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
 fi
 
 DATA_DIR="/qserv/data"
@@ -120,7 +128,7 @@ then
         fi
     done
 
-    if [ "$COMPONENT_NAME" != "$REPL_DB" ]; then
+    if [ "$INSTALL_SCISQL" = true ]; then
         echo "-- "
         echo "-- Deploy scisql plugin"
         # WARN: SciSQL shared library (libcisql*.so) deployed by command
