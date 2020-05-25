@@ -34,7 +34,7 @@ fi
 
 if [ "$COMPONENT_NAME" = "$REPL_DB" ] || [ "$COMPONENT_NAME" = "$INGEST_DB" ]; then
     MYSQL_INSTALL_DB="mysql_install_db"
-    . /secret-repl-db/repl-db.secret.sh
+    . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
 else
     # Source pathes to eups packages
     . /qserv/run/etc/sysconfig/qserv
@@ -97,10 +97,12 @@ then
         file_ext="${file_name#*\.}"
         if [ "${file_ext}" = "tpl.sql" ]; then
             awk \
+                -v INGEST_PASS=${MYSQL_INGEST_PASSWORD} \
                 -v MON_PASS=${MYSQL_MONITOR_PASSWORD} \
                 -v REPL_PASS=${MYSQL_REPLICA_PASSWORD} \
                 -v HOST=${HOST} \
-                '{gsub(/<MYSQL_MONITOR_PASSWORD>/, MON_PASS);
+                '{gsub(/<MYSQL_INGEST_PASSWORD>/, INGEST_PASS);
+                gsub(/<MYSQL_MONITOR_PASSWORD>/, MON_PASS);
                 gsub(/<MYSQL_REPLICA_PASSWORD>/, REPL_PASS);
                 gsub(/<HOST>/, HOST);
                 print}' "$file_name" > "$sql_file_name"
