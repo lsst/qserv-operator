@@ -17,12 +17,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 
 	sqlConfigSuffix := fmt.Sprintf("sql-%s", component)
 
-	var dbName constants.ContainerName
-	if component == constants.ReplDb {
-		dbName = constants.ReplDbName
-	} else {
-		dbName = constants.MariadbName
-	}
+	dbContainerName := constants.GetDbContainerName(component)
 
 	container := v1.Container{
 		Name:  string(constants.InitDbName),
@@ -38,7 +33,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbName),
+			getEtcVolumeMount(dbContainerName),
 			// db startup script and root passwords are shared
 			getStartVolumeMount(constants.InitDbName),
 			getSecretVolumeMount(constants.MariadbName),
@@ -54,13 +49,13 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 	volumes.make(cr)
 
 	volumes.addConfigMapVolume(sqlConfigSuffix)
-	volumes.addEtcVolume(dbName)
+	volumes.addEtcVolume(dbContainerName)
 	volumes.addStartVolume(constants.InitDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
-	if dbName == constants.ReplDbName || dbName == constants.IngestDbName {
-		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(dbName))
-		volumes.addSecretVolume(dbName)
+	if dbContainerName == constants.ReplDbName || dbContainerName == constants.IngestDbName {
+		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(dbContainerName))
+		volumes.addSecretVolume(dbContainerName)
 	}
 
 	return container, volumes.volumeSet
@@ -68,17 +63,12 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 
 func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1.Container, VolumeSet) {
 
-	var dbContainerName constants.ContainerName
-	if component == constants.ReplDb {
-		dbContainerName = constants.ReplDbName
-	} else {
-		dbContainerName = constants.MariadbName
-	}
+	dbContainerName := constants.GetDbContainerName(component)
 
 	mariadbPortName := string(constants.MariadbName)
 
 	container := v1.Container{
-		Name:  string(constants.MariadbName),
+		Name:  string(dbContainerName),
 		Image: getMariadbImage(cr, component),
 		Ports: []v1.ContainerPort{
 			{

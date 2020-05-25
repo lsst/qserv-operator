@@ -54,6 +54,19 @@ const (
 // used to generate pod labels
 type PodClass string
 
+// GetDbContainerName return name of a database container for a given pod
+func GetDbContainerName(pod PodClass) ContainerName {
+	var dbName ContainerName
+	if pod == ReplDb {
+		dbName = ReplDbName
+	} else if pod == IngestDb {
+		dbName = IngestDbName
+	} else {
+		dbName = MariadbName
+	}
+	return dbName
+}
+
 const (
 	// Czar name pods of class Czar
 	Czar PodClass = "czar"
