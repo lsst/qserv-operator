@@ -338,6 +338,9 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 						xrootdContainers[0],
 						xrootdContainers[1],
 					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
+					},
 					Volumes: volumes.toSlice(),
 				},
 			},

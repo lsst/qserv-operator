@@ -184,8 +184,6 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
-	var runAsUser int64 = 1000
-
 	container := v1.Container{
 		Name:    string(constants.ReplWrkName),
 		Image:   spec.Replication.Image,
@@ -201,7 +199,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 			},
 		},
 		SecurityContext: &v1.SecurityContext{
-			RunAsUser: &runAsUser,
+			RunAsUser: &constants.QservUID,
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),

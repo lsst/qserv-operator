@@ -32,6 +32,9 @@ const (
 	GraceTime = 30
 )
 
+var QservGID int64 = 1000
+var QservUID int64 = 1000
+
 // ContainerName name all containers
 type ContainerName string
 
@@ -84,7 +87,7 @@ const (
 
 // ContainerConfigmaps contains names of all micro-services which require configmaps named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
+var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
 
 // MicroserviceSecrets contains names of all micro-services which require secrets
 var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
