@@ -69,10 +69,10 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 
 // GenerateIngestDbService generate service specification for Qserv Ingest database
 func GenerateIngestDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.ReplDbName))
+	name := util.GetName(cr, string(constants.IngestDb))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDb, cr.Name))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.IngestDb, cr.Name))
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -125,7 +125,7 @@ func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]st
 
 // GenerateReplicationDbService generate service specification for Qserv Replication Controller database
 func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
-	name := util.GetName(cr, string(constants.ReplDbName))
+	name := util.GetName(cr, string(constants.ReplDb))
 	namespace := cr.Namespace
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDb, cr.Name))

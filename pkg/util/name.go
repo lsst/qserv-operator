@@ -29,7 +29,7 @@ func GetWorkerServiceName(cr *qservv1alpha1.Qserv) string {
 
 // GetReplCtlServiceName returns name of Replication Con headless service
 func GetReplCtlServiceName(cr *qservv1alpha1.Qserv) string {
-	return GetName(cr, string(constants.ReplCtlName))
+	return GetName(cr, string(constants.ReplCtl))
 }
 
 // GetWorkerNameFilter returns a filter on hostname for mysql user
