@@ -125,7 +125,11 @@ if [ "$KUBEDB" = true ]; then
   )
 fi
 
-kubectl wait --for=condition=Ready pods -l name=qserv-operator -n "$NAMESPACE"
+while ! kubectl wait --for=condition=Ready pods -l name=qserv-operator -n "$NAMESPACE"
+do
+  echo "Waiting for operator to be ready..."
+  kubectl describe pod -l name=qserv-operator -n "$NAMESPACE"
+done
 
 echo
 echo "Successfully installed Qserv operator in '$NAMESPACE' namespace."
