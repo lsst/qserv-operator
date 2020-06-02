@@ -26,7 +26,17 @@
 
 set -eux
 
+VERBOSE=false
 DIR=$(cd "$(dirname "$0")"; pwd -P)
+
+while test $# -gt 0; do
+  case "$1" in
+    -v | --verbose)
+      VERBOSE=true
+      shift
+      ;;
+  esac
+done
 
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
 WORKER_COUNT=$(kubectl get qservs.qserv.lsst.org "$INSTANCE" -o=jsonpath='{.spec.worker.replicas}')
@@ -40,6 +50,9 @@ while ! kubectl wait pod --for=condition=Ready --timeout="10s" -l "app=qserv,ins
 do
   echo "Wait for Qserv pods to be ready:"
   kubectl get pod -l "app=qserv,instance=$INSTANCE"
+  if [ "$VERBOSE" = true ]; then
+    kubectl describe pod -l "app=qserv,instance=$INSTANCE"
+  fi
 done
 
 echo "Qserv pods are ready:"
