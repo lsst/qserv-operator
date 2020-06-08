@@ -22,14 +22,14 @@ type filedesc struct {
 }
 
 type templateData struct {
-	CzarDomainName             string
+	CzarDomainName     string
 	QstatusMysqldHost  string
 	XrootdRedirectorDn string
+	XrootdReplicas     int
 }
 
 func applyTemplate(path string, tmplData templateData) string {
-
-	tmpl, err := template.ParseFiles(path)
+	tmpl, err := template.New(filepath.Base(path)).Funcs(util.TemplateFunctions).ParseFiles(path)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Cannot open template file: %s", path))
 	}
@@ -78,9 +78,10 @@ func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[stri
 func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
 
 	tmplData := templateData{
-		CzarDomainName:             util.GetCzarServiceName(r),
+		CzarDomainName:     util.GetCzarServiceName(r),
 		QstatusMysqldHost:  util.GetCzarServiceName(r),
-		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(r)}
+		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(r),
+		XrootdReplicas:     int(r.Spec.Xrootd.Replicas)}
 
 	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
 
@@ -103,7 +104,7 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.ComponentName) *v1.ConfigMap {
 
 	tmplData := templateData{
-		CzarDomainName:             util.GetCzarServiceName(cr),
+		CzarDomainName:     util.GetCzarServiceName(cr),
 		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(cr)}
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)

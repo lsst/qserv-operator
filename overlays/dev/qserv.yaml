@@ -4,9 +4,6 @@ metadata:
   name: qserv
 spec:
   worker:
-    replicas: 2
-  redis:
-    version: "5.0.3"
-    master: 3
-    replicas: 1
-
+    replicas: 3
+  xrootd:
+    replicas: 4
