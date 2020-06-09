@@ -40,6 +40,11 @@ spec:
                   format: int32
                   type: integer
               type: object
+            networkpolicies:
+              default: false
+              description: NetworkPolicies secures the cluster network using Network
+                Policies. Ensure the Kubernetes cluster has enabled Network plugin.
+              type: boolean
             redis:
               description: Redis defines the settings for redis cluster
               properties:
@@ -60,11 +65,6 @@ spec:
                 image:
                   type: string
               type: object
-            securenetwork:
-              default: false
-              description: SecureNetwork secures the cluster network using Network
-                Policies. Ensure the Kubernetes cluster has enabled Network plugin.
-              type: boolean
             storagecapacity:
               type: string
             storageclass:

@@ -3,7 +3,7 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
-  securenetwork: true
+  networkpolicies: true
   worker:
     replicas: 2
   redis:
