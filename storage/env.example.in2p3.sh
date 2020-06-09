@@ -6,7 +6,7 @@ NS="qserv"
 PARALLEL_SSH_CFG="$HOME/.ssh/sshloginfile"
 
 REPL_DB_HOST="ccqserv201"
-INGEST_DB_HOST="ccqserv202"
+INGEST_DB_HOST="ccqserv201"
 
 DATA_DIR="/data"
 
