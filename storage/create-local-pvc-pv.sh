@@ -74,7 +74,7 @@ DATA_PATH="$STORAGE_PATH/${NS}-${INSTANCE}/qserv"
 echo "Creating persistent volumes and claims for Qserv czars"
 COUNT=0
 for host in $MASTERS;
-done
+do
     PVC_NAME="${PVC_PREFIX}-czar-${COUNT}"
     "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $host -o "$YAML_OUT_DIR" -i "$INSTANCE"
     COUNT=$((COUNT+1))
