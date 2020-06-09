@@ -95,6 +95,6 @@ DATA_PATH="$STORAGE_PATH/${NS}-${INSTANCE}/replication"
 "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $REPL_DB_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
 
 echo "Creating persistent volumes and claims for Ingest Database"
-PVC_NAME="${PVC_PREFIX}-repl-db-0"
+PVC_NAME="${PVC_PREFIX}-ingest-db-0"
 DATA_PATH="$STORAGE_PATH/${NS}-${INSTANCE}/ingest"
 "$DIR"/yaml-builder.py -p "$DATA_PATH" -n "$PVC_NAME" -H $INGEST_DB_HOST -o "$YAML_OUT_DIR" -i "$INSTANCE"
