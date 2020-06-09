@@ -20,7 +20,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - ccqserv202
+          - ccqserv201
   persistentVolumeReclaimPolicy: Retain
   storageClassName: qserv-local-storage
   volumeMode: Filesystem
