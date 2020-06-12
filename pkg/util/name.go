@@ -39,11 +39,12 @@ func GetWorkerNameFilter(cr *qservv1alpha1.Qserv) string {
 	return filter
 }
 
-// GetReplCtlNameFilter returns a filter on hostname for mysql user
-// Example: use in "CREATE USER 'qsreplica'@'<filter>'"
-func GetReplCtlNameFilter(cr *qservv1alpha1.Qserv) string {
-	filter := cr.Name + "-" + string(constants.ReplCtlName) + "-%." + GetReplCtlServiceName(cr) + "." + cr.GetNamespace() + ".svc" + getClusterDomain()
-	return filter
+// GetReplCtlFQDN returns a Replication Controller FQDN
+// It can be used for mysql authentication
+// Example: use in "CREATE USER 'qsreplica'@'<FQDN>'"
+func GetReplCtlFQDN(cr *qservv1alpha1.Qserv) string {
+	fqdn := cr.Name + "-" + string(constants.ReplCtlName) + "-0." + GetReplCtlServiceName(cr) + "." + cr.GetNamespace() + ".svc" + getClusterDomain()
+	return fqdn
 }
 
 // GetXrootdRedirectorServiceName returns name of Xrootd redirector headless service
