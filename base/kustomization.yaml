@@ -20,5 +20,5 @@ secretGenerator:
   - wmgr.secret
 generatorOptions:
   labels:
-    kustomize.generated.resources: somevalue
+    kustomize.generated.resources: qserv 
   disableNameSuffixHash: true
