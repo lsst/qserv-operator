@@ -3,7 +3,8 @@
 INSTANCE="qserv"
 NS="qserv"
 
-PARALLEL_SSH_CFG="$HOME/.ssh/sshloginfile"
+PARALLEL_SSH_CFG="$HOME/.ssh/sshqserv"
+PARALLEL_SSH_MASTER="$HOME/.ssh/sshqservmaster"
 
 REPL_DB_HOST="ccqserv201"
 INGEST_DB_HOST="ccqserv201"
