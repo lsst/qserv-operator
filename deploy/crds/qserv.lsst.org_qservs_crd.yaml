@@ -40,6 +40,12 @@ spec:
                   format: int32
                   type: integer
               type: object
+            ingest:
+              description: IngestSettings defines the settings for ingest workflow
+              properties:
+                dbimage:
+                  type: string
+              type: object
             redis:
               description: Redis defines the settings for redis cluster
               properties:
