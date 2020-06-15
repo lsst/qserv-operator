@@ -61,15 +61,23 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 	return container, volumes.volumeSet
 }
 
-func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1.Container, VolumeSet) {
+func getMariadbContainer(cr *qservv1alpha1.Qserv, pod constants.PodClass) (v1.Container, VolumeSet) {
 
-	dbContainerName := constants.GetDbContainerName(component)
+	dbContainerName := constants.GetDbContainerName(pod)
 
 	mariadbPortName := string(constants.MariadbName)
 
+	// Volumes
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	volumes.addEmptyDirVolume("tmp-volume")
+	volumes.addEtcStartVolumes(dbContainerName)
+
+	// Container
 	container := v1.Container{
 		Name:  string(dbContainerName),
-		Image: getMariadbImage(cr, component),
+		Image: getMariadbImage(cr, pod),
 		Ports: []v1.ContainerPort{
 			{
 				Name:          mariadbPortName,
@@ -87,13 +95,6 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) 
 			getTmpVolumeMount(),
 		},
 	}
-
-	// Volumes
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
-
-	volumes.addEmptyDirVolume("tmp-volume")
-	volumes.addEtcStartVolumes(dbContainerName)
 
 	return container, volumes.volumeSet
 }
@@ -164,6 +165,11 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
+			v1.VolumeMount{
+				MountPath: filepath.Join("/", "qserv", "data"),
+				Name:      "data",
+				ReadOnly:  false,
+			},
 			getEtcVolumeMount(constants.ReplCtlName),
 			getStartVolumeMount(constants.ReplCtlName),
 			getSecretVolumeMount(constants.ReplDbName),
@@ -175,6 +181,7 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
+	volumes.addDataVolume(cr)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 

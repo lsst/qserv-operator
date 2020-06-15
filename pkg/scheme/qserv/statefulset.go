@@ -66,7 +66,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetVolumeClaimTemplateName(),
+						Name: GetDataVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -136,7 +136,7 @@ func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]stri
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetVolumeClaimTemplateName(),
+						Name: GetDataVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -255,7 +255,7 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetVolumeClaimTemplateName(),
+						Name: GetDataVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -276,7 +276,7 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 	return ss
 }
 
-func GetVolumeClaimTemplateName() string {
+func GetDataVolumeClaimTemplateName() string {
 	return constants.QservName + "-data"
 }
 
@@ -347,7 +347,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetVolumeClaimTemplateName(),
+						Name: GetDataVolumeClaimTemplateName(),
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
