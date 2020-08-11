@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    install/index
+   qserv-devel/index
    admin/index
    devel/index
 

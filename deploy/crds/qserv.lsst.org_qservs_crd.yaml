@@ -40,6 +40,12 @@ spec:
                   format: int32
                   type: integer
               type: object
+            devel:
+              description: Devel defines the settings for development environment
+              properties:
+                corepath:
+                  type: string
+              type: object
             imagePullPolicy:
               description: ImagePullPolicy for all containers
               type: string
@@ -69,6 +75,8 @@ spec:
               description: Replication defines the settings for the replication framework
               properties:
                 dbimage:
+                  type: string
+                debug:
                   type: string
                 image:
                   type: string

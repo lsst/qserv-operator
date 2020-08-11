@@ -3,8 +3,10 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
+  devel:
+    corepath: "/tmp/coredump"
   replication:
-    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
+    debug: "all"
   worker:
     replicas: 3
   xrootd:
