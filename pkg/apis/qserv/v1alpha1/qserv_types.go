@@ -40,6 +40,11 @@ type QservSpec struct {
 
 	// Xrootd defines the settings for worker cluster
 	Xrootd XrootdSettings `json:"xrootd,omitempty"`
+
+	// NetworkPolicies secures the cluster network using Network Policies.
+	// Ensure the Kubernetes cluster has enabled Network plugin.
+	// +kubebuilder:default:=false
+	NetworkPolicies bool `json:"networkpolicies,omitempty"`
 }
 
 // CzarSettings defines the specification of the czar cluster

@@ -3,24 +3,24 @@ language: go
 dist: xenial
 
 go:
-- 1.13.4
+  - 1.13.4
 
 before_script:
   - if [ "$DOCKER_USERNAME" ]; then docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; fi
   - ./install-operator-sdk.sh
-  - git clone --depth 1 -b "v0.6.0" --single-branch https://github.com/k8s-school/kind-travis-ci.git
-  - ./kind-travis-ci/kind/k8s-create.sh -s
+  - git clone --depth 1 -b "k8s-v1.18.2" --single-branch https://github.com/k8s-school/kind-travis-ci.git
+  - ./kind-travis-ci/k8s-create.sh -sc
 
 script:
   - . ./env.sh
   - ./build.sh
   - kind load docker-image "$OP_IMAGE"
-  - ./deploy/qserv.sh --dev --install-kubedb 
-  - kubectl apply -k overlays/ci-redis 
-  - ./wait-qserv-ready.sh 
-  - kubectl get all,endpoints,cm,pvc,pv -o wide
+  - ./deploy/qserv.sh --dev --install-kubedb
+  - kubectl apply -k base
+  - ./wait-qserv-ready.sh
+  - kubectl get all,endpoints,cm,pvc,pv,networkpolicies -o wide
   - ./run-integration-tests.sh
 
 after_success:
   - echo "Generate and upload documentation"
-  - curl -fsSL https://raw.githubusercontent.com/lsst/doc-container/tickets\/DM-23256/run.sh | bash -s -- -p "$LTD_PASSWORD" "$PWD" 
+  - curl -fsSL https://raw.githubusercontent.com/lsst/doc-container/tickets\/DM-23256/run.sh | bash -s -- -p "$LTD_PASSWORD" "$PWD"
