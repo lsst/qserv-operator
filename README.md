@@ -3,6 +3,7 @@
 A qserv operator for Kubernetes based on [operator-framework](https://github.com/operator-framework). You may be familiar with Operators from the concept’s [introduction in 2016](https://coreos.com/blog/introducing-operators.html). An Operator is a method of packaging, deploying and managing a Kubernetes application.
 
 [![Build Status](https://travis-ci.com/lsst/qserv-operator.svg?branch=master)](https://travis-ci.com/lsst/qserv-operator)
+[![Go Report Card](https://goreportcard.com/badge/github.com/lsst/qserv-operator)](https://goreportcard.com/report/github.com/lsst/qserv-operator)
 
 ## Documentation
 

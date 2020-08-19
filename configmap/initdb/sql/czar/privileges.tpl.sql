@@ -13,6 +13,9 @@ GRANT ALL ON qservMeta.* TO 'qsmaster'@'%';
 GRANT ALL ON qservCssData.* TO 'qsmaster'@'localhost';
 GRANT ALL ON qservCssData.* TO 'qsmaster'@'%';
 
+-- Grant root access to replication controller pod
+GRANT ALL ON *.* TO 'root'@'{{.ReplicationControllerFQDN}}' IDENTIFIED BY 'CHANGEME' WITH GRANT OPTION;
+
 -- Create user for external monitoring applications
 CREATE USER 'monitor'@'localhost' IDENTIFIED BY '<MYSQL_MONITOR_PASSWORD>';
 CREATE USER 'monitor'@'%' IDENTIFIED BY '<MYSQL_MONITOR_PASSWORD>';

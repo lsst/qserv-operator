@@ -9,6 +9,8 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// FIXME: re-enable "+kubebuilder:default:=XXX" when switching to CRD api version v1
+
 // QservSpec defines the desired state of Qserv
 // +k8s:openapi-gen=true
 // +kubebuilder:validation:Required
@@ -23,6 +25,13 @@ type QservSpec struct {
 
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
+
+	// IngestSettings defines the settings for ingest workflow
+	Ingest IngestSettings `json:"ingest,omitempty"`
+
+	// ImagePullPolicy for all containers
+	// + kubebuilder:default:=Always
+	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// Redis defines the settings for redis cluster
 	// +kubebuilder:validation:Optional
@@ -43,7 +52,6 @@ type QservSpec struct {
 
 	// NetworkPolicies secures the cluster network using Network Policies.
 	// Ensure the Kubernetes cluster has enabled Network plugin.
-	// +kubebuilder:default:=false
 	NetworkPolicies bool `json:"networkpolicies,omitempty"`
 }
 
@@ -54,6 +62,11 @@ type CzarSettings struct {
 	Replicas int32 `json:"replicas,omitempty"`
 }
 
+// IngestSettings defines the specification of the ingest workflow
+type IngestSettings struct {
+	DbImage string `json:"dbimage,omitempty"`
+}
+
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
 	Image    string `json:"image,omitempty"`
@@ -62,7 +75,7 @@ type WorkerSettings struct {
 
 // RedisSettings defines the specification of the Redis database for secondary index
 type RedisSettings struct {
-	// + kubebuilder:default:=5.0.3
+	// + kubebuilder:default:="5.0.3"
 	Version string `json:"version,omitempty"`
 	// + kubebuilder:default:=3
 	Master int32 `json:"master,omitempty"`

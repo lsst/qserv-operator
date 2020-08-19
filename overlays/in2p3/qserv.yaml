@@ -5,5 +5,7 @@ metadata:
 spec:
   storageclass: "qserv-local-storage"
   storagecapacity: "100Gi"
+  # replication:
+  #    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
   worker:
     replicas: 20

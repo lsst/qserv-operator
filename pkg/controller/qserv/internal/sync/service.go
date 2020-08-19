@@ -9,11 +9,17 @@ import (
 	"github.com/lsst/qserv-operator/pkg/staging/syncer"
 )
 
+// NewIngestDbServiceSyncer returns a new sync.Interface for reconciling Ingest Database Service
+func NewIngestDbServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	svc := qserv.GenerateIngestDbService(r, controllerLabels)
+	return syncer.NewObjectSyncer("IngestDbService", r, svc, c, scheme, noFunc)
+}
+
 // NewQservServicesSyncer returns a new []sync.Interface for reconciling all Qserv services
 func NewQservServicesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
 	syncers := []syncer.Interface{
-		syncer.NewObjectSyncer("CzarProxyService", r, qserv.GenerateCzarProxyService(r, controllerLabels), c, scheme, noFunc),
-		syncer.NewObjectSyncer("CzarDatabase", r, qserv.GenerateCzarDatabaseService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("QservNodePortService", r, qserv.GenerateQservNodePortService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("Czar", r, qserv.GenerateCzarService(r, controllerLabels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("WorkerService", r, qserv.GenerateWorkerService(r, controllerLabels), c, scheme, noFunc),
 	}
 

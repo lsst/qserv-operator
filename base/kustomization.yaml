@@ -6,6 +6,9 @@ resources:
 - qserv.yaml
 
 secretGenerator:
+- name: secret-ingest-db-qserv
+  files:
+  - ingest-db.secret.sh
 - name: secret-mariadb-qserv
   files:
   - mariadb.secret.sh
@@ -17,5 +20,5 @@ secretGenerator:
   - wmgr.secret
 generatorOptions:
   labels:
-    kustomize.generated.resources: somevalue
+    kustomize.generated.resources: qserv 
   disableNameSuffixHash: true

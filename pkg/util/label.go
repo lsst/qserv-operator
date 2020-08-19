@@ -19,11 +19,11 @@ func MergeLabels(allLabels ...map[string]string) map[string]string {
 }
 
 // GetLabels returns the labels for the component with specific role
-func GetLabels(component constants.ComponentName, cr_name string) map[string]string {
-	return generateComponentLabels(component, cr_name)
+func GetLabels(component constants.PodClass, cr_name string) map[string]string {
+	return generatePodLabels(component, cr_name)
 }
 
-func generateComponentLabels(component constants.ComponentName, cr_name string) map[string]string {
+func generatePodLabels(component constants.PodClass, cr_name string) map[string]string {
 	componentStr := string(component)
 	return map[string]string{
 		"app":       constants.AppLabel,

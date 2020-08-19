@@ -12,21 +12,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName) (v1.Container, VolumeSet) {
+func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1.Container, VolumeSet) {
 	componentName := string(component)
 
 	sqlConfigSuffix := fmt.Sprintf("sql-%s", component)
 
-	var dbName constants.ContainerName
-	if component == constants.ReplName {
-		dbName = constants.ReplDbName
-	} else {
-		dbName = constants.MariadbName
-	}
+	dbContainerName := constants.GetDbContainerName(component)
 
 	container := v1.Container{
-		Name:  string(constants.InitDbName),
-		Image: getMariadbImage(cr, component),
+		Name:            string(constants.InitDbName),
+		Image:           getMariadbImage(cr, component),
+		ImagePullPolicy: cr.Spec.ImagePullPolicy,
 		Command: []string{
 			"/config-start/initdb.sh",
 		},
@@ -38,7 +34,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbName),
+			getEtcVolumeMount(dbContainerName),
 			// db startup script and root passwords are shared
 			getStartVolumeMount(constants.InitDbName),
 			getSecretVolumeMount(constants.MariadbName),
@@ -54,32 +50,38 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName
 	volumes.make(cr)
 
 	volumes.addConfigMapVolume(sqlConfigSuffix)
-	volumes.addEtcVolume(dbName)
+	volumes.addEtcVolume(dbContainerName)
 	volumes.addStartVolume(constants.InitDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
-	if dbName == constants.ReplDbName {
-		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(dbName))
-		volumes.addSecretVolume(dbName)
+	if dbContainerName == constants.ReplDbName || dbContainerName == constants.IngestDbName {
+		container.VolumeMounts = append(container.VolumeMounts, getSecretVolumeMount(dbContainerName))
+		volumes.addSecretVolume(dbContainerName)
 	}
 
 	return container, volumes.volumeSet
 }
 
-func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentName) (v1.Container, VolumeSet) {
+func getMariadbContainer(cr *qservv1alpha1.Qserv, pod constants.PodClass) (v1.Container, VolumeSet) {
 
-	var uservice constants.ContainerName
-	if component == constants.ReplName {
-		uservice = constants.ReplDbName
-	} else {
-		uservice = constants.MariadbName
-	}
+	dbContainerName := constants.GetDbContainerName(pod)
 
 	mariadbPortName := string(constants.MariadbName)
 
+	// Volumes
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	volumes.addEmptyDirVolume("tmp-volume")
+	volumes.addEtcStartVolumes(dbContainerName)
+
+	// Container
 	container := v1.Container{
-		Name:  string(constants.MariadbName),
-		Image: getMariadbImage(cr, component),
+		Command:         constants.Command,
+		Image:           getMariadbImage(cr, pod),
+		ImagePullPolicy: cr.Spec.ImagePullPolicy,
+		Name:            string(dbContainerName),
+		LivenessProbe:   getTCPProbe(constants.MariadbPortName, 10),
 		Ports: []v1.ContainerPort{
 			{
 				Name:          mariadbPortName,
@@ -87,35 +89,28 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, component constants.ComponentN
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		Command:        constants.Command,
-		LivenessProbe:  getProbe(constants.MariadbPortName, 10, tcpAction),
-		ReadinessProbe: getProbe(constants.MariadbPortName, 5, tcpAction),
+		ReadinessProbe: getTCPProbe(constants.MariadbPortName, 5),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(uservice),
-			getStartVolumeMount(uservice),
+			getEtcVolumeMount(dbContainerName),
+			getStartVolumeMount(dbContainerName),
 			getTmpVolumeMount(),
 		},
 	}
 
-	// Volumes
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
-
-	volumes.addEmptyDirVolume("tmp-volume")
-	volumes.addEtcStartVolumes(uservice)
-
 	return container, volumes.volumeSet
 }
 
-func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.ComponentName) string {
+func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) string {
 	spec := cr.Spec
 	var image string
-	if component == constants.ReplName {
+	if component == constants.ReplDb {
 		image = spec.Replication.DbImage
-	} else if component == constants.WorkerName {
+	} else if component == constants.IngestDb {
+		image = spec.Ingest.DbImage
+	} else if component == constants.Worker {
 		image = spec.Worker.Image
-	} else if component == constants.CzarName {
+	} else if component == constants.Czar {
 		image = spec.Czar.Image
 	}
 	return image
@@ -124,8 +119,10 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.ComponentName)
 func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 	container := v1.Container{
-		Name:  string(constants.ProxyName),
-		Image: spec.Czar.Image,
+		Command:         constants.Command,
+		Image:           spec.Czar.Image,
+		ImagePullPolicy: spec.ImagePullPolicy,
+		Name:            string(constants.ProxyName),
 		Ports: []v1.ContainerPort{
 			{
 				Name:          string(constants.ProxyName),
@@ -133,9 +130,8 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		LivenessProbe:  getProbe(constants.ProxyPortName, 10, tcpAction),
-		ReadinessProbe: getProbe(constants.ProxyPortName, 5, tcpAction),
-		Command:        constants.Command,
+		LivenessProbe:  getTCPProbe(constants.ProxyPortName, 10),
+		ReadinessProbe: getTCPProbe(constants.ProxyPortName, 5),
 		VolumeMounts: []v1.VolumeMount{
 			// Used for mysql socket access
 			// TODO move mysql socket in emptyDir?
@@ -157,10 +153,15 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
+	var probeTimeoutSeconds int32 = 3
+
 	container := v1.Container{
-		Name:    string(constants.ReplCtlName),
-		Image:   spec.Replication.Image,
-		Command: constants.Command,
+		Command:         constants.Command,
+		LivenessProbe:   getHTTPProbe(constants.ReplicationControllerPortName, 10, probeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.ReplicationControllerPortName, 5, probeTimeoutSeconds, "meta/version"),
+		Name:            string(constants.ReplCtlName),
+		Image:           spec.Replication.Image,
+		ImagePullPolicy: spec.ImagePullPolicy,
 		Env: []v1.EnvVar{
 			{
 				Name:  "WORKER_COUNT",
@@ -171,7 +172,19 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 				Value: util.GetName(cr, string(constants.ReplDbName)),
 			},
 		},
+		Ports: []v1.ContainerPort{
+			{
+				Name:          constants.ReplicationControllerPortName,
+				ContainerPort: constants.ReplicationControllerPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
 		VolumeMounts: []v1.VolumeMount{
+			v1.VolumeMount{
+				MountPath: filepath.Join("/", "qserv", "data"),
+				Name:      "data",
+				ReadOnly:  false,
+			},
 			getEtcVolumeMount(constants.ReplCtlName),
 			getStartVolumeMount(constants.ReplCtlName),
 			getSecretVolumeMount(constants.ReplDbName),
@@ -183,6 +196,7 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
+	volumes.addDataVolume(cr)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
@@ -192,20 +206,23 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
-	var runAsUser int64 = 1000
-
 	container := v1.Container{
-		Name:    string(constants.ReplWrkName),
-		Image:   spec.Replication.Image,
-		Command: constants.Command,
+		Name:            string(constants.ReplWrkName),
+		Image:           spec.Replication.Image,
+		ImagePullPolicy: spec.ImagePullPolicy,
+		Command:         constants.Command,
 		Env: []v1.EnvVar{
+			{
+				Name:  "WORKER_COUNT",
+				Value: strconv.FormatInt(int64(spec.Worker.Replicas), 10),
+			},
 			{
 				Name:  "REPL_DB_DN",
 				Value: util.GetName(cr, string(constants.ReplDbName)),
 			},
 		},
 		SecurityContext: &v1.SecurityContext{
-			RunAsUser: &runAsUser,
+			RunAsUser: &constants.QservUID,
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
@@ -230,8 +247,9 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	dotQserv := "dot-qserv"
 	dotQservConfigVolume := util.GetConfigVolumeName(dotQserv)
 	container := v1.Container{
-		Name:  string(constants.WmgrName),
-		Image: cr.Spec.Worker.Image,
+		Name:            string(constants.WmgrName),
+		Image:           cr.Spec.Worker.Image,
+		ImagePullPolicy: cr.Spec.ImagePullPolicy,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          constants.WmgrPortName,
@@ -240,8 +258,8 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 			},
 		},
 		Command:        constants.Command,
-		LivenessProbe:  getProbe(constants.WmgrPortName, 10, tcpAction),
-		ReadinessProbe: getProbe(constants.WmgrPortName, 5, tcpAction),
+		LivenessProbe:  getTCPProbe(constants.WmgrPortName, 10),
+		ReadinessProbe: getTCPProbe(constants.WmgrPortName, 5),
 		VolumeMounts: []v1.VolumeMount{
 			{
 				MountPath: filepath.Join("/", dotQservConfigVolume),
@@ -270,7 +288,7 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	return container, volumes.volumeSet
 }
 
-func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentName) ([]v1.Container, VolumeSet) {
+func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.PodClass) ([]v1.Container, VolumeSet) {
 
 	const (
 		CMSD = iota
@@ -280,14 +298,14 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	spec := cr.Spec
 
 	volumeMounts := getXrootdVolumeMounts(component)
-	xrootdPortName := string(constants.XrootdName)
 
 	containers := []v1.Container{
 		{
-			Name:    string(constants.CmsdName),
-			Image:   spec.Worker.Image,
-			Command: constants.Command,
-			Args:    []string{"-S", "cmsd"},
+			Name:            string(constants.CmsdName),
+			Image:           spec.Worker.Image,
+			ImagePullPolicy: cr.Spec.ImagePullPolicy,
+			Command:         constants.Command,
+			Args:            []string{"-S", "cmsd"},
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{
@@ -298,18 +316,19 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 			VolumeMounts: volumeMounts,
 		},
 		{
-			Name:  string(constants.XrootdName),
-			Image: spec.Worker.Image,
+			Name:            string(constants.XrootdName),
+			Image:           spec.Worker.Image,
+			ImagePullPolicy: cr.Spec.ImagePullPolicy,
 			Ports: []v1.ContainerPort{
 				{
-					Name:          xrootdPortName,
-					ContainerPort: 1094,
+					Name:          constants.XrootdPortName,
+					ContainerPort: constants.XrootdPort,
 					Protocol:      v1.ProtocolTCP,
 				},
 			},
 			Command:        constants.Command,
-			LivenessProbe:  getProbe(constants.XrootdPortName, 10, tcpAction),
-			ReadinessProbe: getProbe(constants.XrootdPortName, 5, tcpAction),
+			LivenessProbe:  getTCPProbe(constants.XrootdPortName, 10),
+			ReadinessProbe: getTCPProbe(constants.XrootdPortName, 5),
 			SecurityContext: &v1.SecurityContext{
 				Capabilities: &v1.Capabilities{
 					Add: []v1.Capability{
@@ -323,16 +342,16 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.ComponentN
 	}
 
 	// Cmsd port is only open on redirectors, not on workers
-	if component == constants.XrootdRedirectorName {
+	if component == constants.XrootdRedirector {
 		containers[0].Ports = []v1.ContainerPort{
 			{
-				Name:          string(constants.CmsdName),
-				ContainerPort: 2131,
+				Name:          constants.CmsdPortName,
+				ContainerPort: constants.CmsdPort,
 				Protocol:      v1.ProtocolTCP,
 			},
 		}
-		containers[0].LivenessProbe = getProbe(constants.CmsdPortName, 10, tcpAction)
-		containers[0].ReadinessProbe = getProbe(constants.CmsdPortName, 5, tcpAction)
+		containers[0].LivenessProbe = getTCPProbe(constants.CmsdPortName, 10)
+		containers[0].ReadinessProbe = getTCPProbe(constants.CmsdPortName, 5)
 	}
 
 	// Volumes
@@ -352,20 +371,28 @@ const (
 	tcpAction  NetworkAction = "tcp"
 )
 
-func getProbe(portName string, periodSeconds int32, action NetworkAction) *v1.Probe {
+func getHTTPProbe(portName string, periodSeconds int32, timeoutSeconds int32, path string) *v1.Probe {
 	var handler *v1.Handler
-	if action == httpAction {
-		handler = &v1.Handler{
-			HTTPGet: &v1.HTTPGetAction{
-				Port: intstr.FromString(portName),
-			},
-		}
-	} else {
-		handler = &v1.Handler{
-			TCPSocket: &v1.TCPSocketAction{
-				Port: intstr.FromString(portName),
-			},
-		}
+	handler = &v1.Handler{
+		HTTPGet: &v1.HTTPGetAction{
+			Path: path,
+			Port: intstr.FromString(portName),
+		},
+	}
+	return &v1.Probe{
+		Handler:             *handler,
+		InitialDelaySeconds: 10,
+		PeriodSeconds:       periodSeconds,
+		TimeoutSeconds:      timeoutSeconds,
+	}
+}
+
+func getTCPProbe(portName string, periodSeconds int32) *v1.Probe {
+	var handler *v1.Handler
+	handler = &v1.Handler{
+		TCPSocket: &v1.TCPSocketAction{
+			Port: intstr.FromString(portName),
+		},
 	}
 	return &v1.Probe{
 		Handler:             *handler,

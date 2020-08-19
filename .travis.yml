@@ -23,4 +23,4 @@ script:
 
 after_success:
   - echo "Generate and upload documentation"
-  - curl -fsSL https://raw.githubusercontent.com/lsst/doc-container/tickets\/DM-23256/run.sh | bash -s -- -p "$LTD_PASSWORD" "$PWD"
+  - curl -fsSL https://raw.githubusercontent.com/lsst-dm/doc-container/master/run.sh | bash -s -- -p "$LTD_PASSWORD" "$PWD"

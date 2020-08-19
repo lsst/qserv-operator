@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Configure mariadb for qserv or replication service :
 # - create data directory
@@ -8,13 +8,24 @@
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -eu
+set -euxo pipefail
 
 # WARN: password are displayed in debug logs
 # set -x
 
+MYSQL_INGEST_PASSWORD=''
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
+
+# Used for Qserv czar and worker databases
+
+if [ "$COMPONENT_NAME" = "czar" ] || [ "$COMPONENT_NAME" = "worker" ]; then
+    EUPS_DB=true
+    INSTALL_SCISQL=true
+else
+    EUPS_DB=false
+    INSTALL_SCISQL=false
+fi
 
 # Require root privileges
 ##
@@ -29,13 +40,14 @@ then
     useradd qserv --uid 1000 --no-create-home
 fi
 
-if [ "$COMPONENT_NAME" = "repl" ]; then
-    MYSQL_INSTALL_DB="mysql_install_db"
-    . /secret-repl-db/repl-db.secret.sh
-else
+if [ "$EUPS_DB" = true ]; then
+
     # Source pathes to eups packages
     . /qserv/run/etc/sysconfig/qserv
     MYSQL_INSTALL_DB="${MYSQL_DIR}/scripts/mysql_install_db --basedir=$MYSQL_DIR"
+else
+    MYSQL_INSTALL_DB="mysql_install_db"
+    . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
 fi
 
 DATA_DIR="/qserv/data"
@@ -51,9 +63,6 @@ fi
 
 SQL_DIR="/config-sql"
 
-EXCLUDE_DIR1="lost+found"
-DATA_FILES=$(find "$DATA_DIR" -mindepth 1 ! -name "$EXCLUDE_DIR1")
-
 # Keep crashing if data initialization has failed in a previous instance
 # of this script
 STATE_FILE="$DATA_DIR/INIT_IN_PROGRESS.state"
@@ -63,7 +72,9 @@ if [ -f "$STATE_FILE" ]; then
     exit 1
 fi
 
-if [ ! "$DATA_FILES" ]
+HOST="$(hostname)"
+
+if [ ! -e "$MYSQLD_DATA_DIR" ]
 then
     touch "$STATE_FILE"
     echo "-- "
@@ -76,7 +87,8 @@ then
 
     echo "-- "
     echo "-- Start mariadb server."
-    mysqld &
+    # Skip networking so to prevent replication controller and workers startup
+    mysqld --skip-networking &
     sleep 5
 
     echo "-- "
@@ -91,10 +103,14 @@ then
         file_ext="${file_name#*\.}"
         if [ "${file_ext}" = "tpl.sql" ]; then
             awk \
-                -v VAR1=${MYSQL_MONITOR_PASSWORD} \
-                -v VAR2=${MYSQL_REPLICA_PASSWORD} \
-                '{gsub(/<MYSQL_MONITOR_PASSWORD>/, VAR1);
-                gsub(/<MYSQL_REPLICA_PASSWORD>/, VAR2);
+                -v INGEST_PASS=${MYSQL_INGEST_PASSWORD} \
+                -v MON_PASS=${MYSQL_MONITOR_PASSWORD} \
+                -v REPL_PASS=${MYSQL_REPLICA_PASSWORD} \
+                -v HOST=${HOST} \
+                '{gsub(/<MYSQL_INGEST_PASSWORD>/, INGEST_PASS);
+                gsub(/<MYSQL_MONITOR_PASSWORD>/, MON_PASS);
+                gsub(/<MYSQL_REPLICA_PASSWORD>/, REPL_PASS);
+                gsub(/<HOST>/, HOST);
                 print}' "$file_name" > "$sql_file_name"
         else
             sql_file_name="$file_name"
@@ -109,7 +125,7 @@ then
         fi
     done
 
-    if [ "$COMPONENT_NAME" != "repl" ]; then
+    if [ "$INSTALL_SCISQL" = true ]; then
         echo "-- "
         echo "-- Deploy scisql plugin"
         # WARN: SciSQL shared library (libcisql*.so) deployed by command

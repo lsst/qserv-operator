@@ -40,8 +40,16 @@ spec:
                   format: int32
                   type: integer
               type: object
+            imagePullPolicy:
+              description: ImagePullPolicy for all containers
+              type: string
+            ingest:
+              description: IngestSettings defines the settings for ingest workflow
+              properties:
+                dbimage:
+                  type: string
+              type: object
             networkpolicies:
-              default: false
               description: NetworkPolicies secures the cluster network using Network
                 Policies. Ensure the Kubernetes cluster has enabled Network plugin.
               type: boolean
