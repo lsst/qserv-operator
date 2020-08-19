@@ -52,7 +52,6 @@ type QservSpec struct {
 
 	// NetworkPolicies secures the cluster network using Network Policies.
 	// Ensure the Kubernetes cluster has enabled Network plugin.
-	// +kubebuilder:default:=false
 	NetworkPolicies bool `json:"networkpolicies,omitempty"`
 }
 

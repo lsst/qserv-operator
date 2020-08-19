@@ -11,7 +11,13 @@ import (
 )
 
 func NewNetworkPoliciesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
-	labels := util.MergeLabels(controllerLabels, util.GetLabels(constants.NetworkPolicy, r.Name))
+
+	tmp_labels := map[string]string{
+		"app":      constants.AppLabel,
+		"instance": r.Name,
+	}
+
+	labels := util.MergeLabels(controllerLabels, tmp_labels)
 	return []syncer.Interface{
 		syncer.NewObjectSyncer("DefaultNetworkPolicy", r, qserv.GenerateDefaultNetworkPolicy(r, labels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("CzarNetworkPolicy", r, qserv.GenerateCzarNetworkPolicy(r, labels), c, scheme, noFunc),

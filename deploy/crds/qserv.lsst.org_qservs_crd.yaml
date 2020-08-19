@@ -40,11 +40,6 @@ spec:
                   format: int32
                   type: integer
               type: object
-            networkpolicies:
-              default: false
-              description: NetworkPolicies secures the cluster network using Network
-                Policies. Ensure the Kubernetes cluster has enabled Network plugin.
-              type: boolean
             imagePullPolicy:
               description: ImagePullPolicy for all containers
               type: string
@@ -54,6 +49,10 @@ spec:
                 dbimage:
                   type: string
               type: object
+            networkpolicies:
+              description: NetworkPolicies secures the cluster network using Network
+                Policies. Ensure the Kubernetes cluster has enabled Network plugin.
+              type: boolean
             redis:
               description: Redis defines the settings for redis cluster
               properties:

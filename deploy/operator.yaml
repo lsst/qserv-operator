@@ -16,10 +16,10 @@ spec:
       containers:
         - name: qserv-operator
           # Replace this with the built image name
-          image: qserv/qserv-operator:a6ec0ae
+          image: qserv/qserv-operator:d1604e9-dirty
           command:
           - qserv-operator
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

@@ -9,6 +9,9 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/env.sh"
 
+# Hack for operator-sdk v0.18.1
+export GOROOT=$(go env GOROOT)
+
 operator-sdk generate k8s
 operator-sdk generate crds --crd-version=v1beta1
 "$DIR"/build.sh

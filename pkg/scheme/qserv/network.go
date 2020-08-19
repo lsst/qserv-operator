@@ -37,7 +37,7 @@ func GenerateCzarNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string
 				v1.PolicyTypeIngress,
 			},
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: util.GetLabels(constants.CzarName, cr.Name),
+				MatchLabels: util.GetLabels(constants.Czar, cr.Name),
 			},
 			Ingress: []v1.NetworkPolicyIngressRule{
 				{
@@ -53,7 +53,7 @@ func GenerateCzarNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string
 						{
 							// Only Replication Controller can access the DB
 							PodSelector: &metav1.LabelSelector{
-								MatchLabels: util.GetLabels(constants.ReplName, cr.Name),
+								MatchLabels: util.GetLabels(constants.ReplCtl, cr.Name),
 							},
 						},
 					},
@@ -85,7 +85,7 @@ func GenerateReplDBNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 				v1.PolicyTypeIngress,
 			},
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: util.GetLabels(constants.ReplName, cr.Name),
+				MatchLabels: util.GetLabels(constants.ReplDb, cr.Name),
 			},
 			Ingress: []v1.NetworkPolicyIngressRule{
 				{
@@ -123,7 +123,7 @@ func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 				v1.PolicyTypeIngress,
 			},
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: util.GetLabels(constants.WorkerName, cr.Name),
+				MatchLabels: util.GetLabels(constants.Worker, cr.Name),
 			},
 			Ingress: []v1.NetworkPolicyIngressRule{
 				{
@@ -181,7 +181,7 @@ func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[s
 				v1.PolicyTypeIngress,
 			},
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: util.GetLabels(constants.XrootdRedirectorName, cr.Name),
+				MatchLabels: util.GetLabels(constants.XrootdRedirector, cr.Name),
 			},
 			Ingress: []v1.NetworkPolicyIngressRule{
 				{
@@ -197,7 +197,7 @@ func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[s
 						{
 							// Only Xrootd workers can access the redirector CMSD
 							PodSelector: &metav1.LabelSelector{
-								MatchLabels: util.GetLabels(constants.WorkerName, cr.Name),
+								MatchLabels: util.GetLabels(constants.Worker, cr.Name),
 							},
 						},
 					},
@@ -215,7 +215,7 @@ func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[s
 						{
 							// Only CZAR can access the redirector Xrootd port
 							PodSelector: &metav1.LabelSelector{
-								MatchLabels: util.GetLabels(constants.CzarName, cr.Name),
+								MatchLabels: util.GetLabels(constants.Czar, cr.Name),
 							},
 						},
 					},
