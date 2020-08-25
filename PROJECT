@@ -1,0 +1,11 @@
+domain: lsst.org
+layout: go.kubebuilder.io/v2
+projectName: qserv-operator
+repo: github.com/lsst/qserv-operator
+resources:
+- group: qserv
+  kind: Qserv
+  version: v1alpha1
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}

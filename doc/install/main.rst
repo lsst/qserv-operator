@@ -48,11 +48,8 @@ Deploy qserv-operator
 .. code:: sh
 
     # Deploy qserv-operator in current namespace
-    curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/master/deploy/qserv.sh | bash -s --install-kubedb
+    curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/master/deploy.sh | bash
 
-The ``--install-kubedb`` option enable ``qserv-operator`` to set-up a
-Redis cluster for managing its secondary index (OnjectID,ChunkId). It
-can be skipped for a regular Qserv installation.
 
 Deploy a qserv instance
 =======================

@@ -1,0 +1,24 @@
+# permissions for end users to edit qservs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: qserv-editor-role
+rules:
+- apiGroups:
+  - qserv.lsst.org
+  resources:
+  - qservs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - qserv.lsst.org
+  resources:
+  - qservs/status
+  verbs:
+  - get
