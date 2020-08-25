@@ -17,9 +17,9 @@ package controllers
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -86,45 +86,39 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	r.Scheme.Default(qserv)
 
-	syncers := []syncer.Interface{
-		syncers.NewCzarStatefulSetSyncer(qserv, r.client, r.scheme),
-		syncers.NewDotQservConfigMapSyncer(qserv, r.client, r.scheme),
-		syncers.NewWorkerStatefulSetSyncer(qserv, r.client, r.scheme),
-		syncers.NewReplicationCtlServiceSyncer(qserv, r.client, r.scheme),
-		syncers.NewReplicationCtlStatefulSetSyncer(qserv, r.client, r.scheme),
-		syncers.NewIngestDbServiceSyncer(qserv, r.client, r.scheme),
-		syncers.NewIngestDbStatefulSetSyncer(qserv, r.client, r.scheme),
-		syncers.NewReplicationDbServiceSyncer(qserv, r.client, r.scheme),
-		syncers.NewReplicationDbStatefulSetSyncer(qserv, r.client, r.scheme),
-		syncers.NewXrootdRedirectorServiceSyncer(qserv, r.client, r.scheme),
-		syncers.NewXrootdStatefulSetSyncer(qserv, r.client, r.scheme),
+	qservSyncers := []syncer.Interface{
+		syncers.NewCzarStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewWorkerStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationCtlStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewIngestDbServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewIngestDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationDbServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewXrootdRedirectorServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewXrootdStatefulSetSyncer(qserv, r.Client, r.Scheme),
 	}
 
-	syncers = append(syncers.NewQservServicesSyncer(qserv, r.client, r.scheme), syncers...)
-
-	// Redis database: optional, stores secondary index data
-	if qserv.Spec.Redis != nil {
-		reqLogger.Info("Reconciling Redis")
-		syncers = append(syncers, syncers.NewRedisSyncer(qserv, r.client, r.scheme))
-	}
+	qservSyncers = append(syncers.NewQservServicesSyncer(qserv, r.Client, r.Scheme), qservSyncers...)
 
 	for _, configmapClass := range constants.ContainerConfigmaps {
 		for _, subpath := range []string{"etc", "start"} {
-			syncers = append(syncers, syncers.NewContainerConfigMapSyncer(qserv, r.client, r.scheme, configmapClass, subpath))
+			qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, configmapClass, subpath))
 		}
 	}
-	syncers = append(syncers, syncers.NewContainerConfigMapSyncer(qserv, r.client, r.scheme, constants.InitDbName, "start"))
+	qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, constants.InitDbName, "start"))
 
 	for _, db := range constants.Databases {
-		syncers = append(syncers, syncers.NewSqlConfigMapSyncer(qserv, r.client, r.scheme, db))
+		qservSyncers = append(qservSyncers, syncers.NewSqlConfigMapSyncer(qserv, r.Client, r.Scheme, db))
 	}
 
 	// Specify Network Policies
 	if qserv.Spec.NetworkPolicies {
-		syncers = append(syncers, syncers.NewNetworkPoliciesSyncer(qserv, r.client, r.scheme)...)
+		qservSyncers = append(qservSyncers, syncers.NewNetworkPoliciesSyncer(qserv, r.Client, r.Scheme)...)
 	}
 
-	if err = r.sync(syncers); err != nil {
+	if err = r.sync(qservSyncers); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -133,23 +127,24 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	podList := &v1.PodList{}
 	listOpts := []client.ListOption{
 		client.InNamespace(qserv.Namespace),
-		client.MatchingLabels(labelsForMemcached(qserv.Name)),
+		client.MatchingLabels(labelsForQserv(qserv.Name)),
 	}
 	if err = r.List(ctx, podList, listOpts...); err != nil {
 		log.Error(err, "Failed to list pods", "Qserv.Namespace", qserv.Namespace, "Qserv.Name", qserv.Name)
 		return ctrl.Result{}, err
 	}
 	podNames := getPodNames(podList.Items)
+	log.Info("Pod names: ", podNames)
 
 	// Update status.Nodes if needed
-	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {
+	/* 	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {
 		qserv.Status.Nodes = podNames
 		err := r.Status().Update(ctx, qserv)
 		if err != nil {
 			log.Error(err, "Failed to update Qserv status")
 			return ctrl.Result{}, err
 		}
-	}
+	} */
 
 	return ctrl.Result{}, nil
 }
@@ -157,13 +152,13 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&qservv1alpha1.Qserv{}).
-		Owns(&appsv1.Statefulset{}).
+		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }
 
 func (r *QservReconciler) sync(syncers []syncer.Interface) error {
 	for _, s := range syncers {
-		if err := syncer.Sync(context.TODO(), s, r.recorder); err != nil {
+		if err := syncer.Sync(context.TODO(), s); err != nil {
 			return err
 		}
 	}

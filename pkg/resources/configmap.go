@@ -37,6 +37,7 @@ func applyTemplate(path string, tmplData templateData) string {
 	tmpl, err := template.New(filepath.Base(path)).Funcs(util.TemplateFunctions).ParseFiles(path)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Cannot open template file: %s", path))
+		return ""
 	}
 
 	var buf bytes.Buffer

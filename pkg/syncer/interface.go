@@ -24,7 +24,6 @@ func (r *SyncResult) SetEventData(eventType, reason, message string) {
 
 // Interface represents a syncer. A syncer persists an object
 // (known as subject), into a store (kubernetes apiserver or generic stores)
-// and records kubernetes events
 type Interface interface {
 	// GetObject returns the object for which sync applies
 	GetObject() interface{}

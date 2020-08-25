@@ -8,8 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -42,16 +40,8 @@ func basicEventReason(objKindName string, err error) string {
 // Sync mutates the subject of the syncer interface using controller-runtime
 // CreateOrUpdate method, when obj is not nil. It takes care of setting owner
 // references and recording kubernetes events where appropriate
-func Sync(ctx context.Context, syncer Interface, recorder record.EventRecorder) error {
-	result, err := syncer.Sync(ctx)
-	owner := syncer.GetOwner()
-
-	if recorder != nil && owner != nil && result.EventType != "" && result.EventReason != "" && result.EventMessage != "" {
-		if err != nil || result.Operation != controllerutil.OperationResultNone {
-			recorder.Eventf(owner, result.EventType, result.EventReason, result.EventMessage)
-		}
-	}
-
+func Sync(ctx context.Context, syncer Interface) error {
+	_, err := syncer.Sync(ctx)
 	return err
 }
 
