@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	qservv1alpha1 "github.com/lsst/qserv-operator/pkg/apis/qserv/v1alpha1"
+	qservv1alpha1 "github.com/lsst/qserv-operator/api/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )

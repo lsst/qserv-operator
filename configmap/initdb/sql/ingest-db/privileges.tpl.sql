@@ -1,4 +1,0 @@
-CREATE USER 'qsingest'@'%' IDENTIFIED BY '<MYSQL_INGEST_PASSWORD>';
-GRANT ALL ON qservIngest.* TO 'qsingest'@'%';
-
-FLUSH PRIVILEGES;
