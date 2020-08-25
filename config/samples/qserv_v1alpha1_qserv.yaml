@@ -53,18 +53,6 @@ spec:
               description: NetworkPolicies secures the cluster network using Network
                 Policies. Ensure the Kubernetes cluster has enabled Network plugin.
               type: boolean
-            redis:
-              description: Redis defines the settings for redis cluster
-              properties:
-                master:
-                  format: int32
-                  type: integer
-                replicas:
-                  format: int32
-                  type: integer
-                version:
-                  type: string
-              type: object
             replication:
               description: Replication defines the settings for the replication framework
               properties:

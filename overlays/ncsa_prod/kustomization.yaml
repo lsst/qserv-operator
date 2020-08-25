@@ -1,0 +1,5 @@
+nameSuffix: -prod
+bases:
+- ../../base
+patchesStrategicMerge:
+- qserv.yaml

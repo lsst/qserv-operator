@@ -1,0 +1,14 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storageclass: "qserv-local-storage"
+  storagecapacity: "100Gi"
+  worker:
+    replicas: 30
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "qserv"
+    effect: "NoSchedule"

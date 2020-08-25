@@ -1,0 +1,22 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  imagePullPolicy: "IfNotPresent"
+  storageclass: "standard"
+  storagecapacity: "1Gi"
+  networkpolicies: true
+  czar:
+    image: "qserv/qserv:deps_20200729_0234"
+  ingest:
+    dbimage: "mariadb:10.2.16"
+  worker:
+    replicas: 2
+    image: "qserv/qserv:deps_20200729_0234"
+  replication:
+      image: "qserv/qserv:tickets_DM-26034"
+      dbimage: "mariadb:10.2.16"
+  xrootd:
+    image: "qserv/qserv:deps_20200729_0234"
+    replicas: 2
