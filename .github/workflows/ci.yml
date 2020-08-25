@@ -1,0 +1,69 @@
+# Qserv operator CI workflow
+---
+name: "CI"
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    name: Build qserv-operator
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Declare Version Variables
+        id: vars
+        shell: bash
+        run: |
+          echo "::set-env name=OP_IMAGE::$(. ./env.sh && echo $OP_IMAGE)"
+      - name: Setup Operator SDK
+        uses: k8s-school/setup-k8s-operator-sdk@v1
+        with:
+          version: "^1.0.0"
+      - name: Run Unit Tests
+        run: make test
+      - name: Build operator image
+        run: |
+          git checkout "$PWD"
+          ./build.sh
+      - name: Scan operator image
+        uses: anchore/scan-action@v2
+        with:
+          image: "${{ env.OP_IMAGE }}"
+          acs-report-enable: true
+      - name: upload Anchore scan SARIF report
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: results.sarif
+  # WARN: Github action runner are too weak to run Qserv e2e tests
+  # e2e:
+  #   name: Run e2e tests on qserv-operator
+  #   runs-on: ubuntu-18.04
+  #   needs: build
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #     - name: Create k3s Cluster
+  #       uses: debianmaster/actions-k3s@master
+  #       id: k3s
+  #       with:
+  #         version: 'v0.9.1'
+  #     - run: |
+  #         kubectl get nodes
+  #         kubectl get storageclasses.storage.k8s.io
+  #         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+  #         kubectl get storageclasses.storage.k8s.io
+  #     - name: Setup kustomize
+  #       uses: imranismail/setup-kustomize@v1
+  #       with:
+  #         kustomize-version: "3.1.0"
+  #     - name: Deploy operator
+  #       run: ./deploy.sh
+  #     - name: Apply a sample manifest
+  #       run: kubectl apply -k manifests/k3s
+  #     - name: Wait for Qserv to start
+  #       run: ./tests/tools/wait-qserv-ready.sh -v
+  #     - name: Run E2E Tests
+  #       run: ./tests/e2e/integration.sh

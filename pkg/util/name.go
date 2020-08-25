@@ -7,7 +7,7 @@ import (
 
 	qservv1alpha1 "github.com/lsst/qserv-operator/api/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var log = logf.Log.WithName("name")
@@ -75,7 +75,7 @@ func PrefixConfigmap(r *qservv1alpha1.Qserv, name string) string {
 	return fmt.Sprintf("%s-%s", r.Name, name)
 }
 
-// PrefixConfigMap add a common prefix to all ConfigMap names of a given Qserv instance
+// GetConfigVolumeName add a common prefix to all pod volume names attaching a configmap
 func GetConfigVolumeName(suffix string) string {
 	return fmt.Sprintf("config-%s", suffix)
 }

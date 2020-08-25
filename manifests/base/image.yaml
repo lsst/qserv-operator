@@ -1,0 +1,13 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  czar:
+    image: qserv/qserv:a4f428a
+  worker:
+    image: qserv/qserv:a4f428a
+  replication:
+      image: qserv/qserv:a4f428a
+  xrootd:
+    image: qserv/qserv:a4f428a

@@ -1,15 +1,14 @@
 package qserv
 
 import (
+	qservv1alpha1 "github.com/lsst/qserv-operator/api/v1alpha1"
+	"github.com/lsst/qserv-operator/pkg/constants"
+	"github.com/lsst/qserv-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	qservv1alpha1 "github.com/lsst/qserv-operator/api/v1alpha1"
-	"github.com/lsst/qserv-operator/pkg/constants"
-	"github.com/lsst/qserv-operator/pkg/util"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var log = logf.Log.WithName("qserv")
@@ -66,7 +65,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetDataVolumeClaimTemplateName(),
+						Name: constants.DataVolumeClaimTemplateName,
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -136,7 +135,7 @@ func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]stri
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetDataVolumeClaimTemplateName(),
+						Name: constants.DataVolumeClaimTemplateName,
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -255,7 +254,7 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetDataVolumeClaimTemplateName(),
+						Name: constants.DataVolumeClaimTemplateName,
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -276,20 +275,10 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 	return ss
 }
 
-func GetDataVolumeClaimTemplateName() string {
-	return constants.QservName + "-data"
-}
-
+// GenerateWorkerStatefulSet generate statefulset specification for Qserv Workers
 func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.Worker)
 	namespace := cr.Namespace
-
-	const (
-		MARIADB = iota
-		WMGR
-	)
-
-	const INIT = 0
 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.Worker, cr.Name))
 
@@ -347,7 +336,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: GetDataVolumeClaimTemplateName(),
+						Name: constants.DataVolumeClaimTemplateName,
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
@@ -367,6 +356,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	return ss
 }
 
+// GenerateXrootdStatefulSet generate statefulset specification for xrootd redirectors
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	namespace := cr.Namespace
 	name := util.GetName(cr, string(constants.XrootdRedirector))

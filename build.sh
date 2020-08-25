@@ -21,7 +21,7 @@ Usage: `basename $0` [options] path host [host ...]
 
   Available options:
     -h          this message
-    -k          development mode: load image in kind instead of pushing it to docker hub
+    -k          development mode: load image in kind
 
 Build qserv-operator image from source code.
 EOD
@@ -49,6 +49,4 @@ make docker-build IMG="$OP_IMAGE"
 
 if [ $kind = true ]; then
   kind load docker-image "$OP_IMAGE"
-else
-  docker push "$OP_IMAGE" || echo "WARN: unable to push qserv-operator image to Docker hub"
 fi

@@ -304,11 +304,6 @@ func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 
 func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.PodClass) ([]v1.Container, VolumeSet) {
 
-	const (
-		CMSD = iota
-		XROOTD
-	)
-
 	spec := cr.Spec
 
 	volumeMounts := getXrootdVolumeMounts(component)
@@ -379,16 +374,8 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.PodClass) 
 	return containers, volumes.volumeSet
 }
 
-type NetworkAction string
-
-const (
-	httpAction NetworkAction = "http"
-	tcpAction  NetworkAction = "tcp"
-)
-
 func getHTTPProbe(portName string, periodSeconds int32, timeoutSeconds int32, path string) *v1.Probe {
-	var handler *v1.Handler
-	handler = &v1.Handler{
+	handler := &v1.Handler{
 		HTTPGet: &v1.HTTPGetAction{
 			Path: path,
 			Port: intstr.FromString(portName),
@@ -403,8 +390,7 @@ func getHTTPProbe(portName string, periodSeconds int32, timeoutSeconds int32, pa
 }
 
 func getTCPProbe(portName string, periodSeconds int32) *v1.Probe {
-	var handler *v1.Handler
-	handler = &v1.Handler{
+	handler := &v1.Handler{
 		TCPSocket: &v1.TCPSocketAction{
 			Port: intstr.FromString(portName),
 		},

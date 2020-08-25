@@ -40,15 +40,6 @@ type QservReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// getPodNames returns the pod names of the array of pods passed in
-func getPodNames(pods []v1.Pod) []string {
-	var podNames []string
-	for _, pod := range pods {
-		podNames = append(podNames, pod.Name)
-	}
-	return podNames
-}
-
 // labelsForQserv returns the labels for selecting the resources
 // belonging to the given qserv CR name.
 func labelsForQserv(name string) map[string]string {
@@ -62,6 +53,7 @@ func labelsForQserv(name string) map[string]string {
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=services;services/finalizers;configmaps;secrets,verbs=create;delete;get;list;patch;update;watch
 
+// Reconcile reconciles a Qserv object
 func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	ctx := context.Background()
@@ -111,7 +103,7 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, constants.InitDbName, "start"))
 
 	for _, db := range constants.Databases {
-		qservSyncers = append(qservSyncers, syncers.NewSqlConfigMapSyncer(qserv, r.Client, r.Scheme, db))
+		qservSyncers = append(qservSyncers, syncers.NewSQLConfigMapSyncer(qserv, r.Client, r.Scheme, db))
 	}
 
 	// Specify Network Policies
@@ -150,6 +142,7 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager setups Qserv controller for k8s
 func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&qservv1alpha1.Qserv{}).

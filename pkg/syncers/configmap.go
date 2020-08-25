@@ -30,8 +30,9 @@ func NewDotQservConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme 
 	})
 }
 
-func NewSqlConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.PodClass) syncer.Interface {
-	cm := qserv.GenerateSqlConfigMap(r, controllerLabels, db)
+// NewSQLConfigMapSyncer generate configmap specification for initContainer in charge of database initialization
+func NewSQLConfigMapSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.PodClass) syncer.Interface {
+	cm := qserv.GenerateSQLConfigMap(r, controllerLabels, db)
 	objectName := fmt.Sprintf("%sSqlConfigMap", strings.Title(string(db)))
 	return syncer.NewObjectSyncer(objectName, r, cm, c, scheme, func() error {
 		return nil

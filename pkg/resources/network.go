@@ -9,6 +9,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// GenerateDefaultNetworkPolicy generate a NetworkPolicy
+// which prevents all incoming network connection to all pods in namespace
 func GenerateDefaultNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -25,6 +27,7 @@ func GenerateDefaultNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]str
 	}
 }
 
+// GenerateCzarNetworkPolicy generate a NetworkPolicy for czar pod
 func GenerateCzarNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -73,6 +76,7 @@ func GenerateCzarNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string
 	}
 }
 
+// GenerateReplDBNetworkPolicy generate a NetworkPolicy for replication database pod
 func GenerateReplDBNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -111,6 +115,7 @@ func GenerateReplDBNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 	}
 }
 
+// GenerateWorkerNetworkPolicy generate a NetworkPolicy for worker pods
 func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -169,6 +174,7 @@ func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 	}
 }
 
+// GenerateXrootdRedirectorNetworkPolicy generate a NetworkPolicy for xrootd redirector pods
 func GenerateXrootdRedirectorNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{

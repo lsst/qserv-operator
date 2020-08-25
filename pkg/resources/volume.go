@@ -33,12 +33,6 @@ func (ivs *InstanceVolumeSet) make(cr *qservv1alpha1.Qserv) {
 	ivs.cr = cr
 }
 
-func (vs *VolumeSet) add(vols VolumeSet) {
-	for k, v := range vols {
-		(*vs)[k] = v
-	}
-}
-
 func (ivs *InstanceVolumeSet) addConfigMapExecVolume(container constants.ContainerName, executeMode *int32) {
 
 	suffix := fmt.Sprintf("%s-start", container)
@@ -98,7 +92,7 @@ func (ivs *InstanceVolumeSet) addEmptyDirVolume(name string) {
 
 func (ivs *InstanceVolumeSet) addDataVolume(cr *qservv1alpha1.Qserv) {
 	name := "data"
-	claimName := fmt.Sprintf("%s-%s-%s-0", GetDataVolumeClaimTemplateName(), cr.Name, constants.Czar)
+	claimName := fmt.Sprintf("%s-%s-%s-0", constants.DataVolumeClaimTemplateName, cr.Name, constants.Czar)
 	volume := v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
@@ -161,7 +155,7 @@ func getCorePathVolumeMount(mountPath string) v1.VolumeMount {
 func getDataVolumeMount() v1.VolumeMount {
 	return v1.VolumeMount{
 		MountPath: filepath.Join("/", "qserv", "data"),
-		Name:      GetDataVolumeClaimTemplateName(),
+		Name:      constants.DataVolumeClaimTemplateName,
 		ReadOnly:  false,
 	}
 }

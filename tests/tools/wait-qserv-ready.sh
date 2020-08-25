@@ -52,6 +52,9 @@ do
   kubectl get pod -l "app=qserv,instance=$INSTANCE"
   if [ "$VERBOSE" = true ]; then
     kubectl describe pod -l "app=qserv,instance=$INSTANCE"
+    df -h
+    kubectl get pvc
+    kubectl get pv
   fi
 done
 

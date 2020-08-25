@@ -1,0 +1,15 @@
+# Report card workflow
+---
+name: Generate code reports
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  report:
+    name: Update code report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Go report card
+        uses: creekorful/goreportcard-action@v1.0

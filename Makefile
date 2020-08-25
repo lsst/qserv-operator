@@ -1,7 +1,10 @@
 # Current Operator version
-VERSION ?= 0.0.1
 
 SHELL := /bin/bash
+
+ROOT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+ENVFILE := $(ROOT_DIR)/env.sh
+VERSION := $(shell . $(ENVFILE) ; echo $${VERSION})
 
 # Default bundle image tag
 BUNDLE_IMG ?= controller-bundle:$(VERSION)
@@ -15,7 +18,7 @@ endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG := $(shell . $(ENVFILE) ; echo $${OP_IMAGE})
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -124,3 +127,8 @@ bundle: manifests
 .PHONY: bundle-build
 bundle-build:
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+
+##@ Versioning
+.PHONY: version
+version: ## Shows the current release version based on version/version.go
+	@. $(ENVFILE) ; echo $(VERSION)

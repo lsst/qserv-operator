@@ -10,14 +10,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// NewNetworkPoliciesSyncer generate NetworkPolicies specifications all Qserv pods
 func NewNetworkPoliciesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
 
-	tmp_labels := map[string]string{
+	tmpLabels := map[string]string{
 		"app":      constants.AppLabel,
 		"instance": r.Name,
 	}
 
-	labels := util.MergeLabels(controllerLabels, tmp_labels)
+	labels := util.MergeLabels(controllerLabels, tmpLabels)
 	return []syncer.Interface{
 		syncer.NewObjectSyncer("DefaultNetworkPolicy", r, qserv.GenerateDefaultNetworkPolicy(r, labels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("CzarNetworkPolicy", r, qserv.GenerateCzarNetworkPolicy(r, labels), c, scheme, noFunc),

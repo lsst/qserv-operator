@@ -11,6 +11,8 @@ const (
 
 	CorePathVolumeName = "corepath"
 
+	DataVolumeClaimTemplateName = QservName + "-data"
+
 	MariadbPort     = 3306
 	MariadbPortName = string(MariadbName)
 
@@ -34,7 +36,10 @@ const (
 	GraceTime = 30
 )
 
+// QservGID qserv user gid
 var QservGID int64 = 1000
+
+// QservUID qserv user uid
 var QservUID int64 = 1000
 
 // ContainerName name all containers
@@ -45,14 +50,22 @@ const (
 	CmsdName ContainerName = "cmsd"
 	// IngestDbName name for ingest database container
 	IngestDbName ContainerName = "ingest-db"
-	InitDbName   ContainerName = "initdb"
-	MariadbName  ContainerName = "mariadb"
-	ProxyName    ContainerName = "proxy"
-	ReplCtlName  ContainerName = "repl-ctl"
-	ReplDbName   ContainerName = "repl-db"
-	XrootdName   ContainerName = "xrootd"
-	WmgrName     ContainerName = "wmgr"
-	ReplWrkName  ContainerName = "repl-wrk"
+	// InitDbName name for database initialization containers
+	InitDbName ContainerName = "initdb"
+	// MariadbName name for mariadb container
+	MariadbName ContainerName = "mariadb"
+	// ProxyName name for proxy container
+	ProxyName ContainerName = "proxy"
+	// ReplCtlName name for replication controller container
+	ReplCtlName ContainerName = "repl-ctl"
+	// ReplDbName name for replication database container
+	ReplDbName ContainerName = "repl-db"
+	// XrootdName name for xrootd container
+	XrootdName ContainerName = "xrootd"
+	// WmgrName name for worker manager container
+	WmgrName ContainerName = "wmgr"
+	// ReplWrkName name for replication worker container
+	ReplWrkName ContainerName = "repl-wrk"
 )
 
 // PodClass name all classes of pod
