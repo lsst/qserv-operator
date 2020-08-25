@@ -5,3 +5,4 @@ proxy-backend-addresses = 127.0.0.1:3306
 
 log-level=debug
 
+proxy-connect-timeout=30

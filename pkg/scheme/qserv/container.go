@@ -221,6 +221,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 				Value: util.GetName(cr, string(constants.ReplDbName)),
 			},
 		},
+		// TODO add ports
 		SecurityContext: &v1.SecurityContext{
 			RunAsUser: &constants.QservUID,
 		},

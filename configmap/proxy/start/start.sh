@@ -49,6 +49,13 @@ QSERV_CONF="/config-etc/qserv-czar.cnf"
 PROXY_OPTIONS="--proxy-lua-script=${QSERV_DIR}/share/lua/qserv/mysqlProxy.lua \
         --lua-cpath=${QSERV_DIR}/lib/lua/qserv/czarProxy.so"
 
+
+# jemalloc profilling
+JEMU=""
+JEMD=""
+#JEMU='LD_PRELOAD=${JEMALLOC_DIR}/lib/libjemalloc.so'
+#JEMD='MALLOC_CONF=MALLOC_CONF=prof:true,lg_prof_interval:30,lg_prof_sample:17,prof_prefix:/qserv/run/var/log/jeprof'
+
 VALG=""
 #VALG="valgrind --leak-check=full"
 #VALG="valgrind --leak-check=no"
@@ -61,6 +68,6 @@ if [ "$USER" = "root" ]; then
     proxy_user_option="--user=$proxy_user"
 fi
 
-QSERV_CONFIG=${QSERV_CONF} ${VALG} mysql-proxy \
+QSERV_CONFIG=${QSERV_CONF}${JEMU} ${JEMD} ${VALG} mysql-proxy \
     $PROXY_OPTIONS $proxy_user_option \
     --defaults-file=${MYPROXY_CONF}
