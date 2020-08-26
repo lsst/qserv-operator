@@ -33,11 +33,24 @@ type templateData struct {
 	XrootdReplicas            uint
 }
 
-func applyTemplate(path string, tmplData templateData) string {
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func applyTemplate(path string, tmplData templateData) (string, error) {
+
+	if !fileExists(path) {
+		return "", fmt.Errorf("File does not exists: %s", path)
+	}
+
 	tmpl, err := template.New(filepath.Base(path)).Funcs(util.TemplateFunctions).ParseFiles(path)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Cannot open template file: %s", path))
-		return ""
+		return "", nil
 	}
 
 	var buf bytes.Buffer
@@ -47,7 +60,7 @@ func applyTemplate(path string, tmplData templateData) string {
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Cannot apply template: %s", path))
 	}
-	return buf.String()
+	return buf.String(), nil
 }
 
 func getFileContent(path string) string {
@@ -67,13 +80,14 @@ func getFileContent(path string) string {
 func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[string]string {
 	files := make(map[string]string)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			reqLogger.Info(fmt.Sprintf("Scan %s", path))
-			files[info.Name()] = applyTemplate(path, tmplData)
-		}
-		return nil
-	})
+	err := filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+			if !info.IsDir() {
+				reqLogger.Info(fmt.Sprintf("Scan %s", path))
+				files[info.Name()], _ = applyTemplate(path, tmplData)
+			}
+			return nil
+		})
 	if err != nil {
 		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
 	}

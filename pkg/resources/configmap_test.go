@@ -1,6 +1,8 @@
 package qserv
 
 import (
+	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,30 +16,30 @@ func TestApplyTemplate(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want bool
+		want string
 	}{
 		{
-			"String in slice returns true",
+			"Existing template",
 			args{
-				"info",
-				templateData{QstatusMysqldHost: "CZAR_TEST"},
+				"example.tpl",
+				templateData{QstatusMysqldHost: "Value"},
 			},
-			true,
-		},
-		{
-			"String not in slice returns false",
-			args{
-				"error",
-				templateData{QstatusMysqldHost: "CZAR_TEST2"},
-			},
-			true,
+			"Test field: Value\n",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//got := applyTemplate(tt.args.str, tt.args.templateData)
-			// FIXME create real tests!
-			got := true
+
+			files, err := ioutil.ReadDir(".")
+			if err != nil {
+				log.Error(err, "toto")
+			}
+			for _, f := range files {
+				fmt.Println(f.Name())
+			}
+
+			got, error := applyTemplate(tt.args.str, tt.args.templateData)
+			fmt.Println(error)
 			assert.Equal(t, tt.want, got)
 		})
 	}
