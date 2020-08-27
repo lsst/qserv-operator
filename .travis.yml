@@ -16,7 +16,7 @@ script:
   - ./build.sh
   - kind load docker-image "$OP_IMAGE"
   - ./deploy.sh
-  - kubectl apply -k base
+  - kubectl apply -k manifests/base
   - ./tests/tools/wait-qserv-ready.sh
   - kubectl get all,endpoints,cm,pvc,pv,networkpolicies -o wide
   - ./tests/e2e/integration.sh 
