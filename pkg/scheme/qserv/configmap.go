@@ -138,10 +138,7 @@ func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string
 
 func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
 
-	tmplData := templateData{
-		CzarDomainName:     util.GetCzarServiceName(cr),
-		XrootdRedirectorDn: util.GetXrootdRedirectorServiceName(cr)}
-
+	tmplData := generateTemplateData(cr)
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
 	name := util.PrefixConfigmap(cr, fmt.Sprintf("sql-%s", db))
