@@ -118,6 +118,21 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) stri
 
 func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
+
+	volumeMounts := []v1.VolumeMount{
+		// Used for mysql socket access
+		// TODO move mysql socket in emptyDir?
+		getDataVolumeMount(),
+		getEtcVolumeMount(constants.ProxyName),
+		getStartVolumeMount(constants.ProxyName),
+	}
+
+	// Volumes
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	setCorePath(spec.Devel.CorePath, &volumeMounts, &volumes)
+
 	container := v1.Container{
 		Command:         constants.Command,
 		Image:           spec.Czar.Image,
@@ -132,28 +147,56 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 		},
 		LivenessProbe:  getTCPProbe(constants.ProxyPortName, 10),
 		ReadinessProbe: getTCPProbe(constants.ProxyPortName, 5),
-		VolumeMounts: []v1.VolumeMount{
-			// Used for mysql socket access
-			// TODO move mysql socket in emptyDir?
-			getDataVolumeMount(),
-			getEtcVolumeMount(constants.ProxyName),
-			getStartVolumeMount(constants.ProxyName),
-		},
+		VolumeMounts:   volumeMounts,
 	}
-
-	// Volumes
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ProxyName)
 
 	return container, volumes.volumeSet
 }
 
+func setCorePath(corepath string, volumeMounts *[]v1.VolumeMount, volumes *InstanceVolumeSet) {
+	if len(corepath) != 0 {
+		*volumeMounts = append(*volumeMounts, getCorePathVolumeMount(corepath))
+		volumes.addCorePathVolume(corepath)
+	}
+}
+
+// setDebug allow to start a container in debug mode.
+// - change container command to 'sleep infinity'
+// - add capability SYS_PTRACE
+// - remove probes
+func setDebug(debug string, name constants.ContainerName, container *v1.Container) {
+	switch debug {
+	case string(name), "all":
+		container.Command = constants.CommandDebug
+		container.SecurityContext = &v1.SecurityContext{
+			Capabilities: &v1.Capabilities{
+				Add: []v1.Capability{
+					v1.Capability("SYS_PTRACE"),
+				},
+			},
+		}
+		container.LivenessProbe = nil
+		container.ReadinessProbe = nil
+	}
+}
+
 func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
 	var probeTimeoutSeconds int32 = 3
+	volumeMounts := []v1.VolumeMount{
+		getEtcVolumeMount(constants.ReplCtlName),
+		getStartVolumeMount(constants.ReplCtlName),
+		getSecretVolumeMount(constants.ReplDbName),
+		getSecretVolumeMount(constants.MariadbName),
+	}
+
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	setCorePath(spec.Devel.CorePath, &volumeMounts, &volumes)
 
 	container := v1.Container{
 		Command:         constants.Command,
@@ -179,32 +222,37 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
-		VolumeMounts: []v1.VolumeMount{
-			v1.VolumeMount{
-				MountPath: filepath.Join("/", "qserv", "data"),
-				Name:      "data",
-				ReadOnly:  false,
-			},
-			getEtcVolumeMount(constants.ReplCtlName),
-			getStartVolumeMount(constants.ReplCtlName),
-			getSecretVolumeMount(constants.ReplDbName),
-			getSecretVolumeMount(constants.MariadbName),
-		},
+		VolumeMounts: volumeMounts,
 	}
 
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+
+	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
 	volumes.addDataVolume(cr)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
+	setDebug(spec.Replication.Debug, constants.ReplCtlName, &container)
 	return container, volumes.volumeSet
 }
 
 func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
+
+	volumeMounts := []v1.VolumeMount{
+		getDataVolumeMount(),
+		getEtcVolumeMount(constants.ReplWrkName),
+		getStartVolumeMount(constants.ReplWrkName),
+		getSecretVolumeMount(constants.MariadbName),
+		getSecretVolumeMount(constants.ReplDbName),
+	}
+
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	setCorePath(spec.Devel.CorePath, &volumeMounts, &volumes)
 
 	container := v1.Container{
 		Name:            string(constants.ReplWrkName),
@@ -225,22 +273,14 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		SecurityContext: &v1.SecurityContext{
 			RunAsUser: &constants.QservUID,
 		},
-		VolumeMounts: []v1.VolumeMount{
-			getDataVolumeMount(),
-			getEtcVolumeMount(constants.ReplWrkName),
-			getStartVolumeMount(constants.ReplWrkName),
-			getSecretVolumeMount(constants.MariadbName),
-			getSecretVolumeMount(constants.ReplDbName),
-		},
+		VolumeMounts: volumeMounts,
 	}
-
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.ReplWrkName)
 	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.ReplDbName)
 
+	setDebug(spec.Replication.Debug, constants.ReplWrkName, &container)
 	return container, volumes.volumeSet
 }
 
@@ -300,6 +340,12 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.PodClass) 
 
 	volumeMounts := getXrootdVolumeMounts(component)
 
+	// Volumes
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	setCorePath(spec.Devel.CorePath, &volumeMounts, &volumes)
+
 	containers := []v1.Container{
 		{
 			Name:            string(constants.CmsdName),
@@ -354,10 +400,6 @@ func getXrootdContainers(cr *qservv1alpha1.Qserv, component constants.PodClass) 
 		containers[0].LivenessProbe = getTCPProbe(constants.CmsdPortName, 10)
 		containers[0].ReadinessProbe = getTCPProbe(constants.CmsdPortName, 5)
 	}
-
-	// Volumes
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.XrootdName)
 	volumes.addEmptyDirVolume(constants.XrootdAdminPathVolumeName)

@@ -115,17 +115,16 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 	}
 }
 
-func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
+func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
 
-	tmplData := generateTemplateData(r)
+	tmplData := templateData{}
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+	name := util.PrefixConfigmap(cr, "dot-qserv")
+	namespace := cr.Namespace
 
-	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", db))
-	namespace := r.Namespace
-
-	labels = util.MergeLabels(labels, util.GetLabels(db, r.Name))
-	root := filepath.Join("/", "configmap", "initdb", "sql", string(db))
+	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
+	root := filepath.Join("/", "configmap", "dot-qserv")
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -137,16 +136,16 @@ func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 	}
 }
 
-func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
+func GenerateSqlConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
 
-	tmplData := templateData{}
+	tmplData := generateTemplateData(cr)
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := util.PrefixConfigmap(cr, "dot-qserv")
+	name := util.PrefixConfigmap(cr, fmt.Sprintf("sql-%s", db))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
-	root := filepath.Join("/", "configmap", "dot-qserv")
+	labels = util.MergeLabels(labels, util.GetLabels(db, cr.Name))
+	root := filepath.Join("/", "configmap", "initdb", "sql", string(db))
 
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{

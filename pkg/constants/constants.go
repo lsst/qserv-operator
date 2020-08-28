@@ -9,6 +9,8 @@ const (
 	CmsdPort     = 2131
 	CmsdPortName = string(CmsdName)
 
+	CorePathVolumeName = "corepath"
+
 	MariadbPort     = 3306
 	MariadbPortName = string(MariadbName)
 
@@ -97,3 +99,6 @@ var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
 
 // Command contains the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}
+
+// CommandDebug is a prerequisite for interactive debugging
+var CommandDebug = []string{"sleep", "infinity"}

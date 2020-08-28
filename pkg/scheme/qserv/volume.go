@@ -73,6 +73,19 @@ func (ivs *InstanceVolumeSet) addConfigMapVolume(suffix string) {
 	ivs.volumeSet[volumeName] = volume
 }
 
+func (ivs *InstanceVolumeSet) addCorePathVolume(path string) {
+	name := constants.CorePathVolumeName
+	volume := v1.Volume{
+		Name: name,
+		VolumeSource: v1.VolumeSource{
+			HostPath: &v1.HostPathVolumeSource{
+				Path: path,
+			},
+		},
+	}
+	ivs.volumeSet[name] = volume
+}
+
 func (ivs *InstanceVolumeSet) addEmptyDirVolume(name string) {
 	volume := v1.Volume{
 		Name: name,
@@ -164,6 +177,11 @@ func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount 
 func getStartVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-start", microservice)
 	return v1.VolumeMount{Name: volumeName, MountPath: "/config-start"}
+}
+
+func getCorePathVolumeMount(mountPath string) v1.VolumeMount {
+	volumeName := constants.CorePathVolumeName
+	return v1.VolumeMount{Name: volumeName, MountPath: mountPath}
 }
 
 func getTmpVolumeMount() v1.VolumeMount {

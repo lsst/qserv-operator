@@ -33,6 +33,9 @@ type QservSpec struct {
 	// + kubebuilder:default:=Always
 	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
+	// Devel defines the settings for development environment
+	Devel DevelSettings `json:"devel,omitempty"`
+
 	// Redis defines the settings for redis cluster
 	// +kubebuilder:validation:Optional
 	Redis *RedisSettings `json:"redis,omitempty"`
@@ -67,6 +70,11 @@ type IngestSettings struct {
 	DbImage string `json:"dbimage,omitempty"`
 }
 
+// DevelSettings defines the specification for development/debug environment
+type DevelSettings struct {
+	CorePath string `json:"corepath,omitempty"`
+}
+
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
 	Image    string `json:"image,omitempty"`
@@ -85,6 +93,7 @@ type RedisSettings struct {
 
 // ReplicationSettings defines the specification of the replication framework
 type ReplicationSettings struct {
+	Debug   string `json:"debug,omitempty"`
 	DbImage string `json:"dbimage,omitempty"`
 	Image   string `json:"image,omitempty"`
 }
