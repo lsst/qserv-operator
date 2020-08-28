@@ -134,8 +134,8 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Error(err, "Failed to list pods", "Qserv.Namespace", qserv.Namespace, "Qserv.Name", qserv.Name)
 		return ctrl.Result{}, err
 	}
-	podNames := getPodNames(podList.Items)
-	log.Info("Pod names: ", podNames)
+	//podNames := getPodNames(podList.Items)
+	//log.Info("Pod description:", "pod names", podNames)
 
 	// Update status.Nodes if needed
 	/* 	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {

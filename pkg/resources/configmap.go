@@ -134,7 +134,8 @@ func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 
 	tmplData := generateTemplateData(r)
 
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+	// reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+	// reqLogger.Info("XXXXX %s", "tmplData", tmplData)
 
 	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", db))
 	namespace := r.Namespace
