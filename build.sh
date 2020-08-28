@@ -27,6 +27,8 @@ Build qserv-operator image from source code.
 EOD
 }
 
+kind=false
+
 # get the options
 while getopts hk c ; do
     case $c in
