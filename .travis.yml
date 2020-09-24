@@ -15,11 +15,11 @@ script:
   - . ./env.sh
   - ./build.sh
   - kind load docker-image "$OP_IMAGE"
-  - ./deploy/qserv.sh --dev --install-kubedb
-  - kubectl apply -k base
-  - ./wait-qserv-ready.sh
+  - ./deploy.sh
+  - kubectl apply -k manifests/base
+  - ./tests/tools/wait-qserv-ready.sh
   - kubectl get all,endpoints,cm,pvc,pv,networkpolicies -o wide
-  - ./run-integration-tests.sh
+  - ./tests/e2e/integration.sh 
 
 after_success:
   - echo "Generate and upload documentation"

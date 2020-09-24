@@ -57,7 +57,7 @@ Install Qserv in two lines
 
 .. code:: bash
 
-    curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/master/deploy/qserv.sh | bash -s
+    curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/master/deploy.sh | bash
     kubectl apply -k https://github.com/lsst/qserv-operator/base
 
 Run Qserv integration tests
@@ -66,7 +66,7 @@ Run Qserv integration tests
 .. code:: bash
 
     cd "$WORKDIR"
-    git clone  https://github.com/lsst/qserv-operator
+    git clone --depth 1 --single-branch https://github.com/lsst/qserv-operator
     cd qserv-operator
-    ./wait-qserv-ready.sh
-    ./run-integration-tests.sh
+    ./tests/tools/wait-qserv-ready.sh
+    ./tests/e2e/integration.sh
