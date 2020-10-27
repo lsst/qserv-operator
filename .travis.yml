@@ -20,7 +20,3 @@ script:
   - ./tests/tools/wait-qserv-ready.sh
   - kubectl get all,endpoints,cm,pvc,pv,networkpolicies -o wide
   - ./tests/e2e/integration.sh 
-
-after_success:
-  - echo "Generate and upload documentation"
-  - curl -fsSL https://raw.githubusercontent.com/lsst-dm/doc-container/master/run.sh | bash -s -- -p "$LTD_PASSWORD" "$PWD"

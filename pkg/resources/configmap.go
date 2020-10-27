@@ -3,7 +3,6 @@ package qserv
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -15,11 +14,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-type filedesc struct {
-	name    string
-	content []byte
-}
 
 type templateData struct {
 	CzarDomainName            string
@@ -44,12 +38,12 @@ func fileExists(filename string) bool {
 func applyTemplate(path string, tmplData templateData) (string, error) {
 
 	if !fileExists(path) {
-		return "", fmt.Errorf("File does not exists: %s", path)
+		return "", fmt.Errorf("file does not exists: %s", path)
 	}
 
 	tmpl, err := template.New(filepath.Base(path)).Funcs(util.TemplateFunctions).ParseFiles(path)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("Cannot open template file: %s", path))
+		log.Error(err, fmt.Sprintf("cannot open template file: %s", path))
 		return "", nil
 	}
 
@@ -61,20 +55,6 @@ func applyTemplate(path string, tmplData templateData) (string, error) {
 		log.Error(err, fmt.Sprintf("Cannot apply template: %s", path))
 	}
 	return buf.String(), nil
-}
-
-func getFileContent(path string) string {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Cannot open file: %s", path))
-	}
-	defer file.Close()
-
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Cannot read file: %s", path))
-	}
-	return fmt.Sprintf("%s", b)
 }
 
 func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[string]string {
@@ -130,7 +110,8 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 	}
 }
 
-func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
+// GenerateSQLConfigMap generate configmaps for initContainers in charge of databases initializations
+func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
 
 	tmplData := generateTemplateData(r)
 
@@ -153,6 +134,7 @@ func GenerateSqlConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 	}
 }
 
+// GenerateDotQservConfigMap generate configmap for Qserv client configuration
 func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
 
 	tmplData := templateData{}

@@ -5,6 +5,9 @@ commonLabels:
 resources:
 - qserv.yaml
 
+patchesStrategicMerge:
+- image.yaml
+
 secretGenerator:
 - name: secret-ingest-db-qserv
   files:

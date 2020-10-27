@@ -52,13 +52,18 @@ Option #2: k3s
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC=“--docker --write-kubeconfig-mode 644” sh -
     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-Install Qserv in two lines
-==========================
+Install Qserv in four lines
+===========================
+
+`go-lang` is a pre-requisite.
 
 .. code:: bash
 
-    curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/master/deploy.sh | bash
-    kubectl apply -k https://github.com/lsst/qserv-operator/base
+    git clone https://github.com/lsst/qserv-operator
+    cd qserv-operator
+    ./deploy.sh
+    kubectl apply -k manifests/base
+
 
 Run Qserv integration tests
 ===========================

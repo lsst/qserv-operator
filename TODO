@@ -1,3 +1,4 @@
+Test latest qserv image: qserv/qserv:2607ae1
+
 Export metrics:
 https://sdk.operatorframework.io/docs/building-operators/golang/project_migration_guide/#export-metrics
-

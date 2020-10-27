@@ -9,37 +9,36 @@ func MergeLabels(allLabels ...map[string]string) map[string]string {
 	res := map[string]string{}
 
 	for _, labels := range allLabels {
-		if labels != nil {
-			for k, v := range labels {
-				res[k] = v
-			}
+		for k, v := range labels {
+			res[k] = v
 		}
 	}
 	return res
 }
 
 // GetLabels returns the labels for the component with specific role
-func GetLabels(component constants.PodClass, cr_name string) map[string]string {
-	return generatePodLabels(component, cr_name)
+func GetLabels(component constants.PodClass, crName string) map[string]string {
+	return generatePodLabels(component, crName)
 }
 
-func generatePodLabels(component constants.PodClass, cr_name string) map[string]string {
+func generatePodLabels(component constants.PodClass, crName string) map[string]string {
 	componentStr := string(component)
 	return map[string]string{
 		"app":       constants.AppLabel,
 		"component": componentStr,
-		"instance":  cr_name,
+		"instance":  crName,
 	}
 }
 
-func GetContainerLabels(container constants.ContainerName, cr_name string) map[string]string {
-	return generateContainerLabels(container, cr_name)
+// GetContainerLabels returns the labels for containers
+func GetContainerLabels(container constants.ContainerName, crName string) map[string]string {
+	return generateContainerLabels(container, crName)
 }
 
-func generateContainerLabels(container constants.ContainerName, cr_name string) map[string]string {
+func generateContainerLabels(container constants.ContainerName, crName string) map[string]string {
 	return map[string]string{
 		"app":       constants.AppLabel,
 		"container": string(container),
-		"instance":  cr_name,
+		"instance":  crName,
 	}
 }

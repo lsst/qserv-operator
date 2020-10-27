@@ -1,6 +1,6 @@
-GIT_HASH="$(git describe --dirty --always)"
-TAG=${OP_VERSION:-${GIT_HASH}}
+RELEASE=0.0.1
+GIT_HASH="$(git rev-parse --short HEAD)"
+VERSION="$RELEASE-${GIT_HASH}"
 
-
-# Image version create by build procedure
-OP_IMAGE="qserv/qserv-operator:$TAG"
+# Image version created by build procedure
+OP_IMAGE="qserv/qserv-operator:$VERSION"

@@ -184,6 +184,7 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v
 	}
 }
 
+// GenerateXrootdRedirectorService generates headless service for xrootd redirectors StatefulSet
 func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetName(cr, string(constants.XrootdRedirector))
 	namespace := cr.Namespace
