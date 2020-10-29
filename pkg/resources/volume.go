@@ -90,20 +90,6 @@ func (ivs *InstanceVolumeSet) addEmptyDirVolume(name string) {
 	ivs.volumeSet[name] = volume
 }
 
-func (ivs *InstanceVolumeSet) addDataVolume(cr *qservv1alpha1.Qserv) {
-	name := "data"
-	claimName := fmt.Sprintf("%s-%s-%s-0", constants.DataVolumeClaimTemplateName, cr.Name, constants.Czar)
-	volume := v1.Volume{
-		Name: name,
-		VolumeSource: v1.VolumeSource{
-			PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-				ClaimName: claimName,
-			},
-		},
-	}
-	ivs.volumeSet[name] = volume
-}
-
 func (ivs *InstanceVolumeSet) addSecretVolume(containerName constants.ContainerName) {
 	secretName := util.GetSecretName(ivs.cr, containerName)
 	volume := v1.Volume{

@@ -46,7 +46,7 @@ SHELL_POD="${INSTANCE}-shell"
 kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"
 kubectl run "${INSTANCE}-shell" --image="curlimages/curl:7.70.0"  --restart=Never sleep 3600
 kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
-while ! kubectl wait pod --for=condition=Ready --timeout="10s" -l "app=qserv,instance=$INSTANCE"
+while ! kubectl wait pod --for=condition=Ready --timeout="10s" -l "app.kubernetes.io/managed-by=qserv-operator,app=qserv,instance=$INSTANCE"
 do
   echo "Wait for Qserv pods to be ready:"
   kubectl get pod -l "app=qserv,instance=$INSTANCE"

@@ -70,6 +70,12 @@ CREATE TABLE IF NOT EXISTS `config_worker` (
   `exporter_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
   `exporter_tmp_dir` VARCHAR(255)       DEFAULT NULL ,    -- a file system path to the temporary folder
 
+    -- HTTP-based ingest service
+
+  `http_loader_host`    VARCHAR(255)       NOT NULL ,        -- the host name on which the worker's HTTP-based ingest server runs
+  `http_loader_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
+  `http_loader_tmp_dir` VARCHAR(255)       DEFAULT NULL ,    -- a file system path to the temporary folder
+
   PRIMARY KEY (`name`) ,
 
   UNIQUE  KEY (`exporter_host`, `exporter_port`) ,

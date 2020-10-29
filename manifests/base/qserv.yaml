@@ -6,7 +6,7 @@ spec:
   imagePullPolicy: "IfNotPresent"
   storageclass: "standard"
   storagecapacity: "1Gi"
-  networkpolicies: true
+  networkpolicies: false 
   czar:
   ingest:
     dbimage: "mariadb:10.2.16"

@@ -19,6 +19,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # Image URL to use all building/pushing image targets
 IMG := $(shell . $(ENVFILE) ; echo $${OP_IMAGE})
+
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -58,6 +59,12 @@ uninstall: manifests kustomize
 deploy: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+# Generate operator.yaml
+# TODO replace with OLM and bundle command
+yaml: manifests kustomize
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default > $(ROOT_DIR)/manifests/operator.yaml
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen

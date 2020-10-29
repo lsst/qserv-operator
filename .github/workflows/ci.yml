@@ -17,11 +17,10 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "::set-env name=OP_IMAGE::$(. ./env.sh && echo $OP_IMAGE)"
+          echo "OP_IMAGE=$(. ./env.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
       - name: Setup Operator SDK
-        uses: k8s-school/setup-k8s-operator-sdk@v1
-        with:
-          version: "^1.0.0"
+        run: |
+          ./install-operator-sdk.sh
       - name: Run Unit Tests
         run: make test
       - name: Build operator image

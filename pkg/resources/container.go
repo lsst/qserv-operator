@@ -145,6 +145,7 @@ func getProxyContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
+		Resources:      spec.Czar.ProxyResources,
 		LivenessProbe:  getTCPProbe(constants.ProxyPortName, 10),
 		ReadinessProbe: getTCPProbe(constants.ProxyPortName, 5),
 		VolumeMounts:   volumeMounts,
@@ -203,7 +204,6 @@ func getReplicationCtlContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
 
 	volumes.addEtcStartVolumes(constants.ReplCtlName)
-	volumes.addDataVolume(cr)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
@@ -231,6 +231,7 @@ func getReplicationWrkContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSe
 		Name:            string(constants.ReplWrkName),
 		Image:           spec.Replication.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
+		Resources:       cr.Spec.Worker.ReplicationResources,
 		Command:         constants.Command,
 		Env: []v1.EnvVar{
 			{
