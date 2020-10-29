@@ -51,6 +51,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
+					Affinity: &cr.Spec.Czar.Affinity,
 					InitContainers: []v1.Container{
 						initContainer,
 					},
@@ -317,6 +318,7 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
+					Affinity: &cr.Spec.Worker.Affinity,
 					InitContainers: []v1.Container{
 						initContainer,
 					},

@@ -70,9 +70,11 @@ type QservSpec struct {
 
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
-	Image string `json:"image,omitempty"`
+	Affinity v1.Affinity `json:"affinity,omitempty"`
+	Image    string      `json:"image,omitempty"`
 	// + kubebuilder:default:=1
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas       int32                   `json:"replicas,omitempty"`
+	ProxyResources v1.ResourceRequirements `json:"proxyresources,omitempty"`
 }
 
 // DevelSettings defines the specification for development/debug environment
@@ -87,8 +89,10 @@ type IngestSettings struct {
 
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
-	Image    string `json:"image,omitempty"`
-	Replicas int32  `json:"replicas,omitempty"`
+	Affinity             v1.Affinity             `json:"affinity,omitempty"`
+	Image                string                  `json:"image,omitempty"`
+	Replicas             int32                   `json:"replicas,omitempty"`
+	ReplicationResources v1.ResourceRequirements `json:"replicationresources,omitempty"`
 }
 
 // RedisSettings defines the specification of the Redis database for secondary index

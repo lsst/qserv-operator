@@ -34,6 +34,8 @@ const (
 	XrootdPortName            = string(XrootdName)
 
 	GraceTime = 30
+
+	ReplicationWorkerDefaultThreads = 16
 )
 
 // QservGID qserv user gid

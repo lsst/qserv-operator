@@ -1,0 +1,35 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storagecapacity: "200Gi"
+  # replication:
+  #    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
+  czar:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - czar
+    proxyresources:
+      requests:
+        cpu: 24
+  worker:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - worker
+    replicas: 5
+    replicationresources:
+      limits:
+        cpu: 14

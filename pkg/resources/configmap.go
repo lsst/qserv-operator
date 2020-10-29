@@ -12,6 +12,7 @@ import (
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,11 +21,12 @@ type templateData struct {
 	QstatusMysqldHost         string
 	ReplicationControllerPort uint
 	// qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
-	ReplicationControllerFQDN string
-	WorkerDn                  string
-	WorkerReplicas            uint
-	XrootdRedirectorDn        string
-	XrootdReplicas            uint
+	ReplicationControllerFQDN          string
+	ReplicationLoaderProcessingThreads uint
+	WorkerDn                           string
+	WorkerReplicas                     uint
+	XrootdRedirectorDn                 string
+	XrootdReplicas                     uint
 }
 
 func fileExists(filename string) bool {
@@ -74,16 +76,30 @@ func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[stri
 	return files
 }
 
+func getReplicationWorkerThread(cpuLimit *resource.Quantity) uint {
+	var loaderProcessingThreads uint
+	limit := uint(cpuLimit.Value())
+	if limit == 0 {
+		loaderProcessingThreads = constants.ReplicationWorkerDefaultThreads
+	} else {
+		loaderProcessingThreads = 2 * limit
+	}
+	return loaderProcessingThreads
+}
+
 func generateTemplateData(r *qservv1alpha1.Qserv) templateData {
+	cpuLimit := r.Spec.Worker.ReplicationResources.Limits.Cpu()
 	return templateData{
-		CzarDomainName:            util.GetCzarServiceName(r),
-		QstatusMysqldHost:         util.GetCzarServiceName(r),
-		ReplicationControllerPort: constants.ReplicationControllerPort,
-		ReplicationControllerFQDN: util.GetReplCtlFQDN(r),
-		WorkerDn:                  util.GetWorkerServiceName(r),
-		WorkerReplicas:            uint(r.Spec.Worker.Replicas),
-		XrootdRedirectorDn:        util.GetXrootdRedirectorServiceName(r),
-		XrootdReplicas:            uint(r.Spec.Xrootd.Replicas)}
+		CzarDomainName:                     util.GetCzarServiceName(r),
+		QstatusMysqldHost:                  util.GetCzarServiceName(r),
+		ReplicationControllerPort:          constants.ReplicationControllerPort,
+		ReplicationControllerFQDN:          util.GetReplCtlFQDN(r),
+		WorkerDn:                           util.GetWorkerServiceName(r),
+		WorkerReplicas:                     uint(r.Spec.Worker.Replicas),
+		XrootdRedirectorDn:                 util.GetXrootdRedirectorServiceName(r),
+		XrootdReplicas:                     uint(r.Spec.Xrootd.Replicas),
+		ReplicationLoaderProcessingThreads: getReplicationWorkerThread(cpuLimit),
+	}
 }
 
 // GenerateContainerConfigMap generate 2 configmaps for Qserv containers

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# See
-# https://github.com/operator-framework/operator-sdk/blob/master/doc/user-guide.md#build-and-run-the-operator
+# Push image to Docker Hub or load it inside kind
 
 # @author  Fabrice Jammes, IN2P3
 
@@ -21,18 +20,22 @@ Usage: `basename $0` [options] path host [host ...]
 
   Available options:
     -h          this message
+    -k          development mode: load image in kind
+    -d          development mode: push image to docker hub
 
-Build qserv-operator image from source code.
+Push image to Docker Hub or load it inside kind
 EOD
 }
 
 kind=false
+dockerhub=false
 
 # get the options
-while getopts hk c ; do
+while getopts dhk c ; do
     case $c in
 	    h) usage ; exit 0 ;;
 	    k) kind=true ;;
+	    d) dockerhub=true ;;
 	    \?) usage ; exit 2 ;;
     esac
 done
@@ -43,5 +46,9 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-make manifests
-make docker-build IMG="$OP_IMAGE"
+if [ $kind = true ]; then
+  kind load docker-image "$OP_IMAGE"
+fi
+if [ $dockerhub = true ]; then
+  docker push "$OP_IMAGE"
+fi

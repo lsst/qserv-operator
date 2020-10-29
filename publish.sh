@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# See
-# https://github.com/operator-framework/operator-sdk/blob/master/doc/user-guide.md#build-and-run-the-operator
+# Push operator image to docker hub and produce related yaml file 
 
 # @author  Fabrice Jammes, IN2P3
 
@@ -22,7 +21,7 @@ Usage: `basename $0` [options] path host [host ...]
   Available options:
     -h          this message
 
-Build qserv-operator image from source code.
+Push operator image to docker hub and produce related yaml file 
 EOD
 }
 
@@ -32,7 +31,6 @@ kind=false
 while getopts hk c ; do
     case $c in
 	    h) usage ; exit 0 ;;
-	    k) kind=true ;;
 	    \?) usage ; exit 2 ;;
     esac
 done
@@ -43,5 +41,6 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-make manifests
+make yaml 
 make docker-build IMG="$OP_IMAGE"
+docker push "$OP_IMAGE"

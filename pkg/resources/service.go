@@ -49,7 +49,8 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 			Labels:    labels,
 		},
 		Spec: v1.ServiceSpec{
-			Type: v1.ServiceTypeClusterIP,
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
 					Port:     constants.MariadbPort,
