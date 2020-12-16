@@ -61,7 +61,7 @@ Install Qserv in four lines
 
     git clone https://github.com/lsst/qserv-operator
     cd qserv-operator
-    ./deploy.sh
+    kubectl apply -f manifests/operator.yaml
     kubectl apply -k manifests/base
 
 
