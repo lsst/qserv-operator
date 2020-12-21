@@ -13,7 +13,7 @@ Build Qserv-operator and run Qserv multi-node integration tests (using a fixed Q
 
 ## Documentation
 
-Access to [Qserv-operator documentation at https://qserv-operator.lsst.io](https://qserv-operator.lsst.io/
+Access to [Qserv-operator documentation](https://qserv-operator.lsst.io/)
 
 # Code analysis
 
