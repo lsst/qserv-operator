@@ -4,15 +4,15 @@ metadata:
   name: qserv
 spec:
   imagePullPolicy: "IfNotPresent"
-  storageclass: "standard"
-  storagecapacity: "1Gi"
-  networkpolicies: false 
+  storageClassName: "standard"
+  storage: "1Gi"
+  networkPolicies: false 
   czar:
   ingest:
-    dbimage: "mariadb:10.2.16"
+    dbImage: "mariadb:10.2.16"
   worker:
     replicas: 2
   replication:
-      dbimage: "mariadb:10.2.16"
+      dbImage: "mariadb:10.2.16"
   xrootd:
     replicas: 2

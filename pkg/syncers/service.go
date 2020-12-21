@@ -18,7 +18,7 @@ func NewIngestDbServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *r
 // NewQservServicesSyncer returns a new []sync.Interface for reconciling all Qserv services
 func NewQservServicesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
 	syncers := []syncer.Interface{
-		syncer.NewObjectSyncer("QservNodePortService", r, qserv.GenerateQservNodePortService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("QservNodePortService", r, qserv.GenerateQservQueryService(r, controllerLabels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("Czar", r, qserv.GenerateCzarService(r, controllerLabels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("WorkerService", r, qserv.GenerateWorkerService(r, controllerLabels), c, scheme, noFunc),
 	}

@@ -3,7 +3,7 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
-  storageclass: "local-path"
+  storageClassName: "local-path"
   worker:
     replicas: 1
   xrootd:
