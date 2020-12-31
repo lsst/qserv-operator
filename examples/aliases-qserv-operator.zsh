@@ -3,6 +3,7 @@ alias cdi="cd ~/src/qserv-ingest"
 
 # Re-install qserv from scratch
 alias krq="cdo && kubectl delete qservs.qserv.lsst.org --all && kubectl delete pvc,pv --all && kubectl apply -k manifests/base"
+alias gkrq="cdo && kubectl delete qservs.qserv.lsst.org --all && kubectl delete pvc,pv --all && kubectl apply -k manifests/gke-qserv-dev"
 
 # Rebuild qserv from scratch
 alias rbo="cdo && ./build.sh -k && ./push-image.sh -d && \

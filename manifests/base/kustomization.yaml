@@ -21,7 +21,10 @@ secretGenerator:
 - name: secret-wmgr-qserv
   files:
   - wmgr.secret
+- name: secret-repl-creds-qserv
+  files:
+  - qserv
 generatorOptions:
   labels:
-    kustomize.generated.resources: qserv 
+    kustomize.generated.resources: qserv
   disableNameSuffixHash: true
