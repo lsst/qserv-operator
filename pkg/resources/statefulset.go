@@ -13,6 +13,12 @@ import (
 
 var log = logf.Log.WithName("qserv")
 
+func getValue(value string, defaultValue string) string {
+	if value == "" {
+		value = defaultValue
+	return value
+}
+
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
 func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.Czar)
@@ -20,8 +26,8 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
 
 	var replicas int32 = 1
-	storageClass := cr.Spec.StorageClass
-	storageSize := cr.Spec.StorageCapacity
+	storageClass := getValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
+	storageSize := getValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
 
 	initContainer, initVolumes := getInitContainer(cr, constants.Czar)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Czar)
@@ -284,8 +290,9 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 	labels = util.MergeLabels(labels, util.GetLabels(constants.Worker, cr.Name))
 
 	replicas := cr.Spec.Worker.Replicas
-	storageClass := cr.Spec.StorageClass
-	storageSize := cr.Spec.StorageCapacity
+
+	storageClass := getValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
+	storageSize := getValue(cr.Spec.Worker.StorageCapacity, cr.Spec.StorageCapacity)
 
 	initContainer, initVolumes := getInitContainer(cr, constants.Worker)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Worker)

@@ -30,8 +30,8 @@ type QservSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Common settings
-	StorageClass    string `json:"storageclass,omitempty"`
-	StorageCapacity string `json:"storagecapacity,omitempty"`
+	StorageClass    string `json:"storageClassName,omitempty"`
+	StorageCapacity string `json:"storage,omitempty"`
 
 	// Czar defines the settings for czar cluster
 	Czar CzarSettings `json:"czar,omitempty"`
@@ -46,9 +46,8 @@ type QservSpec struct {
 	// Devel defines the settings for development environment
 	Devel DevelSettings `json:"devel,omitempty"`
 
-	// Redis defines the settings for redis cluster
-	// +kubebuilder:validation:Optional
-	Redis *RedisSettings `json:"redis,omitempty"`
+	// QueryService defines the settings for the service which expose Qserv SQL interface (czar/proxy)
+	QueryService QueryServiceSettings `json:"queryService,omitempty"`
 
 	// Replication defines the settings for the replication framework
 	Replication ReplicationSettings `json:"replication,omitempty"`
@@ -65,7 +64,7 @@ type QservSpec struct {
 
 	// NetworkPolicies secures the cluster network using Network Policies.
 	// Ensure the Kubernetes cluster has enabled Network plugin.
-	NetworkPolicies bool `json:"networkpolicies,omitempty"`
+	NetworkPolicies bool `json:"networkPolicies,omitempty"`
 }
 
 // CzarSettings defines the specification of the czar cluster
@@ -74,17 +73,36 @@ type CzarSettings struct {
 	Image    string      `json:"image,omitempty"`
 	// + kubebuilder:default:=1
 	Replicas       int32                   `json:"replicas,omitempty"`
-	ProxyResources v1.ResourceRequirements `json:"proxyresources,omitempty"`
+	ProxyResources v1.ResourceRequirements `json:"proxyResources,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	StorageClass string `json:"storageClassName,omitempty"`
+	// +kubebuilder:validation:Optional
+	StorageCapacity string `json:"storage,omitempty"`
 }
 
 // DevelSettings defines the specification for development/debug environment
 type DevelSettings struct {
-	CorePath string `json:"corepath,omitempty"`
+	CorePath string `json:"corePath,omitempty"`
 }
 
 // IngestSettings defines the specification of the ingest workflow
 type IngestSettings struct {
-	DbImage string `json:"dbimage,omitempty"`
+	DbImage string `json:"dbImage,omitempty"`
+}
+
+// QueryServiceSettings defines the specification of the service which
+// expose Qserv czar/proxy port
+type QueryServiceSettings struct {
+	ServiceType v1.ServiceType    `json:"type,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// ReplicationSettings defines the specification of the replication framework
+type ReplicationSettings struct {
+	Debug   string `json:"debug,omitempty"`
+	DbImage string `json:"dbImage,omitempty"`
+	Image   string `json:"image,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
@@ -92,24 +110,11 @@ type WorkerSettings struct {
 	Affinity             v1.Affinity             `json:"affinity,omitempty"`
 	Image                string                  `json:"image,omitempty"`
 	Replicas             int32                   `json:"replicas,omitempty"`
-	ReplicationResources v1.ResourceRequirements `json:"replicationresources,omitempty"`
-}
-
-// RedisSettings defines the specification of the Redis database for secondary index
-type RedisSettings struct {
-	// + kubebuilder:default:="5.0.3"
-	Version string `json:"version,omitempty"`
-	// + kubebuilder:default:=3
-	Master int32 `json:"master,omitempty"`
-	// + kubebuilder:default:=1
-	Replicas int32 `json:"replicas,omitempty"`
-}
-
-// ReplicationSettings defines the specification of the replication framework
-type ReplicationSettings struct {
-	Debug   string `json:"debug,omitempty"`
-	DbImage string `json:"dbimage,omitempty"`
-	Image   string `json:"image,omitempty"`
+	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`
+	// +kubebuilder:validation:Optional
+	StorageClass string `json:"storageClassName,omitempty"`
+	// +kubebuilder:validation:Optional
+	StorageCapacity string `json:"storage,omitempty"`
 }
 
 // XrootdSettings defines the specification of the xrootd redirectors cluster

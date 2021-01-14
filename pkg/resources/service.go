@@ -8,8 +8,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GenerateQservNodePortService generate NodePort service specification for Qserv Czar proxy
-func GenerateQservNodePortService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+// GenerateQservQueryService generate service specification for Qserv Czar proxy
+func GenerateQservQueryService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
 	name := util.GetName(cr, constants.QservName)
 	namespace := cr.Namespace
 
@@ -17,12 +17,13 @@ func GenerateQservNodePortService(cr *qservv1alpha1.Qserv, labels map[string]str
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: cr.Spec.QueryService.Annotations,
 		},
 		Spec: v1.ServiceSpec{
-			Type: v1.ServiceTypeNodePort,
+			Type: cr.Spec.QueryService.ServiceType,
 			Ports: []v1.ServicePort{
 				{
 					Port:     constants.ProxyPort,

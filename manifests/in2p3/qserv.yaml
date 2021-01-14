@@ -3,9 +3,12 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
-  storageclass: "qserv-local-storage"
-  storagecapacity: "100Gi"
+  storageClassName: "qserv-local-storage"
+  storage: "100Gi"
   # replication:
   #    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
   worker:
     replicas: 20
+    replicationResources:
+      limits:
+        cpu: 36

@@ -14,11 +14,12 @@ USE qservIngest;
 CREATE TABLE `task` (
 
   `chunk_id`              INTEGER             NOT NULL ,                  -- the id of the chunk to load
-  `chunk_file_url`        VARCHAR(255)        NOT NULL ,                  -- the url of the chunk file to load
+  `chunk_file_path`       VARCHAR(255)        NOT NULL ,                  -- the path of the chunk file to load
   `database`              VARCHAR(255)        NOT NULL ,                  -- the name of the target database
+  `is_overlap`            BOOLEAN             NOT NULL ,                  -- is this file an overlap
   `pod`                   VARCHAR(255)        DEFAULT NULL ,              -- the name of the pod which launch the ingest
   `table`                 VARCHAR(255)        NOT NULL ,                  -- the name of the target table
 
-  PRIMARY KEY (`chunk_id`, `chunk_file_url`, `database`, `table`)
+  PRIMARY KEY (`chunk_id`, `chunk_file_path`, `database`, `is_overlap`, `table`)
 )
 ENGINE = InnoDB;

@@ -645,7 +645,7 @@ spec:
                   type: object
                 image:
                   type: string
-                proxyresources:
+                proxyResources:
                   description: ResourceRequirements describes the compute resource
                     requirements.
                   properties:
@@ -675,11 +675,15 @@ spec:
                 replicas:
                   format: int32
                   type: integer
+                storage:
+                  type: string
+                storageClassName:
+                  type: string
               type: object
             devel:
               description: Devel defines the settings for development environment
               properties:
-                corepath:
+                corePath:
                   type: string
               type: object
             imagePullPolicy:
@@ -688,38 +692,39 @@ spec:
             ingest:
               description: IngestSettings defines the settings for ingest workflow
               properties:
-                dbimage:
+                dbImage:
                   type: string
               type: object
-            networkpolicies:
+            networkPolicies:
               description: NetworkPolicies secures the cluster network using Network
                 Policies. Ensure the Kubernetes cluster has enabled Network plugin.
               type: boolean
-            redis:
-              description: Redis defines the settings for redis cluster
+            queryService:
+              description: QueryService defines the settings for the service which
+                expose Qserv SQL interface (czar/proxy)
               properties:
-                master:
-                  format: int32
-                  type: integer
-                replicas:
-                  format: int32
-                  type: integer
-                version:
+                annotations:
+                  additionalProperties:
+                    type: string
+                  type: object
+                type:
+                  description: Service Type string describes ingress methods for a
+                    service
                   type: string
               type: object
             replication:
               description: Replication defines the settings for the replication framework
               properties:
-                dbimage:
+                dbImage:
                   type: string
                 debug:
                   type: string
                 image:
                   type: string
               type: object
-            storagecapacity:
+            storage:
               type: string
-            storageclass:
+            storageClassName:
               description: Common settings
               type: string
             tolerations:
@@ -1370,7 +1375,7 @@ spec:
                 replicas:
                   format: int32
                   type: integer
-                replicationresources:
+                replicationResources:
                   description: ResourceRequirements describes the compute resource
                     requirements.
                   properties:
@@ -1397,6 +1402,10 @@ spec:
                         to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                       type: object
                   type: object
+                storage:
+                  type: string
+                storageClassName:
+                  type: string
               type: object
             xrootd:
               description: Xrootd defines the settings for worker cluster
@@ -1647,7 +1656,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:0.0.1-a503725
+        image: qserv/qserv-operator:0.0.1-5b6077f
         name: manager
         resources:
           limits:
