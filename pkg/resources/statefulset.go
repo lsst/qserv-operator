@@ -14,11 +14,9 @@ import (
 var log = logf.Log.WithName("qserv")
 
 func getValue(value string, defaultValue string) string {
-	if value != "" {
-		return value
-	} else {
-		return defaultValue
-	}
+	if value == "" {
+		value = defaultValue
+	return value
 }
 
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
