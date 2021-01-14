@@ -16,6 +16,7 @@ var log = logf.Log.WithName("qserv")
 func getValue(value string, defaultValue string) string {
 	if value == "" {
 		value = defaultValue
+	}
 	return value
 }
 

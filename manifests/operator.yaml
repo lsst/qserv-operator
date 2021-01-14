@@ -1656,7 +1656,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:0.0.1-5b6077f
+        image: qserv/qserv-operator:0.0.1-1293a1f
         name: manager
         resources:
           limits:
