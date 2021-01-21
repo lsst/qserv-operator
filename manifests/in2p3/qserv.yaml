@@ -3,6 +3,8 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
+  queryService:
+    type: NodePort
   storageClassName: "qserv-local-storage"
   storage: "100Gi"
   # replication:
