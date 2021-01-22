@@ -19,6 +19,8 @@ CREATE TABLE `task` (
   `is_overlap`            BOOLEAN             NOT NULL ,                  -- is this file an overlap
   `pod`                   VARCHAR(255)        DEFAULT NULL ,              -- the name of the pod which launch the ingest
   `table`                 VARCHAR(255)        NOT NULL ,                  -- the name of the target table
+  `start`                 TIMESTAMP           NULL ,                      -- the date when ingest start for this file
+  `succeed`               TIMESTAMP           NULL ,                      -- the date when ingest has succeeded for this file
 
   PRIMARY KEY (`chunk_id`, `chunk_file_path`, `database`, `is_overlap`, `table`)
 )

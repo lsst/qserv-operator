@@ -3,12 +3,20 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
+  queryService:
+    type: NodePort
   storageClassName: "qserv-local-storage"
   storage: "100Gi"
   # replication:
   #    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
   worker:
-    replicas: 20
+    replicas: 15
     replicationResources:
       limits:
         cpu: 36
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "qserv"
+    effect: "NoSchedule"
+

@@ -1,4 +1,6 @@
-Test latest qserv image: qserv/qserv:2607ae1
+- Update build documentation
 
-Export metrics:
+- Add support for --auth-key: https://confluence.lsstcorp.org/display/DM/Replication%3A+Authorization+Options
+
+- Export metrics:
 https://sdk.operatorframework.io/docs/building-operators/golang/project_migration_guide/#export-metrics

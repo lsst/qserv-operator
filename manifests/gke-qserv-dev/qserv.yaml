@@ -3,13 +3,13 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
-  storageClassName: "standard-rwo"
-  storage: "1Gi"
+  storageClassName: "qserv"
+  storage: "100Gi"
   # replication:
   #    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
   czar:
-    storageClassName: "premium-rwo"
-    storage: "2Gi"
+    storageClassName: "czar"
+    storage: "500Gi"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -27,7 +27,7 @@ spec:
         cloud.google.com/load-balancer-type: Internal
       type: LoadBalancer
   worker:
-    storage: "3Gi"
+    storage: "500Gi"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
