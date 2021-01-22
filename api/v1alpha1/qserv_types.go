@@ -1,6 +1,5 @@
 /*
 
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -94,8 +93,10 @@ type IngestSettings struct {
 // QueryServiceSettings defines the specification of the service which
 // expose Qserv czar/proxy port
 type QueryServiceSettings struct {
-	ServiceType v1.ServiceType    `json:"type,omitempty"`
-	Annotations map[string]string `json:"annotations,omitempty"`
+	Annotations    map[string]string `json:"annotations,omitempty"`
+	LoadBalancerIP string            `json:"loadBalancerIP,omitempty"`
+	NodePort       int32             `json:"nodePort,omitempty"`
+	ServiceType    v1.ServiceType    `json:"type,omitempty"`
 }
 
 // ReplicationSettings defines the specification of the replication framework

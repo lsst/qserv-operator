@@ -5,16 +5,22 @@
 set -e
 set -x
 
-RELEASE_VERSION=v1.0.0
+RELEASE_VERSION=v1.3.0
+export ARCH=$(case $(arch) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(arch) ;; esac)
+export OS=$(uname | awk '{print tolower($0)}')
+
 
 PGP_SERVER="keyserver.ubuntu.com"
 #PGP_SERVER="pool.sks-keyservers.net"
+OPERATOR_SDK_DL_URL="https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}"
+OPERATOR_SDK_BIN="operator-sdk_${OS}_${ARCH}"
 
-curl -OJL https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}/operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
-curl -OJL https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}/operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu.asc
-gpg --keyserver "$PGP_SERVER" --recv-key "BF6F6F18846753754CBB1DDFBC9679ED89ED8983"
-gpg --verify operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu.asc
-chmod +x operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
+curl -OJL $OPERATOR_SDK_DL_URL/$OPERATOR_SDK_BIN
+gpg --keyserver "$PGP_SERVER" --recv-key "052996E2A20B5C7E"
+curl -LO ${OPERATOR_SDK_DL_URL}/checksums.txt
+curl -LO ${OPERATOR_SDK_DL_URL}/checksums.txt.asc
+gpg -u "Operator SDK (release) <cncf-operator-sdk@cncf.io>" --verify checksums.txt.asc
+chmod +x "$OPERATOR_SDK_BIN"
 sudo mkdir -p /usr/local/bin
-sudo cp operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu /usr/local/bin/operator-sdk
-rm operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
+sudo cp "$OPERATOR_SDK_BIN" /usr/local/bin/operator-sdk
+rm "$OPERATOR_SDK_BIN"

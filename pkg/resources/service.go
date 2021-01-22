@@ -23,12 +23,14 @@ func GenerateQservQueryService(cr *qservv1alpha1.Qserv, labels map[string]string
 			Annotations: cr.Spec.QueryService.Annotations,
 		},
 		Spec: v1.ServiceSpec{
-			Type: cr.Spec.QueryService.ServiceType,
+			LoadBalancerIP: cr.Spec.QueryService.LoadBalancerIP,
+			Type:           cr.Spec.QueryService.ServiceType,
 			Ports: []v1.ServicePort{
 				{
+					Name:     constants.ProxyPortName,
+					NodePort: cr.Spec.QueryService.NodePort,
 					Port:     constants.ProxyPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.ProxyPortName,
 				},
 			},
 			Selector: labels,

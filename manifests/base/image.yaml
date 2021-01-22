@@ -4,10 +4,10 @@ metadata:
   name: qserv
 spec:
   czar:
-    image: qserv/qserv:f42678f
+    image: qserv/qserv:0b4809e70
   worker:
-    image: qserv/qserv:f42678f
+    image: qserv/qserv:0b4809e70
   replication:
-      image: qserv/qserv:f42678f
+      image: qserv/qserv:0b4809e70
   xrootd:
-    image: qserv/qserv:f42678f
+    image: qserv/qserv:0b4809e70

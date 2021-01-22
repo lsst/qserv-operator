@@ -1,3 +1,8 @@
+- Test Fixed NodePort
+
+- Install an operator per namespace
+  Watch multipe namespace: https://sdk.operatorframework.io/docs/building-operators/golang/operator-scope/#configuring-cluster-scoped-operators-with-multinamespacedcachebuilder
+
 - Update build documentation
 
 - Add support for --auth-key: https://confluence.lsstcorp.org/display/DM/Replication%3A+Authorization+Options

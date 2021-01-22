@@ -702,6 +702,11 @@ spec:
                   additionalProperties:
                     type: string
                   type: object
+                loadBalancerIP:
+                  type: string
+                nodePort:
+                  format: int32
+                  type: integer
                 type:
                   description: Service Type string describes ingress methods for a
                     service

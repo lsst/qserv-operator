@@ -1,0 +1,11 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storage: "100Gi"
+  czar:
+    storage: "500Gi"
+  worker:
+    storage: "500Gi"
+    replicas: 5
