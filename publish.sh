@@ -40,7 +40,7 @@ if [ $# -ne 0 ] ; then
 fi
 
 make yaml
-# WARN: Hack to pass CI static code checks
-git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 make docker-build IMG="$OP_IMAGE"
+# WARN: Hack used to pass CI static code checks
+git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 docker push "$OP_IMAGE"
