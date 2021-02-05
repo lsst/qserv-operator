@@ -5,8 +5,6 @@ metadata:
 spec:
   storageClassName: "qserv"
   storage: "100Gi"
-  # replication:
-  #    image: "qserv/replica:tools-w.2018.16-1345-gb9191ae-dirty"
   czar:
     storageClassName: "czar"
     storage: "500Gi"
@@ -25,6 +23,7 @@ spec:
   queryService:
       annotations:
         cloud.google.com/load-balancer-type: Internal
+      loadBalancerIP: 10.134.1.211
       type: LoadBalancer
   worker:
     storage: "500Gi"

@@ -77,7 +77,7 @@ func TestApplyTemplate(t *testing.T) {
 				fmt.Println(f.Name())
 			}
 
-			got, error := applyTemplate(tt.args.str, tt.args.templateData)
+			got, error := applyTemplate(tt.args.str, &tt.args.templateData)
 			fmt.Println(error)
 			assert.Equal(t, tt.want, got)
 		})

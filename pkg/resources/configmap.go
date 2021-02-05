@@ -37,7 +37,7 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func applyTemplate(path string, tmplData templateData) (string, error) {
+func applyTemplate(path string, tmplData *templateData) (string, error) {
 
 	if !fileExists(path) {
 		return "", fmt.Errorf("file does not exists: %s", path)
@@ -59,7 +59,7 @@ func applyTemplate(path string, tmplData templateData) (string, error) {
 	return buf.String(), nil
 }
 
-func scanDir(root string, reqLogger logr.Logger, tmplData templateData) map[string]string {
+func scanDir(root string, reqLogger logr.Logger, tmplData *templateData) map[string]string {
 	files := make(map[string]string)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
 	err := filepath.Walk(root,
@@ -122,7 +122,7 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: scanDir(root, reqLogger, tmplData),
+		Data: scanDir(root, reqLogger, &tmplData),
 	}
 }
 
@@ -146,7 +146,7 @@ func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: scanDir(root, reqLogger, tmplData),
+		Data: scanDir(root, reqLogger, &tmplData),
 	}
 }
 
@@ -168,6 +168,6 @@ func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Data: scanDir(root, reqLogger, tmplData),
+		Data: scanDir(root, reqLogger, &tmplData),
 	}
 }

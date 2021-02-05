@@ -707,6 +707,11 @@ spec:
                   additionalProperties:
                     type: string
                   type: object
+                loadBalancerIP:
+                  type: string
+                nodePort:
+                  format: int32
+                  type: integer
                 type:
                   description: Service Type string describes ingress methods for a
                     service
@@ -1656,7 +1661,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:0.0.1-124ab67
+        image: qserv/qserv-operator:0.0.1-4c167c0
         name: manager
         resources:
           limits:

@@ -2,7 +2,3 @@ bases:
 - ../base
 patchesStrategicMerge:
 - qserv.yaml
-
-resources:
-- czar-storage.yaml
-- qserv-storage.yaml
