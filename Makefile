@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 
 ROOT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-ENVFILE := $(ROOT_DIR)/env.sh
+ENVFILE := $(ROOT_DIR)/env.build.sh
 VERSION := $(shell . $(ENVFILE) ; echo $${VERSION})
 
 # Default bundle image tag

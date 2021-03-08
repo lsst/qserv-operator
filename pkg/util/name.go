@@ -22,6 +22,11 @@ func GetCzarServiceName(cr *qservv1alpha1.Qserv) string {
 	return GetName(cr, string(constants.Czar))
 }
 
+// GetDashboardServiceName returns name of Qserv dashboard service
+func GetDashboardServiceName(cr *qservv1alpha1.Qserv) string {
+	return GetName(cr, string(constants.Dashboard))
+}
+
 // GetWorkerServiceName returns name of Qserv workers headless service
 func GetWorkerServiceName(cr *qservv1alpha1.Qserv) string {
 	return GetName(cr, string(constants.Worker))

@@ -1,9 +1,16 @@
-alias cdo="cd ~/src/qserv-operator"
-alias cdi="cd ~/src/qserv-ingest"
+
+QSERV_OPERATOR_SRC_DIR="~/src/qserv-operator"
+QSERV_INGEST_SRC_DIR="~/src/qserv-ingest"
+
+alias cdo="cd $QSERV_OPERATOR_SRC_DIR"
+alias cdi="cd $QSERV_INGEST_SRC_DIR"
+
 
 # Re-install qserv from scratch
-alias krq="cdo && kubectl delete qservs.qserv.lsst.org --all && kubectl delete pvc,pv --all && kubectl apply -k manifests/base"
-alias gkrq="cdo && kubectl delete qservs.qserv.lsst.org --all && kubectl delete pvc,pv --all && kubectl apply -k manifests/gke-qserv-dev"
+
+alias delete-qserv="kubectl delete qservs.qserv.lsst.org --all && kubectl delete pvc,pv --all"
+alias krq="delete-qserv && kubectl apply -k $QSERV_OPERATOR_SRC_DIR/manifests/base"
+alias gkrq="delete-qserv &&  && kubectl apply -k $QSERV_OPERATOR_SRC_DIR/manifests/gke-qserv-dev"
 
 # Rebuild qserv from scratch
 alias rbo="cdo && ./build.sh -k && ./push-image.sh -d && \
@@ -11,4 +18,4 @@ alias rbo="cdo && ./build.sh -k && ./push-image.sh -d && \
 	   ./deploy.sh && krq"
 
 # Relaunch ingest
-alias ri="cdi && ./build-image.sh && ./job.sh init && ./job.sh ingest && ./job.sh publish && ./job.sh index-tables"
+alias ri="cdi && ./build-image.sh && ./argo-submit.sh"

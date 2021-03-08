@@ -675,6 +675,12 @@ spec:
                 storageClassName:
                   type: string
               type: object
+            dashboard:
+              description: Dashboard defines the settings for dashboard deployment
+              properties:
+                image:
+                  type: string
+              type: object
             devel:
               description: Devel defines the settings for development environment
               properties:

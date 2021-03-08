@@ -36,4 +36,5 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        imagePullPolicy: Always
       terminationGracePeriodSeconds: 10

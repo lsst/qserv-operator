@@ -55,7 +55,7 @@ echo "Run integration test for Qserv"
 upper_id=$((WORKER_COUNT-1))
 for i in $(seq 0 "$upper_id");
 do
-    CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=5012 \
+    CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=8080 \
     host=${INSTANCE}-worker-${i}.${INSTANCE}-worker; "
 done
 

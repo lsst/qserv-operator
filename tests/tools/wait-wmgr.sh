@@ -18,7 +18,7 @@ EOD
 }
 
 WORKER_POD=""
-WMGR_PORT=5012
+WMGR_PORT=8080
 
 if [ $# -ne 1 ] ; then
     usage

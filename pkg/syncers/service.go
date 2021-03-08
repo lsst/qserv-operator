@@ -9,6 +9,12 @@ import (
 	"github.com/lsst/qserv-operator/pkg/syncer"
 )
 
+// NewDashboardServiceSyncer returns a new sync.Interface for reconciling Ingest Database Service
+func NewDashboardServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	svc := qserv.GenerateDashboardService(r, controllerLabels)
+	return syncer.NewObjectSyncer("DashboardService", r, svc, c, scheme, noFunc)
+}
+
 // NewIngestDbServiceSyncer returns a new sync.Interface for reconciling Ingest Database Service
 func NewIngestDbServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	svc := qserv.GenerateIngestDbService(r, controllerLabels)
@@ -18,11 +24,10 @@ func NewIngestDbServiceSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *r
 // NewQservServicesSyncer returns a new []sync.Interface for reconciling all Qserv services
 func NewQservServicesSyncer(r *qservv1alpha1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
 	syncers := []syncer.Interface{
-		syncer.NewObjectSyncer("QservNodePortService", r, qserv.GenerateQservQueryService(r, controllerLabels), c, scheme, noFunc),
-		syncer.NewObjectSyncer("Czar", r, qserv.GenerateCzarService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("QservQueryService", r, qserv.GenerateQservQueryService(r, controllerLabels), c, scheme, noFunc),
+		syncer.NewObjectSyncer("CzarService", r, qserv.GenerateCzarService(r, controllerLabels), c, scheme, noFunc),
 		syncer.NewObjectSyncer("WorkerService", r, qserv.GenerateWorkerService(r, controllerLabels), c, scheme, noFunc),
 	}
-
 	return syncers
 }
 

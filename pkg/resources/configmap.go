@@ -18,11 +18,14 @@ import (
 
 type templateData struct {
 	CzarDomainName            string
+	DashboardDn               string
+	DashboardPort             uint
 	QstatusMysqldHost         string
 	ReplicationControllerPort uint
-	// qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
+	// Example: qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
 	ReplicationControllerFQDN          string
 	ReplicationLoaderProcessingThreads uint
+	WmgrPort                           uint
 	WorkerDn                           string
 	WorkerReplicas                     uint
 	XrootdRedirectorDn                 string
@@ -91,10 +94,13 @@ func generateTemplateData(r *qservv1alpha1.Qserv) templateData {
 	cpuLimit := r.Spec.Worker.ReplicationResources.Limits.Cpu()
 	return templateData{
 		CzarDomainName:                     util.GetCzarServiceName(r),
+		DashboardDn:                        util.GetDashboardServiceName(r),
+		DashboardPort:                      constants.DashboardPort,
 		QstatusMysqldHost:                  util.GetCzarServiceName(r),
 		ReplicationControllerPort:          constants.ReplicationControllerPort,
 		ReplicationControllerFQDN:          util.GetReplCtlFQDN(r),
 		WorkerDn:                           util.GetWorkerServiceName(r),
+		WmgrPort:                           constants.WmgrPort,
 		WorkerReplicas:                     uint(r.Spec.Worker.Replicas),
 		XrootdRedirectorDn:                 util.GetXrootdRedirectorServiceName(r),
 		XrootdReplicas:                     uint(r.Spec.Xrootd.Replicas),
@@ -153,7 +159,8 @@ func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 // GenerateDotQservConfigMap generate configmap for Qserv client configuration
 func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
 
-	tmplData := templateData{}
+	tmplData := generateTemplateData(cr)
+
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
 	name := util.PrefixConfigmap(cr, "dot-qserv")
