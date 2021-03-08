@@ -6,6 +6,8 @@ spec:
   storage: "100Gi"
   czar:
     storage: "500Gi"
+  queryService:
+      loadBalancerIP: 10.140.1.211
   worker:
     storage: "500Gi"
     replicas: 5
