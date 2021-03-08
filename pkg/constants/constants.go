@@ -11,6 +11,9 @@ const (
 
 	CorePathVolumeName = "corepath"
 
+	DashboardPort     = 8080
+	DashboardPortName = "http"
+
 	DataVolumeClaimTemplateName = QservName + "-data"
 
 	MariadbPort     = 3306
@@ -23,11 +26,11 @@ const (
 
 	RedisName = "redis"
 
-	ReplicationControllerPort     = 25080
-	ReplicationControllerPortName = string(ReplCtlName)
+	ReplicationControllerPort     = 8080
+	ReplicationControllerPortName = "http"
 
-	WmgrPort     = 5012
-	WmgrPortName = string(WmgrName)
+	WmgrPort     = 8080
+	WmgrPortName = "http"
 
 	XrootdAdminPathVolumeName = "xrootd-adminpath"
 	XrootdPort                = 1094
@@ -50,6 +53,8 @@ type ContainerName string
 const (
 	// CmsdName name for cmsd containers
 	CmsdName ContainerName = "cmsd"
+	// DashboardName name for dashboard container
+	DashboardName ContainerName = "dashboard"
 	// IngestDbName name for ingest database container
 	IngestDbName ContainerName = "ingest-db"
 	// InitDbName name for database initialization containers
@@ -90,12 +95,14 @@ func GetDbContainerName(pod PodClass) ContainerName {
 const (
 	// Czar name pods of class Czar
 	Czar PodClass = "czar"
+	// Dashboard name pods of class Dashboard
+	Dashboard PodClass = PodClass(DashboardName)
 	// IngestDb name pods of class Ingest database
-	IngestDb PodClass = "ingest-db"
+	IngestDb PodClass = PodClass(IngestDbName)
 	// ReplCtl name pods of class Replication controller
-	ReplCtl PodClass = "repl-ctl"
+	ReplCtl PodClass = PodClass(ReplCtlName)
 	// ReplDb name pods of class Replication database
-	ReplDb PodClass = "repl-db"
+	ReplDb PodClass = PodClass(ReplDbName)
 	// Worker name pods of class Replication worker
 	Worker PodClass = "worker"
 	// XrootdRedirector name pods of class Xrootd redirector
@@ -104,12 +111,12 @@ const (
 
 // ContainerConfigmaps contains names of all micro-services which require configmaps named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
+var ContainerConfigmaps = []ContainerName{DashboardName, IngestDbName, MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
 
 // MicroserviceSecrets contains names of all micro-services which require secrets
 var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
 
-// Databases contains names of all Qserv pods which have a database
+// Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
 
 // Command contains the default command used to launch a container

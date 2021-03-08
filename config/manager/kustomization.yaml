@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: qserv/qserv-operator
-  newTag: 0.0.1-eaff1f0
+  newTag: 0.0.2-3-g0d8cff5-dirty

@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `config_worker` (
   `exporter_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
   `exporter_tmp_dir` VARCHAR(255)       DEFAULT NULL ,    -- a file system path to the temporary folder
 
-    -- HTTP-based ingest service
+  -- HTTP-based ingest service
 
   `http_loader_host`    VARCHAR(255)       NOT NULL ,        -- the host name on which the worker's HTTP-based ingest server runs
   `http_loader_port`    SMALLINT UNSIGNED  DEFAULT NULL ,    -- override for the global default
@@ -78,11 +78,12 @@ CREATE TABLE IF NOT EXISTS `config_worker` (
 
   PRIMARY KEY (`name`) ,
 
-  UNIQUE  KEY (`exporter_host`, `exporter_port`) ,
-  UNIQUE  KEY (`db_host`,  `db_port`) ,
+  UNIQUE  KEY (`svc_host`, `svc_port`) ,
   UNIQUE  KEY (`fs_host`,  `fs_port`) ,
+  UNIQUE  KEY (`db_host`,  `db_port`) ,
   UNIQUE  KEY (`loader_host`, `loader_port`),
-  UNIQUE  KEY (`svc_host`, `svc_port`)
+  UNIQUE  KEY (`exporter_host`, `exporter_port`),
+  UNIQUE  KEY (`http_loader_host`, `http_loader_port`)
 )
 ENGINE = InnoDB;
 
@@ -172,24 +173,6 @@ CREATE TABLE IF NOT EXISTS `config_database` (
 )
 ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table `database_ingest`
--- -----------------------------------------------------
---
--- Store a parameters and a state of the catalog ingest.
-CREATE TABLE `database_ingest` (
-  `database` VARCHAR(255) NOT NULL ,
-  `category` VARCHAR(255) NOT NULL ,
-  `param`    VARCHAR(255) NOT NULL ,
-  `value`    TEXT NOT NULL ,
-  PRIMARY KEY (`database`, `category`, `param`) ,
-  CONSTRAINT `database_ingest_fk_1`
-    FOREIGN KEY (`database` )
-    REFERENCES `config_database` (`database` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
-)
-ENGINE = InnoDB ;
 
 -- -----------------------------------------------------
 -- Table `config_database_table`
@@ -556,6 +539,9 @@ CREATE TABLE IF NOT EXISTS `transaction` (
   `begin_time` BIGINT UNSIGNED NOT NULL ,
   `end_time`   BIGINT UNSIGNED DEFAULT 0 ,
 
+  `context` MEDIUMBLOB DEFAULT '' ,
+
+  UNIQUE KEY (`id`) ,
   PRIMARY KEY (`id`,`database`) ,
 
   CONSTRAINT `transaction_fk_1`
@@ -565,6 +551,87 @@ CREATE TABLE IF NOT EXISTS `transaction` (
     ON UPDATE CASCADE
 )
 ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `transaction_contrib`
+-- -----------------------------------------------------
+--
+-- This table registers contributions made in a context
+-- of "super-transactions" during ingests.
+--
+DROP TABLE IF EXISTS `transaction_contrib` ;
+
+CREATE TABLE IF NOT EXISTS `transaction_contrib` (
+
+  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,  -- a unique identifier of the contribution
+  `transaction_id` INT UNSIGNED NOT NULL ,                -- FK to the parent transaction
+
+  `worker` VARCHAR(255) NOT NULL ,
+
+  `database` VARCHAR(255) NOT NULL ,
+  `table`    VARCHAR(255) NOT NULL ,
+
+  `chunk`      INT UNSIGNED NOT NULL ,
+  `is_overlap` BOOLEAN NOT NULL ,
+
+  `url` TEXT NOT NULL ,
+
+  `begin_time` BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
+  `end_time`   BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
+
+  `num_bytes` BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
+  `num_rows`  BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
+
+  `success` BOOLEAN NOT NULL DEFAULT 0 ,
+
+  PRIMARY KEY (`id`) ,
+
+  CONSTRAINT `transaction_contrib_fk_1`
+    FOREIGN KEY (`transaction_id`)
+    REFERENCES `transaction` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `transaction_contrib_fk_2`
+    FOREIGN KEY (`worker` )
+    REFERENCES `config_worker` (`name`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `transaction_contrib_fk_3`
+    FOREIGN KEY (`database`, `table`)
+    REFERENCES `config_database_table` (`database`, `table`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `database_ingest`
+-- -----------------------------------------------------
+--
+-- Store a parameters and a state of the catalog ingest.
+
+DROP TABLE IF EXISTS `database_ingest` ;
+
+CREATE TABLE IF NOT EXISTS `database_ingest` (
+
+  `database` VARCHAR(255) NOT NULL ,
+  `category` VARCHAR(255) NOT NULL ,
+  `param`    VARCHAR(255) NOT NULL ,
+  `value`    TEXT NOT NULL ,
+
+  PRIMARY KEY (`database`, `category`, `param`) ,
+
+  CONSTRAINT `database_ingest_fk_1`
+    FOREIGN KEY (`database` )
+    REFERENCES `config_database` (`database` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+)
+ENGINE = InnoDB ;
 
 
 SET SQL_MODE=@OLD_SQL_MODE ;

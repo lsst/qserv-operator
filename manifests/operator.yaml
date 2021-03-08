@@ -680,6 +680,12 @@ spec:
                 storageClassName:
                   type: string
               type: object
+            dashboard:
+              description: Dashboard defines the settings for dashboard deployment
+              properties:
+                image:
+                  type: string
+              type: object
             devel:
               description: Devel defines the settings for development environment
               properties:
@@ -1481,6 +1487,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - deployments
   - statefulsets
   verbs:
   - create
@@ -1661,7 +1668,8 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:0.0.1-eaff1f0
+        image: qserv/qserv-operator:0.0.2-3-g0d8cff5-dirty
+        imagePullPolicy: Always
         name: manager
         resources:
           limits:

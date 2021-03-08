@@ -5,7 +5,7 @@
 
 # interface to listen to, defaults to 127.0.0.1
 WMGR_INTERFACE = '0.0.0.0'
-WMGR_PORT = 5012
+WMGR_PORT = {{.WmgrPort}}
 
 # for production set both to 0
 DEBUG = 0

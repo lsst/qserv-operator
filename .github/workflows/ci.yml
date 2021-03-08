@@ -17,7 +17,7 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "OP_IMAGE=$(. ./env.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
+          echo "OP_IMAGE=$(. ./env.build.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
       - name: Setup Operator SDK
         run: |
           ./install-operator-sdk.sh

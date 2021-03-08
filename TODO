@@ -1,3 +1,5 @@
+- Add init containers for checking other containers starting (dashboard repl-ctl)
+
 - Test Fixed NodePort
 
 - Install an operator per namespace
