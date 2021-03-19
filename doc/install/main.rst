@@ -8,7 +8,7 @@ Prerequisites
 For all setups
 --------------
 
--  Access to a Kubernetes v1.14.2+ cluster via a valid ``KUBECONFIG`` file.
+-  Access to a Kubernetes v1.19+ cluster via a valid ``KUBECONFIG`` file.
 -  Dynamic volume provisionning need to be available on the Kubernetes cluster (for example `kind <https://kind.sigs.k8s.io/>`__ for or
    GKE).
 
@@ -45,70 +45,42 @@ For a development workstation
 Deploy qserv-operator
 =====================
 
+`qserv-operator` can be deployed at cluster-scope, and will then manage all Qserv instances of the k8s cluster.
+It can also be deployed at namespace-scope, and will then manage Qserv instances based in the same namespace.
+Installing in the same k8s cluster, a qserv-operator at cluster-scope and an other at namespace-scope is not supported.
+
 .. code:: sh
 
-    # Deploy qserv-operator in current namespace
-    curl -fsSL https://raw.githubusercontent.com/lsst/qserv-operator/master/deploy.sh | bash
+    # Deploy qserv-operator at cluster-scope in "qserv-operator-system" namespace
+    kubectl apply -f https://raw.githubusercontent.com/lsst/qserv-operator/master/manifests/operator.yaml
+
+    # Deploy qserv-operator at namespace-scope in "qserv-dev" namespace
+    curl https://raw.githubusercontent.com/lsst/qserv-operator/master/manifests/operator-ns-scoped.yaml | sed 's/<NAMESPACE>/qserv-dev/' | kubectl apply -f -
 
 
 Deploy a qserv instance
 =======================
 
-Deployments below are recommended for development purpose, or continuous
-integration. Qserv install customization is handled with
-`Kustomize <https://github.com/kubernetes-sigs/kustomize>`__, which is a
-template engine allowing to customize kubernetes Yaml files.
-``Kustomize`` is integrated with ``kubectl`` (``-k`` option).
 
 with default settings
 ---------------------
+
+Default settings below are recommended for development purpose, or continuous integration. 
 
 .. code:: sh
 
     # Install a qserv instance with default settings inside default namespace
     kubectl apply -k https://github.com/lsst/qserv-operator/overlays/dev --namespace='default'
 
-with a Redis cluster
+with custom settings
 --------------------
 
-.. code:: sh
+For production setup, Qserv install customization is handled with
+`Kustomize <https://github.com/kubernetes-sigs/kustomize>`__, which is a
+template engine allowing to customize kubernetes Yaml files.
+``Kustomize`` is integrated with ``kubectl`` (``-k`` option).
 
-    # Install a qserv instance plus a Redis cluster inside default namespace
-    # This overlay is used on Travis-CI, o, top of kind
-    kubectl apply -k https://github.com/lsst/qserv-operator/ci-redis --namespace='default'
-
-Undeploy a qserv instance
-=========================
-
-First list all Qserv instances running in a given namespace
-
-.. code:: sh
-
-    kubectl get qserv -n "<namespace>"
-
-It will output something like:
-
-::
-
-    NAME            AGE
-    qserv   59m
-
-Then delete this Qserv instance
-
-.. code:: sh
-
-    kubectl delete qserv qserv -n "<namespace>"
-
-To delete all Qserv instances inside a namespace:
-
-.. code:: sh
-
-    kubectl delete qserv --all -n "<namespace>"
-
-All qserv storage will remain untouch by this operation.
-
-Deploy a qserv instance with custom settings
-============================================
+This setup is recommended for production platforms.
 
 Example are available, see below:
 
@@ -157,9 +129,44 @@ And finally create customized Qserv instance:
 
     kubectl apply -k overlays/my-qserv/ --namespace='<namespace>'
 
-Launch integration tests
-========================
+Run Qserv integration tests
+===========================
+
+.. code:: bash
+
+    cd "$WORKDIR"
+    git clone --depth 1 --single-branch https://github.com/lsst/qserv-operator
+    cd qserv-operator
+    ./tests/tools/wait-qserv-ready.sh
+    ./tests/e2e/integration.sh
+
+Undeploy a Qserv instance
+=========================
+
+First list all Qserv instances running in a given namespace
 
 .. code:: sh
 
-    ./run-integration-tests.sh
+    kubectl get qserv -n "<namespace>"
+
+It will output something like:
+
+::
+
+    NAME    CZARS   INGEST-DB   REPL-CTL   REPL-DB   WORKERS   XROOTD   AGE
+    qserv   1/1     1/1         1/1        1/1       2/2       2/2      2d10h
+
+
+Then delete this Qserv instance
+
+.. code:: sh
+
+    kubectl delete qserv qserv -n "<namespace>"
+
+To delete all Qserv instances inside a namespace:
+
+.. code:: sh
+
+    kubectl delete qserv --all -n "<namespace>"
+
+All qserv storage will remain untouch by this operation.

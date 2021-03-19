@@ -8,6 +8,7 @@ spec:
   storage: "1Gi"
   networkPolicies: false 
   czar:
+    replicas: 1
   ingest:
     dbImage: "mariadb:10.2.16"
   worker:

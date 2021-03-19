@@ -16,29 +16,25 @@ func MergeLabels(allLabels ...map[string]string) map[string]string {
 	return res
 }
 
-// GetLabels returns the labels for the component with specific role
-func GetLabels(component constants.PodClass, crName string) map[string]string {
-	return generatePodLabels(component, crName)
+// GetInstanceLabels returns the labels for a Qserv instance
+func GetInstanceLabels(crName string) map[string]string {
+	return map[string]string{
+		"app":                          constants.QservName,
+		"app.kubernetes.io/managed-by": "qserv-operator",
+		"instance":                     crName,
+	}
 }
 
-func generatePodLabels(component constants.PodClass, crName string) map[string]string {
-	componentStr := string(component)
-	return map[string]string{
-		"app":       constants.AppLabel,
-		"component": componentStr,
-		"instance":  crName,
-	}
+// GetComponentLabels returns the labels for the component with specific role
+func GetComponentLabels(component constants.PodClass, crName string) map[string]string {
+	labels := GetInstanceLabels(crName)
+	labels["component"] = string(component)
+	return labels
 }
 
 // GetContainerLabels returns the labels for containers
 func GetContainerLabels(container constants.ContainerName, crName string) map[string]string {
-	return generateContainerLabels(container, crName)
-}
-
-func generateContainerLabels(container constants.ContainerName, crName string) map[string]string {
-	return map[string]string{
-		"app":       constants.AppLabel,
-		"container": string(container),
-		"instance":  crName,
-	}
+	labels := GetInstanceLabels(crName)
+	labels["component"] = string(container)
+	return labels
 }

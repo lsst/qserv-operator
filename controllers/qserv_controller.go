@@ -17,11 +17,12 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,6 +32,7 @@ import (
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/syncer"
 	"github.com/lsst/qserv-operator/pkg/syncers"
+	"github.com/lsst/qserv-operator/pkg/util"
 )
 
 // QservReconciler reconciles a Qserv object
@@ -40,24 +42,18 @@ type QservReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// labelsForQserv returns the labels for selecting the resources
-// belonging to the given qserv CR name.
-func labelsForQserv(name string) map[string]string {
-	return map[string]string{"app": "qserv", "qserv_cr": name}
-}
-
+// +kubebuilder:rbac:groups=apps,resources=statefulsets;deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;create;update
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=services;services/finalizers;configmaps;secrets,verbs=create;delete;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=apps,resources=statefulsets;deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=services;services/finalizers;configmaps;secrets,verbs=create;delete;get;list;patch;update;watch
 
 // Reconcile reconciles a Qserv object
-func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *QservReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
-	ctx := context.Background()
-	log := r.Log.WithValues("memcached", req.NamespacedName)
+	log := r.Log.WithValues("qserv", req.NamespacedName)
 
 	log.Info("Reconciling Qserv")
 
@@ -77,8 +73,16 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	// Manage default values for specification
 	r.Scheme.Default(qserv)
 
+	result, err := r.updateQservStatus(ctx, req, qserv, &log)
+	if err != nil {
+		log.Error(err, "Unable to update Qserv status")
+		return result, err
+	}
+
+	// Manage syncronisation
 	qservSyncers := []syncer.Interface{
 		syncers.NewCzarStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
@@ -117,20 +121,6 @@ func (r *QservReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return reconcile.Result{}, err
 	}
 
-	// Update the Qserv status with the pod names
-	// List the pods for this qserv's deployment
-	podList := &v1.PodList{}
-	listOpts := []client.ListOption{
-		client.InNamespace(qserv.Namespace),
-		client.MatchingLabels(labelsForQserv(qserv.Name)),
-	}
-	if err = r.List(ctx, podList, listOpts...); err != nil {
-		log.Error(err, "Failed to list pods", "Qserv.Namespace", qserv.Namespace, "Qserv.Name", qserv.Name)
-		return ctrl.Result{}, err
-	}
-	//podNames := getPodNames(podList.Items)
-	//log.Info("Pod description:", "pod names", podNames)
-
 	// Update status.Nodes if needed
 	/* 	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {
 		qserv.Status.Nodes = podNames
@@ -159,4 +149,81 @@ func (r *QservReconciler) sync(syncers []syncer.Interface) error {
 		}
 	}
 	return nil
+}
+
+func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1alpha1.Qserv, log *logr.Logger) (ctrl.Result, error) {
+	// Manage status
+	// See https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html#2-list-all-active-jobs-and-update-the-status
+	listOpts := []client.ListOption{
+		client.InNamespace(qserv.Namespace),
+		client.MatchingLabels(util.GetInstanceLabels(qserv.Name)),
+	}
+
+	availableCondition := metav1.Condition{
+		LastTransitionTime: metav1.Now(),
+		Status:             metav1.ConditionTrue,
+		Type:               "Available",
+		Reason:             "Succeed",
+	}
+	var statefulsets appsv1.StatefulSetList
+	if err := r.List(ctx, &statefulsets, listOpts...); err != nil {
+		(*log).Error(err, "Unable to list Qserv statefulsets")
+		return ctrl.Result{}, err
+	}
+	var notReadyStatefulSet []appsv1.StatefulSet
+	for _, statefulset := range statefulsets.Items {
+		readyReplicas := statefulset.Status.ReadyReplicas
+		desiredReplicas := *statefulset.Spec.Replicas
+		readyFraction := fmt.Sprintf("%d/%d", readyReplicas, desiredReplicas)
+		(*log).Info(fmt.Sprintf("Statefulset: %v, %s", statefulset.Name, readyFraction))
+		if readyReplicas != desiredReplicas {
+			notReadyStatefulSet = append(notReadyStatefulSet, statefulset)
+		}
+
+		componentLabel := statefulset.Labels["component"]
+		switch componentLabel {
+		case string(constants.Czar):
+			qserv.Status.CzarReadyFraction = readyFraction
+		case string(constants.IngestDb):
+			qserv.Status.IngestDatabaseReadyFraction = readyFraction
+		case string(constants.ReplCtl):
+			qserv.Status.ReplicationControllerReadyFraction = readyFraction
+		case string(constants.ReplDb):
+			qserv.Status.ReplicationDatabaseReadyFraction = readyFraction
+		case string(constants.Worker):
+			qserv.Status.WorkerReadyFraction = readyFraction
+		case string(constants.XrootdRedirector):
+			qserv.Status.XrootdReadyFraction = readyFraction
+		default:
+			(*log).Info(fmt.Sprintf("Statefulset: %s has unknown 'component' label", statefulset.Name))
+		}
+	}
+
+	// For qserv-dashboard deployment
+	var deployments appsv1.DeploymentList
+	if err := r.List(ctx, &deployments, listOpts...); err != nil {
+		(*log).Error(err, "Unable to list Qserv deployments")
+		return ctrl.Result{}, err
+	}
+	var notAvailableDeployment []appsv1.Deployment
+	for _, deployment := range deployments.Items {
+
+		availableReplicas := deployment.Status.AvailableReplicas
+		desiredReplicas := *deployment.Spec.Replicas
+		(*log).Info(fmt.Sprintf("Deployment: %v, %d/%d\n", deployment.Name, availableReplicas, desiredReplicas))
+		if availableReplicas != desiredReplicas {
+			notAvailableDeployment = append(notAvailableDeployment, deployment)
+		}
+	}
+
+	if len(notReadyStatefulSet) != 0 || len(notAvailableDeployment) != 0 {
+		availableCondition.Status = metav1.ConditionFalse
+		availableCondition.Reason = "NotReadyPods"
+		availableCondition.Message = fmt.Sprintf("Pod(s) not ready or available")
+	}
+
+	qserv.Status.Conditions = []metav1.Condition{availableCondition}
+	(*log).Info(fmt.Sprintf("Update status %v", qserv.Status.Conditions))
+	err := r.Status().Update(ctx, qserv)
+	return ctrl.Result{}, err
 }

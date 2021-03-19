@@ -1,9 +1,8 @@
+- implement `kubectl explain qserv`
+
+- Check example: https://gitlab.com/gitlab-org/gl-openshift/gitlab-operator or https://github.com/open-telemetry/opentelemetry-operator
+
 - Add init containers for checking other containers starting (dashboard repl-ctl)
-
-- Test Fixed NodePort
-
-- Install an operator per namespace
-  Watch multipe namespace: https://sdk.operatorframework.io/docs/building-operators/golang/operator-scope/#configuring-cluster-scoped-operators-with-multinamespacedcachebuilder
 
 - Update build documentation
 

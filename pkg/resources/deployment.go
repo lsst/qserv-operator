@@ -10,10 +10,10 @@ import (
 )
 
 // GenerateDashboardDeployment generate deployment specification for Qserv Web
-func GenerateDashboardDeployment(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.Deployment {
+func GenerateDashboardDeployment(cr *qservv1alpha1.Qserv) *appsv1.Deployment {
 	name := cr.Name + "-" + string(constants.Dashboard)
 	namespace := cr.Namespace
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Dashboard, cr.Name))
+	labels := util.GetComponentLabels(constants.Dashboard, cr.Name)
 
 	var replicas int32 = 1
 

@@ -39,7 +39,7 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-make yaml
+make yaml yaml-ns-scoped
 make docker-build IMG="$OP_IMAGE"
 # WARN: Hack used to pass CI static code checks
 git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go

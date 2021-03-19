@@ -37,4 +37,5 @@ spec:
             cpu: 100m
             memory: 20Mi
         imagePullPolicy: Always
+      serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
