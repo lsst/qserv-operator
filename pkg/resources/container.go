@@ -109,9 +109,9 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) stri
 	} else if component == constants.IngestDb {
 		image = spec.Ingest.DbImage
 	} else if component == constants.Worker {
-		image = spec.Worker.Image
+		image = spec.Worker.DbImage
 	} else if component == constants.Czar {
-		image = spec.Czar.Image
+		image = spec.Czar.DbImage
 	}
 	return image
 }
