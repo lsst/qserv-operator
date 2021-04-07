@@ -10,10 +10,10 @@ spec:
   czar:
     replicas: 1
   ingest:
-    dbImage: "mariadb:10.2.16"
+    dbImage: "qserv/lite-mariadb:2021.04.0"
   worker:
     replicas: 2
   replication:
-      dbImage: "mariadb:10.2.16"
+      dbImage: "qserv/lite-mariadb:2021.04.0"
   xrootd:
     replicas: 2

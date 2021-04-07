@@ -16,6 +16,7 @@ func IterateCount(count uint) []int {
 	return items
 }
 
+// NoFunc define nil function
 var NoFunc = func() error {
 	return nil
 }

@@ -25,42 +25,25 @@
 
 set -euxo pipefail
 
+INGEST_DIR="/tmp/qserv-ingest"
+
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
-WORKER_COUNT=$(kubectl get qservs.qserv.lsst.org "$INSTANCE" -o=jsonpath='{.spec.worker.replicas}')
-CSS_INFO=""
 
-
-if kubectl get redis -l instance="$INSTANCE" -o=jsonpath='{.items[0].metadata.name}' >& /dev/null
-then
-    echo "Run integration test for Redis cluster"
-    # List cluster nodes
-    REDIS_NODE="$INSTANCE"-redis-shard0-0
-    REDIS_SVC_DN="$INSTANCE"-redis
-    kubectl exec -it "$REDIS_NODE" -c redis -- redis-cli -c cluster nodes
-
-    kubectl exec -it "$REDIS_NODE" -c redis -- redis-cli -c cluster keyslot hello
-
-    kubectl exec -it "$REDIS_NODE" -c redis -- redis-cli -c -h "$REDIS_SVC_DN" set hello world
-    kubectl exec -it "$REDIS_NODE" -c redis -- redis-cli -c -h "$REDIS_SVC_DN" get hello
-
-    REDIS_NODE_2_IP=$(kubectl get pods "$INSTANCE"-redis-shard2-1 -o jsonpath="{.status.podIP}")
-    kubectl exec -it "$REDIS_NODE" -c redis -- redis-cli -c -h "$REDIS_NODE_2_IP" get hello
-else
-    echo "Do not run integration test for Redis cluster: Redis database does not exist"
-fi
-
-echo "Run integration test for Qserv"
-
-# Build CSS input data
-upper_id=$((WORKER_COUNT-1))
-for i in $(seq 0 "$upper_id");
+echo "Run integration tests for Qserv"
+git clone --single-branch -b tickets/DM-29567 https://github.com/lsst-dm/qserv-ingest "$INGEST_DIR"
+"$INGEST_DIR"/argo-install.sh
+kubectl apply -f "$INGEST_DIR"/tests/dataserver.yaml
+POD=$(kubectl get pods -l app=dataserver -o jsonpath='{.items[0].metadata.name}')
+kubectl wait --for=condition=available --timeout=600s deployment dataserver
+kubectl cp ""$INGEST_DIR"/tests/data" "$POD":/www
+cp "$INGEST_DIR"/env.example.sh "$INGEST_DIR"/env.sh
+"$INGEST_DIR"/argo-submit.sh
+argo watch @latest
+PODS_ARGO_FAILED=$(kubectl get pods -l workflows.argoproj.io/completed=true -o jsonpath='{.items[*].metadata.name}' --field-selector=status.phase=Failed)
+for pod in $PODS_ARGO_FAILED
 do
-    CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=8080 \
-    host=${INSTANCE}-worker-${i}.${INSTANCE}-worker; "
+  echo "pod $pod log:"
+  echo "-----------------------------------------" 
+  kubectl logs $pod -c main
+  echo "-----------------------------------------" 
 done
-
-kubectl exec "${INSTANCE}-czar-0" -c wmgr -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
-    setup qserv_distrib -t qserv-dev && \
-    echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:3306/qservCssData && \
-    qserv-test-integration.py -V DEBUG"
-

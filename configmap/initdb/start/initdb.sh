@@ -19,34 +19,7 @@ MYSQL_MONITOR_PASSWORD=''
 
 # Used for Qserv czar and worker databases
 
-if [ "$COMPONENT_NAME" = "czar" ] || [ "$COMPONENT_NAME" = "worker" ]; then
-    EUPS_DB=true
-    INSTALL_SCISQL=true
-else
-    EUPS_DB=false
-    INSTALL_SCISQL=false
-fi
-
-# Require root privileges
-##
-MARIADB_CONF="/config-etc/my.cnf"
-if [ -e "$MARIADB_CONF" ]; then
-    mkdir -p /etc/mysql
-    ln -sf "$MARIADB_CONF" /etc/mysql/my.cnf
-fi
-
-if ! id 1000 > /dev/null 2>&1
-then
-    useradd qserv --uid 1000 --no-create-home
-fi
-
-if [ "$EUPS_DB" = true ]; then
-
-    # Source pathes to eups packages
-    . /qserv/run/etc/sysconfig/qserv
-    MYSQL_INSTALL_DB="${MYSQL_DIR}/scripts/mysql_install_db --basedir=$MYSQL_DIR"
-else
-    MYSQL_INSTALL_DB="mysql_install_db"
+if [ ! "$COMPONENT_NAME" = "czar" ] && [ ! "$COMPONENT_NAME" = "worker" ]; then
     . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
 fi
 
@@ -79,7 +52,9 @@ then
     touch "$STATE_FILE"
     echo "-- "
     echo "-- Installing mysql database files."
-    ${MYSQL_INSTALL_DB} >/dev/null ||
+    id
+    ls -rtl /qserv/data
+    mysql_install_db --auth-root-authentication-method=normal >/dev/null ||
         {
             echo "ERROR : mysql_install_db failed, exiting"
             exit 1
@@ -124,17 +99,6 @@ then
             exit 1
         fi
     done
-
-    if [ "$INSTALL_SCISQL" = true ]; then
-        echo "-- "
-        echo "-- Deploy scisql plugin"
-        # WARN: SciSQL shared library (libcisql*.so) deployed by command
-        # below will be removed at each container startup.
-        # That's why this shared library is currently
-        # installed in mysql plugin directory at image creation.
-        echo "$MYSQL_ROOT_PASSWORD" | scisql-deploy.py --mysql-dir="$MYSQL_DIR" \
-            --mysql-socket="$MYSQLD_SOCKET"
-    fi
 
     echo "-- Stop mariadb server."
     mysqladmin -u root --password="$MYSQL_ROOT_PASSWORD" shutdown

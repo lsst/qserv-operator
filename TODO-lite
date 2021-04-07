@@ -1,0 +1,6 @@
+set xrootd mlock ulimit in: http://www.softpanorama.org/HPC/Networking/MPI/Troubleshooting/ulimit_locked_memory_limit.shtml
+https://elixir.bootlin.com/linux/latest/source/tools/testing/selftests/vm/mlock-random-test.c
+
+Secure mysql install:
+- https://bertvv.github.io/notes-to-self/2015/11/16/automating-mysql_secure_installation/
+- https://lsstc.slack.com/archives/D2Y1TQY5S/p1617778618002400

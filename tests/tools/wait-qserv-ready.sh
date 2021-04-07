@@ -2,7 +2,7 @@
 
 # LSST Data Management System
 # Copyright 2014 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -10,14 +10,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 
 # Wait Qserv pods to be in ready state
@@ -39,22 +39,28 @@ while test $# -gt 0; do
 done
 
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
-WORKER_COUNT=$(kubectl get qservs.qserv.lsst.org "$INSTANCE" -o=jsonpath='{.spec.worker.replicas}')
-
-SHELL_POD="${INSTANCE}-shell"
-
-kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"
-kubectl run "${INSTANCE}-shell" --image="curlimages/curl:7.70.0"  --restart=Never sleep 3600
-kubectl label pod "${INSTANCE}-shell" "app=qserv" "instance=$INSTANCE" "tier=shell"
-kubectl wait qserv  --for=condition=available qserv
-echo "Qserv pods are ready:"
-kubectl get all -l "app=qserv,instance=$INSTANCE"
-
-for (( i=0; i<${WORKER_COUNT}; i++ ))
-do
-  kubectl cp "$DIR/wait-wmgr.sh" "$SHELL_POD":/tmp
-  kubectl exec "$SHELL_POD" -it /tmp/wait-wmgr.sh "${INSTANCE}-worker-${i}.${INSTANCE}-worker"
+while true; do
+  if kubectl wait qserv --timeout=10s --for=condition=available "$INSTANCE"
+  then
+        kubectl get qservs.qserv.lsst.org -o jsonpath='{.items[*].status}'
+        break
+    else
+        echo "Wait for Qserv to start"
+        kubectl get pods,pvc -l app=qserv
+        kubectl get pv
+        # See https://stackoverflow.com/questions/67122591/display-logs-of-an-initcontainer-running-inside-github-actions
+        # INITDB_WAITING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.initContainerStatuses[0].state.waiting}')
+        # INITDB_WAITING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.phase}')
+        echo "initdb state"
+        INITDB_RUNNING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.initContainerStatuses[0].state.running}')
+        if [ -n "$INITDB_RUNNING" ]; then
+          kubectl logs qserv-worker-0 -c initdb
+        fi
+    fi
 done
-echo "wmgr service is ready in all Qserv pods"
-
-kubectl delete pod -l "app=qserv,instance=$INSTANCE,tier=shell"
+echo "Qserv pods are ready"
+kubectl get pods -l app=qserv
+kubectl describe statefulsets.apps qserv-czar
+kubectl get pods -A
+kubectl describe pod qserv-czar-0
+kubectl get qservs.qserv.lsst.org -o jsonpath='{.items[*].status}'

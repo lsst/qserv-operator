@@ -1,0 +1,48 @@
+# Qserv operator CI workflow
+---
+name: "e2e debug"
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+jobs:
+  e2e:
+    name: Run e2e tests
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: apparmor
+        run: |
+          set -x
+          sudo apt-get remove mysql-server --purge
+          sudo apt-get install apparmor-profiles
+          sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.3'
+      - run: go version
+      - name: Install go dependencies
+        run: |
+          go get golang.org/x/tools/cmd/goimports
+      - name: Create k8s/kind cluster
+        run: |
+          git clone --depth 1 -b "k8s-v1.20.2" --single-branch https://github.com/k8s-school/kind-travis-ci.git
+          ./kind-travis-ci/k8s-create.sh -s -n ci
+      - name: Install kustomize
+        run: |
+          curl -lO "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
+          chmod +x ./install_kustomize.sh
+          sudo rm -f /usr/local/bin/kustomize
+          sudo ./install_kustomize.sh 4.0.5 /usr/local/bin
+      - name: Deploy operator
+        run: |
+          kubectl apply -f manifests/operator.yaml
+          ./tests/tools/wait-operator-ready.sh
+      - name: Deploy Qserv
+        run: kubectl apply -k manifests/base
+      - name: Wait for Qserv to start
+        run: ./tests/tools/wait-qserv-ready.sh -v
+      - name: Run E2E Tests
+        run: ./tests/e2e/integration.sh

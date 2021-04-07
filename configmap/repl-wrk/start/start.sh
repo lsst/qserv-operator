@@ -19,9 +19,6 @@ MYSQLD_USER_QSERV="qsmaster"
 . /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
 
-# Source pathes to eups packages
-. /qserv/run/etc/sysconfig/qserv
-
 WORKER_ID=$(hostname)
 
 # Required by dataloader
