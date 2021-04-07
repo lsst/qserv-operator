@@ -34,7 +34,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbContainerName),
+			getMysqlCnfVolumeMount(dbContainerName),
 			// db startup script and root passwords are shared
 			getStartVolumeMount(constants.InitDbName),
 			getSecretVolumeMount(constants.MariadbName),
@@ -92,7 +92,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, pod constants.PodClass) (v1.Co
 		ReadinessProbe: getTCPProbe(constants.MariadbPortName, 5),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbContainerName),
+			getMysqlCnfVolumeMount(dbContainerName),
 			getStartVolumeMount(dbContainerName),
 			getTmpVolumeMount(),
 		},

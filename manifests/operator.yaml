@@ -665,6 +665,8 @@ spec:
                           type: array
                       type: object
                   type: object
+                dbImage:
+                  type: string
                 image:
                   type: string
                 proxyResources:
@@ -1403,6 +1405,8 @@ spec:
                           type: array
                       type: object
                   type: object
+                dbImage:
+                  type: string
                 image:
                   type: string
                 replicas:
@@ -1793,8 +1797,8 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:2021.04.0-11-gff3bb0d-dirty
-        imagePullPolicy: Always
+        image: qserv/qserv-operator:2021.04.0-13-gf259de7-dirty
+        imagePullPolicy: IfNotPresent
         name: manager
         resources:
           limits:
