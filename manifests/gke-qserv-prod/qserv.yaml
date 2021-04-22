@@ -9,5 +9,5 @@ spec:
   queryService:
       loadBalancerIP: 10.140.1.211
   worker:
-    storage: "500Gi"
+    storage: "2Ti"
     replicas: 5
