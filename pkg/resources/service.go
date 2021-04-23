@@ -9,11 +9,11 @@ import (
 )
 
 // GenerateQservQueryService generate service specification for Qserv Czar proxy
-func GenerateQservQueryService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateQservQueryService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetName(cr, constants.QservName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
+	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -39,11 +39,11 @@ func GenerateQservQueryService(cr *qservv1alpha1.Qserv, labels map[string]string
 }
 
 // GenerateCzarService generate service specification for Qserv Czar database
-func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateCzarService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetCzarServiceName(cr)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
+	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -72,11 +72,11 @@ func GenerateCzarService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.
 }
 
 // GenerateDashboardService generate service specification for Qserv Czar database
-func GenerateDashboardService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateDashboardService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetDashboardServiceName(cr)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Dashboard, cr.Name))
+	labels := util.GetComponentLabels(constants.Dashboard, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -99,11 +99,11 @@ func GenerateDashboardService(cr *qservv1alpha1.Qserv, labels map[string]string)
 }
 
 // GenerateIngestDbService generate service specification for Qserv Ingest database
-func GenerateIngestDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateIngestDbService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetName(cr, string(constants.IngestDb))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.IngestDb, cr.Name))
+	labels := util.GetComponentLabels(constants.IngestDb, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -127,11 +127,11 @@ func GenerateIngestDbService(cr *qservv1alpha1.Qserv, labels map[string]string) 
 }
 
 // GenerateReplicationCtlService generate service specification for Qserv Replication Controller
-func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetReplCtlServiceName(cr)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtl, cr.Name))
+	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -155,11 +155,11 @@ func GenerateReplicationCtlService(cr *qservv1alpha1.Qserv, labels map[string]st
 }
 
 // GenerateReplicationDbService generate service specification for Qserv Replication Controller database
-func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateReplicationDbService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetName(cr, string(constants.ReplDb))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDb, cr.Name))
+	labels := util.GetComponentLabels(constants.ReplDb, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -183,11 +183,11 @@ func GenerateReplicationDbService(cr *qservv1alpha1.Qserv, labels map[string]str
 }
 
 // GenerateWorkerService generates headless service for Qserv workers StatefulSet
-func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateWorkerService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetWorkerServiceName(cr)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Worker, cr.Name))
+	labels := util.GetComponentLabels(constants.Worker, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -216,11 +216,11 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv, labels map[string]string) *v
 }
 
 // GenerateXrootdRedirectorService generates headless service for xrootd redirectors StatefulSet
-func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.Service {
+func GenerateXrootdRedirectorService(cr *qservv1alpha1.Qserv) *v1.Service {
 	name := util.GetName(cr, string(constants.XrootdRedirector))
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirector, cr.Name))
+	labels := util.GetComponentLabels(constants.XrootdRedirector, cr.Name)
 
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{

@@ -38,7 +38,7 @@ Script below uses a `simple install script for kind <https://github.com/k8s-scho
     mkdir -p "$WORKDIR"
 
     cd "$WORKDIR"
-    git clone --depth 1 -b "v0.6.0" --single-branch https://github.com/k8s-school/kind-travis-ci
+    git clone --depth 1 -b "k8s-v1.20.2" --single-branch https://github.com/k8s-school/kind-travis-ci
     cd kind-travis-ci
     ./kind/k8s-create.sh -s
 
@@ -52,26 +52,24 @@ Option #2: k3s
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC=“--docker --write-kubeconfig-mode 644” sh -
     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-Install Qserv in four lines
+Deploy Qserv in four lines
 ===========================
+
+This procedure is recommended for development platform only.
 
 `go-lang` is a pre-requisite.
 
 .. code:: bash
 
-    git clone https://github.com/lsst/qserv-operator
-    cd qserv-operator
-    kubectl apply -f manifests/operator.yaml
-    kubectl apply -k manifests/base
-
-
-Run Qserv integration tests
-===========================
-
-.. code:: bash
-
-    cd "$WORKDIR"
     git clone --depth 1 --single-branch https://github.com/lsst/qserv-operator
     cd qserv-operator
+    # Deploy Qserv operator
+    kubectl apply -f manifests/operator.yaml
+    # Deploy Qserv
+    kubectl apply -k manifests/base
+    # Run integration tests
     ./tests/tools/wait-qserv-ready.sh
     ./tests/e2e/integration.sh
+
+
+

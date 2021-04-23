@@ -21,12 +21,11 @@ func getValue(value string, defaultValue string) string {
 }
 
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
-func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.Czar)
 	namespace := cr.Namespace
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
+	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
-	var replicas int32 = 1
 	storageClass := getValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
 	storageSize := getValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
 
@@ -46,7 +45,7 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 		},
 		Spec: appsv1.StatefulSetSpec{
 			ServiceName: name,
-			Replicas:    &replicas,
+			Replicas:    &cr.Spec.Czar.Replicas,
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
@@ -95,11 +94,11 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) 
 }
 
 // GenerateIngestDbStatefulSet generate statefulset specification for Qserv Ingest Database
-func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.IngestDb)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.IngestDb, cr.Name))
+	labels := util.GetComponentLabels(constants.IngestDb, cr.Name)
 
 	var replicas int32 = 1
 	storageClass := cr.Spec.StorageClass
@@ -165,11 +164,11 @@ func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]stri
 }
 
 // GenerateReplicationCtlStatefulSet generate statefulset specification for Qserv Replication Controller
-func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplCtlName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplCtl, cr.Name))
+	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
 
 	var replicas int32 = 1
 
@@ -214,11 +213,11 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv, labels map[strin
 }
 
 // GenerateReplicationDbStatefulSet generate statefulset specification for Qserv Replication Database
-func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.ReplDbName)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.ReplDb, cr.Name))
+	labels := util.GetComponentLabels(constants.ReplDb, cr.Name)
 
 	var replicas int32 = 1
 	storageClass := cr.Spec.StorageClass
@@ -284,11 +283,11 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv, labels map[string
 }
 
 // GenerateWorkerStatefulSet generate statefulset specification for Qserv Workers
-func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	name := cr.Name + "-" + string(constants.Worker)
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Worker, cr.Name))
+	labels := util.GetComponentLabels(constants.Worker, cr.Name)
 
 	replicas := cr.Spec.Worker.Replicas
 
@@ -367,11 +366,11 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string
 }
 
 // GenerateXrootdStatefulSet generate statefulset specification for xrootd redirectors
-func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv, labels map[string]string) *appsv1.StatefulSet {
+func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	namespace := cr.Namespace
 	name := util.GetName(cr, string(constants.XrootdRedirector))
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.XrootdRedirector, cr.Name))
+	labels := util.GetComponentLabels(constants.XrootdRedirector, cr.Name)
 
 	var replicas int32 = cr.Spec.Xrootd.Replicas
 

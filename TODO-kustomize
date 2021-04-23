@@ -1,0 +1,2 @@
+- Update doc
+sed 's/<NAMESPACE>/qserv/' manifests/operator-ns-scoped.yaml | kubectl apply -f -

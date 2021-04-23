@@ -15,3 +15,7 @@ func IterateCount(count uint) []int {
 	}
 	return items
 }
+
+var NoFunc = func() error {
+	return nil
+}

@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// +k8s:deepcopy-gen=package
 package v1alpha1
 
 import (
@@ -134,14 +135,32 @@ type XrootdSettings struct {
 
 // QservStatus defines the observed state of Qserv
 type QservStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// Known .status.conditions.type are: "Available", "Progressing", and "Degraded"
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	Conditions                         []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+	CzarReadyFraction                  string             `json:"czarreadyfraction,omitempty"`
+	IngestDatabaseReadyFraction        string             `json:"ingestdatabasereadyfraction,omitempty"`
+	ReplicationControllerReadyFraction string             `json:"replicationcontrollerreadyfraction,omitempty"`
+	ReplicationDatabaseReadyFraction   string             `json:"replicationdatabasereadyfraction,omitempty"`
+	WorkerReadyFraction                string             `json:"workerreadyfraction,omitempty"`
+	XrootdReadyFraction                string             `json:"xrootdreadyfraction,omitempty"`
 }
 
+// Qserv is the Schema for the qservs API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-
-// Qserv is the Schema for the qservs API
+// +kubebuilder:printcolumn:name="Czar",type=string,JSONPath=`.status.czarreadyfraction`
+// +kubebuilder:printcolumn:name="Ingest-db",type=string,JSONPath=`.status.ingestdatabasereadyfraction`
+// +kubebuilder:printcolumn:name="Repl-ctl",type=string,JSONPath=`.status.replicationcontrollerreadyfraction`
+// +kubebuilder:printcolumn:name="Repl-db",type=string,JSONPath=`.status.replicationdatabasereadyfraction`
+// +kubebuilder:printcolumn:name="Worker",type=string,JSONPath=`.status.workerreadyfraction`
+// +kubebuilder:printcolumn:name="Xrootd",type=string,JSONPath=`.status.xrootdreadyfraction`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Qserv struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -150,9 +169,8 @@ type Qserv struct {
 	Status QservStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
-
 // QservList contains a list of Qserv
+// +kubebuilder:object:root=true
 type QservList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
