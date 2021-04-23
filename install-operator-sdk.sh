@@ -5,7 +5,7 @@
 set -e
 set -x
 
-RELEASE_VERSION=v1.3.0
+RELEASE_VERSION=v1.5.0
 export ARCH=$(case $(arch) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(arch) ;; esac)
 export OS=$(uname | awk '{print tolower($0)}')
 

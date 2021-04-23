@@ -110,7 +110,7 @@ func generateTemplateData(r *qservv1alpha1.Qserv) templateData {
 
 // GenerateContainerConfigMap generate 2 configmaps for Qserv containers
 // one with startup scripts and one with configuration files
-func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, container constants.ContainerName, subdir string) *v1.ConfigMap {
+func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, container constants.ContainerName, subdir string) *v1.ConfigMap {
 
 	tmplData := generateTemplateData(r)
 
@@ -119,7 +119,7 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 	name := util.PrefixConfigmap(r, fmt.Sprintf("%s-%s", container, subdir))
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetContainerLabels(container, r.Name))
+	labels := util.GetContainerLabels(container, r.Name)
 	root := filepath.Join("/", "configmap", string(container), subdir)
 
 	return &v1.ConfigMap{
@@ -133,7 +133,7 @@ func GenerateContainerConfigMap(r *qservv1alpha1.Qserv, labels map[string]string
 }
 
 // GenerateSQLConfigMap generate configmaps for initContainers in charge of databases initializations
-func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db constants.PodClass) *v1.ConfigMap {
+func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, db constants.PodClass) *v1.ConfigMap {
 
 	tmplData := generateTemplateData(r)
 
@@ -143,7 +143,7 @@ func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", db))
 	namespace := r.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(db, r.Name))
+	labels := util.GetComponentLabels(db, r.Name)
 	root := filepath.Join("/", "configmap", "initdb", "sql", string(db))
 
 	return &v1.ConfigMap{
@@ -157,7 +157,7 @@ func GenerateSQLConfigMap(r *qservv1alpha1.Qserv, labels map[string]string, db c
 }
 
 // GenerateDotQservConfigMap generate configmap for Qserv client configuration
-func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string) *v1.ConfigMap {
+func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv) *v1.ConfigMap {
 
 	tmplData := generateTemplateData(cr)
 
@@ -166,7 +166,7 @@ func GenerateDotQservConfigMap(cr *qservv1alpha1.Qserv, labels map[string]string
 	name := util.PrefixConfigmap(cr, "dot-qserv")
 	namespace := cr.Namespace
 
-	labels = util.MergeLabels(labels, util.GetLabels(constants.Czar, cr.Name))
+	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 	root := filepath.Join("/", "configmap", "dot-qserv")
 
 	return &v1.ConfigMap{

@@ -19,7 +19,7 @@ var (
 // passing a SyncFn
 type ObjectSyncer struct {
 	Owner          runtime.Object
-	Obj            runtime.Object
+	Obj            client.Object
 	SyncFn         controllerutil.MutateFn
 	Name           string
 	Client         client.Client
@@ -33,7 +33,7 @@ func (s *ObjectSyncer) GetObject() interface{} { return s.Obj }
 // GetOwner returns the ObjectSyncer owner
 func (s *ObjectSyncer) GetOwner() runtime.Object { return s.Owner }
 
-// Sync does the actual syncing and implements the syncer.Inteface Sync method
+// Sync does the actual syncing and implements the syncer.Interface Sync method
 func (s *ObjectSyncer) Sync(ctx context.Context) (SyncResult, error) {
 	result := SyncResult{}
 
@@ -105,7 +105,7 @@ func (s *ObjectSyncer) mutateFn() controllerutil.MutateFn {
 // with an owner and persists data using controller-runtime's CreateOrUpdate.
 // The name is used for logging and event emitting purposes and should be an
 // valid go identifier in upper camel case. (eg. MysqlStatefulSet)
-func NewObjectSyncer(name string, owner, obj runtime.Object, c client.Client, scheme *runtime.Scheme, syncFn controllerutil.MutateFn) Interface {
+func NewObjectSyncer(name string, owner, obj client.Object, c client.Client, scheme *runtime.Scheme, syncFn controllerutil.MutateFn) Interface {
 	return &ObjectSyncer{
 		Owner:  owner,
 		Obj:    obj,

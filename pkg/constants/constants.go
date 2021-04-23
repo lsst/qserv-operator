@@ -4,7 +4,6 @@ package constants
 // Do not change their value.
 const (
 	BaseName = "lsst"
-	AppLabel = "qserv"
 
 	CmsdPort     = 2131
 	CmsdPortName = string(CmsdName)
@@ -23,8 +22,6 @@ const (
 	ProxyPortName = string(ProxyName)
 
 	QservName = "qserv"
-
-	RedisName = "redis"
 
 	ReplicationControllerPort     = 8080
 	ReplicationControllerPortName = "http"
@@ -109,18 +106,18 @@ const (
 	XrootdRedirector PodClass = "xrootd-redirector"
 )
 
-// ContainerConfigmaps contains names of all micro-services which require configmaps named:
-// '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{DashboardName, IngestDbName, MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
-
-// MicroserviceSecrets contains names of all micro-services which require secrets
-var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
-
-// Databases contains names of all Qserv pods which embed a database container
-var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
-
 // Command contains the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}
 
 // CommandDebug is a prerequisite for interactive debugging
 var CommandDebug = []string{"sleep", "infinity"}
+
+// ContainerConfigmaps contains names of all micro-services which require configmaps named:
+// '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
+var ContainerConfigmaps = []ContainerName{DashboardName, IngestDbName, MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
+
+// Databases contains names of all Qserv pods which embed a database container
+var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
+
+// MicroserviceSecrets contains names of all micro-services which require secrets
+var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
