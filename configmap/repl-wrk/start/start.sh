@@ -1,12 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 # Start Qserv replication worker service inside pod
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
-set -e
 # WARN: password are displayed in debug logs
-set -x
+set -euxo pipefail
+
+. /secret-mariadb/mariadb.secret.sh
+. /secret-repl-db/repl-db.secret.sh
 
 REPL_DB_PORT="3306"
 REPL_DB_USER="qsreplica"
@@ -21,8 +23,6 @@ QSERV_WORKER_DB="qservw_worker"
 QSERV_WORKER_DB_USER="root"
 QSERV_WORKER_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
-. /secret-mariadb/mariadb.secret.sh
-. /secret-repl-db/repl-db.secret.sh
 
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
