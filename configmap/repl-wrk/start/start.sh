@@ -15,6 +15,11 @@ DATA_DIR="/qserv/data"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 MYSQLD_USER_QSERV="qsmaster"
+QSERV_WORKER_DB_DN="127.0.0.1"
+QSERV_WORKER_DB_PORT="3306"
+QSERV_WORKER_DB="qservw_worker"
+QSERV_WORKER_DB_USER="root"
+QSERV_WORKER_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
 . /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
@@ -59,7 +64,8 @@ done
 export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
-qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-db-password="${MYSQL_ROOT_PASSWORD}" --debug
+QSERV_WORKER_DB_URL="mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}@${QSERV_WORKER_DB_DN}:${QSERV_WORKER_DB_PORT}/${QSERV_WORKER_DB}"
+qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-worker-db="${QSERV_WORKER_DB_URL}" --debug
 
 # For debug purpose
 #while true;

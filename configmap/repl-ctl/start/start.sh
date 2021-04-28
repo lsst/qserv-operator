@@ -15,6 +15,12 @@ REPL_DB_PORT="3306"
 REPL_DB_USER="qsreplica"
 REPL_DB="qservReplica"
 
+QSERV_CZAR_DB_DN="{{.CzarDomainName}}"
+QSERV_CZAR_DB_PORT="3306"
+QSERV_CZAR_DB="qservMeta"
+QSERV_CZAR_DB_USER="root"
+QSERV_CZAR_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
+
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
 
@@ -74,10 +80,10 @@ cd "${WORK_DIR}"
 export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
+QSERV_CZAR_DB_URL="mysql://${QSERV_CZAR_DB_USER}:${QSERV_CZAR_DB_PASSWORD}@${QSERV_CZAR_DB_DN}:${QSERV_CZAR_DB_PORT}/${QSERV_CZAR_DB}"
 PARAMETERS="--worker-evict-timeout=3600 --health-probe-interval=120 --replication-interval=1200"
 MALLOC_CONF=${OPT_MALLOC_CONF} LD_PRELOAD=${OPT_LD_PRELOAD} \
-# qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}" --qserv-db-password="${MYSQL_ROOT_PASSWORD}" --debug
-qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}" --qserv-db-password="${MYSQL_ROOT_PASSWORD}"
+qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}" --qserv-czar-db="${QSERV_CZAR_DB_URL}" --debug
 
 # For debug purpose
 #while true;
