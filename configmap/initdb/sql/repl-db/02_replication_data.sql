@@ -59,7 +59,6 @@ INSERT INTO `config` VALUES ('worker', 'num_http_loader_processing_threads', '{{
 {{$workerFqdn := print $workerId "." $.WorkerDn}}
 INSERT INTO `config_worker` VALUES ('{{$workerId}}', 1, 0, '{{$workerFqdn}}', NULL,
                                     '{{$workerFqdn}}', NULL, NULL,
-                                    'localhost', NULL, NULL,
                                     '{{$workerFqdn}}', NULL, NULL,
                                     '{{$workerFqdn}}', NULL, NULL,
                                     '{{$workerFqdn}}', NULL, NULL);
