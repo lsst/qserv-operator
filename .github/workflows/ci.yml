@@ -134,4 +134,4 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Push image to Docker Hub
         run: |
-          docker push ${{ env.QSERV_IMAGE }}
+          docker push ${{ env.IMAGE }}
