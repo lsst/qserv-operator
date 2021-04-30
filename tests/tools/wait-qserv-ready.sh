@@ -51,15 +51,16 @@ while true; do
         # See https://stackoverflow.com/questions/67122591/display-logs-of-an-initcontainer-running-inside-github-actions
         # INITDB_WAITING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.initContainerStatuses[0].state.waiting}')
         # INITDB_WAITING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.phase}')
-        echo "initdb state"
-        POD_WORKER=$(kubectl get pods -l statefulset.kubernetes.io/pod-name=qserv-worker-0 -o jsonpath='{.items[0].metadata.name}')
-        if [ -n "$POD_WORKER" ]; then
-          INITDB_RUNNING=$(kubectl get pods $POD_WORKER -o jsonpath='{$.status.initContainerStatuses[0].state.running}')
-          if [ -n "$INITDB_RUNNING" ]; then
-            echo "initdb logs for $POD_WORKER"
-            kubectl logs qserv-worker-0 -c initdb
-          fi
-        fi
+        # echo "initdb state"
+        # FIXME: command below fails if there is not qserv-worker-0 pod (.items[0] is then inconsistent)
+        # POD_WORKER=$(kubectl get pods -l statefulset.kubernetes.io/pod-name=qserv-worker-0 -o jsonpath='{.items[0].metadata.name}')
+        # if [ -n "$POD_WORKER" ]; then
+        #  INITDB_RUNNING=$(kubectl get pods $POD_WORKER -o jsonpath='{$.status.initContainerStatuses[0].state.running}')
+        #  if [ -n "$INITDB_RUNNING" ]; then
+        #    echo "initdb logs for $POD_WORKER"
+        ##    kubectl logs qserv-worker-0 -c initdb
+        #  fi
+        # fi
     fi
 done
 echo "Qserv pods are ready"
