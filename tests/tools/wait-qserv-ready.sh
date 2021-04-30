@@ -52,9 +52,13 @@ while true; do
         # INITDB_WAITING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.initContainerStatuses[0].state.waiting}')
         # INITDB_WAITING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.phase}')
         echo "initdb state"
-        INITDB_RUNNING=$(kubectl get pods qserv-worker-0 -o jsonpath='{$.status.initContainerStatuses[0].state.running}')
-        if [ -n "$INITDB_RUNNING" ]; then
-          kubectl logs qserv-worker-0 -c initdb
+        POD_WORKER=$(kubectl get pods -l statefulset.kubernetes.io/pod-name=qserv-worker-0 -o jsonpath='{.items[0].metadata.name}')
+        if [ -n "$POD_WORKER" ]; then
+          INITDB_RUNNING=$(kubectl get pods $POD_WORKER -o jsonpath='{$.status.initContainerStatuses[0].state.running}')
+          if [ -n "$INITDB_RUNNING" ]; then
+            echo "initdb logs for $POD_WORKER"
+            kubectl logs qserv-worker-0 -c initdb
+          fi
         fi
     fi
 done

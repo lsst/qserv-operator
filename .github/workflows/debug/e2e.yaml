@@ -28,8 +28,8 @@ jobs:
           go get golang.org/x/tools/cmd/goimports
       - name: Create k8s/kind cluster
         run: |
-          git clone --depth 1 -b "k8s-v1.20.2" --single-branch https://github.com/k8s-school/kind-travis-ci.git
-          ./kind-travis-ci/k8s-create.sh -s -n ci
+          git clone --depth 1 -b "k8s-v1.20.2" --single-branch https://github.com/k8s-school/kind-helper.git
+          ./kind-helper/k8s-create.sh -s -n ci
       - name: Install kustomize
         run: |
           curl -lO "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"

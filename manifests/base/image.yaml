@@ -9,15 +9,13 @@ spec:
   dashboard:
     image: qserv/dashboard:2021.04.0
   worker:
-  replication:
     image: qserv/lite-qserv:2021.4.0-21-g185b2a571
+    dbImage: "qserv/lite-mariadb:2021.04.0"
   xrootd:
     image: qserv/lite-qserv:2021.4.0-21-g185b2a571
     dbImage: "qserv/lite-mariadb:2021.04.0"
   replication:
     image: qserv/lite-qserv:2021.4.0-21-g185b2a571
     dbImage: "qserv/lite-mariadb:2021.04.0"
-  replication:
-      image: qserv/lite-qserv:2021.4.0-21-g185b2a571
   xrootd:
     image: qserv/lite-qserv:2021.4.0-21-g185b2a571

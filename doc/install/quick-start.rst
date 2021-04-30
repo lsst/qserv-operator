@@ -30,7 +30,7 @@ Option #1: kind
 
 `kind <https://kind.sigs.k8s.io/>`__ is a tool for running local Kubernetes clusters using Docker container “nodes”.
 kind was primarily designed for testing Kubernetes itself, but may be used for local development or CI.
-Script below uses a `simple install script for kind <https://github.com/k8s-school/kind-travis-ci>`__ provided by `K8s-school <https://k8s-school.fr>`__.
+Script below uses a `simple install script for kind <https://github.com/k8s-school/kind-helper>`__ provided by `K8s-school <https://k8s-school.fr>`__.
 
 .. code:: bash
 
@@ -38,8 +38,8 @@ Script below uses a `simple install script for kind <https://github.com/k8s-scho
     mkdir -p "$WORKDIR"
 
     cd "$WORKDIR"
-    git clone --depth 1 -b "k8s-v1.20.2" --single-branch https://github.com/k8s-school/kind-travis-ci
-    cd kind-travis-ci
+    git clone --depth 1 -b "k8s-v1.20.2" --single-branch https://github.com/k8s-school/kind-helper
+    cd kind-helper
     ./kind/k8s-create.sh -s
 
 Option #2: k3s
