@@ -24,8 +24,3 @@ chmod +x "$OPERATOR_SDK_BIN"
 sudo mkdir -p /usr/local/bin
 sudo cp "$OPERATOR_SDK_BIN" /usr/local/bin/operator-sdk
 rm "$OPERATOR_SDK_BIN"
-
-VERSION="1.20.2"
-curl -fsL "https://storage.googleapis.com/kubebuilder-tools/kubebuilder-tools-${VERSION}-${OS}-${ARCH}.tar.gz" -o kubebuilder-tools
-tar -zvxf kubebuilder-tools
-sudo mv kubebuilder/ /usr/local/kubebuilder
