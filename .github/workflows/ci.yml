@@ -29,8 +29,8 @@ jobs:
         run: |
           ./install-operator-sdk.sh
       # FIXME: see https://github.com/operator-framework/operator-sdk/issues/4856
-      # - name: Run Unit Tests
-      #   run: make test
+      - name: Run Unit Tests
+        run: make test
       - name: Build operator image
         run: |
           git checkout "$PWD"
