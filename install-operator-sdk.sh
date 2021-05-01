@@ -1,14 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 # Helper to install operator-sdk 
 
-set -e
-set -x
+set -euxo pipefail
 
-RELEASE_VERSION=v1.5.0
+RELEASE_VERSION="v1.5.0"
 export ARCH=$(case $(arch) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(arch) ;; esac)
 export OS=$(uname | awk '{print tolower($0)}')
 
+cd /tmp
 
 PGP_SERVER="keyserver.ubuntu.com"
 #PGP_SERVER="pool.sks-keyservers.net"
@@ -24,3 +24,8 @@ chmod +x "$OPERATOR_SDK_BIN"
 sudo mkdir -p /usr/local/bin
 sudo cp "$OPERATOR_SDK_BIN" /usr/local/bin/operator-sdk
 rm "$OPERATOR_SDK_BIN"
+
+VERSION="1.20.2"
+curl -fsL "https://storage.googleapis.com/kubebuilder-tools/kubebuilder-tools-${VERSION}-${OS}-${ARCH}.tar.gz" -o kubebuilder-tools
+tar -zvxf kubebuilder-tools
+sudo mv kubebuilder/ /usr/local/kubebuilder
