@@ -36,7 +36,7 @@ spec:
               operator: In
               values:
               - worker
-    replicas: 5
+    replicas: 10 
     replicationresources:
       limits:
         cpu: 14
