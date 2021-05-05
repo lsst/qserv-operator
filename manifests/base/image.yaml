@@ -8,6 +8,8 @@ spec:
     dbImage: "qserv/lite-mariadb:2021.04.0"
   dashboard:
     image: qserv/dashboard:2021.04.0
+  ingest:
+    dbImage: "qserv/lite-mariadb:2021.04.0"
   replication:
     image: qserv/lite-qserv:2021.4.0-21-g185b2a571
     dbImage: "qserv/lite-mariadb:2021.04.0"

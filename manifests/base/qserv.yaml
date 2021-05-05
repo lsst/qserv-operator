@@ -9,11 +9,7 @@ spec:
   networkPolicies: false 
   czar:
     replicas: 1
-  ingest:
-    dbImage: "qserv/lite-mariadb:2021.04.0"
   worker:
     replicas: 2
-  replication:
-      dbImage: "qserv/lite-mariadb:2021.04.0"
   xrootd:
     replicas: 2
