@@ -24,7 +24,7 @@ if [ ! "$COMPONENT_NAME" = "czar" ] && [ ! "$COMPONENT_NAME" = "worker" ]; then
     . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
 else
   # Initialize scisql on both czar and worker
-  cp /docker-entrypoint-initdb.d/scisql.sql "${SQL_DIR}/${COMPONENT_NAME}/" 
+  INSTALL_SCISQL=true
 fi
 
 DATA_DIR="/qserv/data"
@@ -102,6 +102,17 @@ then
             exit 1
         fi
     done
+
+    if [ "$INSTALL_SCISQL" = true ]; then
+        if mysql -vvv --user="root" --password="${MYSQL_ROOT_PASSWORD}" \
+            < "/docker-entrypoint-initdb.d/scisql.sql"
+        then
+            echo "-- -> success"
+        else
+            >&2 echo "-- -> error"
+            exit 1
+        fi
+    fi
 
     echo "-- Stop mariadb server."
     mysqladmin -u root --password="$MYSQL_ROOT_PASSWORD" shutdown
