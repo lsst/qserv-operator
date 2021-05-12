@@ -16,6 +16,7 @@ set -euxo pipefail
 MYSQL_INGEST_PASSWORD=''
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
+SQL_DIR="/config-sql"
 
 # Used for Qserv czar and worker databases
 
@@ -37,7 +38,6 @@ if [ -z "$MYSQL_ROOT_PASSWORD" ]; then
     exit 2
 fi
 
-SQL_DIR="/config-sql"
 
 # Keep crashing if data initialization has failed in a previous instance
 # of this script
