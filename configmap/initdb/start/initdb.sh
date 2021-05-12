@@ -21,6 +21,9 @@ MYSQL_MONITOR_PASSWORD=''
 
 if [ ! "$COMPONENT_NAME" = "czar" ] && [ ! "$COMPONENT_NAME" = "worker" ]; then
     . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
+else
+  # Initialize scisql on both czar and worker
+  cp /docker-entrypoint-initdb.d/scisql.sql "${SQL_DIR}/${COMPONENT_NAME}/" 
 fi
 
 DATA_DIR="/qserv/data"
@@ -71,9 +74,9 @@ then
     mysqladmin -u root password "$MYSQL_ROOT_PASSWORD"
 
     echo "-- "
-    echo "-- Initializing Qserv database"
+    echo "-- Initialize Qserv database"
     for file_name in "${SQL_DIR}/${COMPONENT_NAME}"/*; do
-        echo "-- Loading ${file_name} in MySQL"
+        echo "-- Load ${file_name} in MySQL"
         sql_file_name="/tmp/out.sql"
         file_ext="${file_name#*\.}"
         if [ "${file_ext}" = "tpl.sql" ]; then

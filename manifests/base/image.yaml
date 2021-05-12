@@ -4,17 +4,17 @@ metadata:
   name: qserv
 spec:
   czar:
-    image: qserv/lite-qserv:2021.4.0-21-g185b2a571
+    image: qserv/lite-qserv:2021.5.0-lite-2-gfd413f0f5
     dbImage: "qserv/lite-mariadb:2021.04.0"
   dashboard:
     image: qserv/dashboard:2021.04.0
   ingest:
     dbImage: "qserv/lite-mariadb:2021.04.0"
   replication:
-    image: qserv/lite-qserv:2021.4.0-21-g185b2a571
+    image: qserv/lite-qserv:2021.5.0-lite-2-gfd413f0f5
     dbImage: "qserv/lite-mariadb:2021.04.0"
   worker:
-    image: qserv/lite-qserv:2021.4.0-21-g185b2a571
+    image: qserv/lite-qserv:2021.5.0-lite-2-gfd413f0f5
     dbImage: "qserv/lite-mariadb:2021.04.0"
   xrootd:
-    image: qserv/lite-qserv:2021.4.0-21-g185b2a571
+    image: qserv/lite-qserv:2021.5.0-lite-2-gfd413f0f5
