@@ -22,9 +22,10 @@ SQL_DIR="/config-sql"
 
 if [ ! "$COMPONENT_NAME" = "czar" ] && [ ! "$COMPONENT_NAME" = "worker" ]; then
     . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
+    INSTALL_SCISQL=false
 else
-  # Initialize scisql on both czar and worker
-  INSTALL_SCISQL=true
+    # Initialize scisql on both czar and worker
+    INSTALL_SCISQL=true
 fi
 
 DATA_DIR="/qserv/data"
