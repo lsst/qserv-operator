@@ -12,6 +12,8 @@ require (
 	github.com/onsi/gomega v1.10.2
 	github.com/rs/zerolog v1.20.0
 	github.com/stretchr/testify v1.5.1
+	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6 // indirect
+	golang.org/x/tools v0.1.0 // indirect
 	k8s.io/api v0.19.2
 	k8s.io/apimachinery v0.19.2
 	k8s.io/client-go v0.19.2

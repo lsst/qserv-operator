@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package v1alpha1 Define Qserv CRD specification
 // +k8s:deepcopy-gen=package
 package v1alpha1
 
@@ -73,6 +74,7 @@ type QservSpec struct {
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
+	DbImage  string      `json:"dbImage,omitempty"`
 	Image    string      `json:"image,omitempty"`
 	// + kubebuilder:default:=1
 	Replicas       int32                   `json:"replicas,omitempty"`
@@ -118,6 +120,7 @@ type ReplicationSettings struct {
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
 	Affinity             v1.Affinity             `json:"affinity,omitempty"`
+	DbImage              string                  `json:"dbImage,omitempty"`
 	Image                string                  `json:"image,omitempty"`
 	Replicas             int32                   `json:"replicas,omitempty"`
 	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`

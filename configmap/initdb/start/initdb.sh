@@ -16,38 +16,16 @@ set -euxo pipefail
 MYSQL_INGEST_PASSWORD=''
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
+SQL_DIR="/config-sql"
 
 # Used for Qserv czar and worker databases
 
-if [ "$COMPONENT_NAME" = "czar" ] || [ "$COMPONENT_NAME" = "worker" ]; then
-    EUPS_DB=true
-    INSTALL_SCISQL=true
-else
-    EUPS_DB=false
-    INSTALL_SCISQL=false
-fi
-
-# Require root privileges
-##
-MARIADB_CONF="/config-etc/my.cnf"
-if [ -e "$MARIADB_CONF" ]; then
-    mkdir -p /etc/mysql
-    ln -sf "$MARIADB_CONF" /etc/mysql/my.cnf
-fi
-
-if ! id 1000 > /dev/null 2>&1
-then
-    useradd qserv --uid 1000 --no-create-home
-fi
-
-if [ "$EUPS_DB" = true ]; then
-
-    # Source pathes to eups packages
-    . /qserv/run/etc/sysconfig/qserv
-    MYSQL_INSTALL_DB="${MYSQL_DIR}/scripts/mysql_install_db --basedir=$MYSQL_DIR"
-else
-    MYSQL_INSTALL_DB="mysql_install_db"
+if [ ! "$COMPONENT_NAME" = "czar" ] && [ ! "$COMPONENT_NAME" = "worker" ]; then
     . /secret-"$COMPONENT_NAME"/"$COMPONENT_NAME".secret.sh
+    INSTALL_SCISQL=false
+else
+    # Initialize scisql on both czar and worker
+    INSTALL_SCISQL=true
 fi
 
 DATA_DIR="/qserv/data"
@@ -61,7 +39,6 @@ if [ -z "$MYSQL_ROOT_PASSWORD" ]; then
     exit 2
 fi
 
-SQL_DIR="/config-sql"
 
 # Keep crashing if data initialization has failed in a previous instance
 # of this script
@@ -79,7 +56,9 @@ then
     touch "$STATE_FILE"
     echo "-- "
     echo "-- Installing mysql database files."
-    ${MYSQL_INSTALL_DB} >/dev/null ||
+    id
+    ls -rtl /qserv/data
+    mysql_install_db --auth-root-authentication-method=normal >/dev/null ||
         {
             echo "ERROR : mysql_install_db failed, exiting"
             exit 1
@@ -96,9 +75,9 @@ then
     mysqladmin -u root password "$MYSQL_ROOT_PASSWORD"
 
     echo "-- "
-    echo "-- Initializing Qserv database"
+    echo "-- Initialize Qserv database"
     for file_name in "${SQL_DIR}/${COMPONENT_NAME}"/*; do
-        echo "-- Loading ${file_name} in MySQL"
+        echo "-- Load ${file_name} in MySQL"
         sql_file_name="/tmp/out.sql"
         file_ext="${file_name#*\.}"
         if [ "${file_ext}" = "tpl.sql" ]; then
@@ -126,14 +105,14 @@ then
     done
 
     if [ "$INSTALL_SCISQL" = true ]; then
-        echo "-- "
-        echo "-- Deploy scisql plugin"
-        # WARN: SciSQL shared library (libcisql*.so) deployed by command
-        # below will be removed at each container startup.
-        # That's why this shared library is currently
-        # installed in mysql plugin directory at image creation.
-        echo "$MYSQL_ROOT_PASSWORD" | scisql-deploy.py --mysql-dir="$MYSQL_DIR" \
-            --mysql-socket="$MYSQLD_SOCKET"
+        if mysql -vvv --user="root" --password="${MYSQL_ROOT_PASSWORD}" \
+            < "/docker-entrypoint-initdb.d/scisql.sql"
+        then
+            echo "-- -> success"
+        else
+            >&2 echo "-- -> error"
+            exit 1
+        fi
     fi
 
     echo "-- Stop mariadb server."

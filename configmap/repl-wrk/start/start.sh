@@ -24,9 +24,6 @@ QSERV_WORKER_DB_USER="root"
 QSERV_WORKER_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
 
-# Source pathes to eups packages
-. /qserv/run/etc/sysconfig/qserv
-
 WORKER_ID=$(hostname)
 
 # Required by dataloader

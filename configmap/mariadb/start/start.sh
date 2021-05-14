@@ -7,9 +7,6 @@
 
 set -eux
 
-# Source pathes to eups packages
-. /qserv/run/etc/sysconfig/qserv
-
 MARIADB_CONF="/config-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
     mkdir -p /etc/mysql

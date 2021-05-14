@@ -66,6 +66,9 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 						proxyContainer,
 						wmgrContainer,
 					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
+					},
 					Volumes: volumes.toSlice(),
 				},
 			},
@@ -135,6 +138,9 @@ func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 					},
 					Containers: []v1.Container{
 						mariadbContainer,
+					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
 					},
 					Volumes: volumes.toSlice(),
 				},
@@ -254,6 +260,9 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulS
 					},
 					Containers: []v1.Container{
 						mariadbContainer,
+					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
 					},
 					Volumes: volumes.toSlice(),
 				},

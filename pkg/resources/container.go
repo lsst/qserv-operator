@@ -34,7 +34,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbContainerName),
+			getMysqlCnfVolumeMount(dbContainerName),
 			// db startup script and root passwords are shared
 			getStartVolumeMount(constants.InitDbName),
 			getSecretVolumeMount(constants.MariadbName),
@@ -92,7 +92,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, pod constants.PodClass) (v1.Co
 		ReadinessProbe: getTCPProbe(constants.MariadbPortName, 5),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbContainerName),
+			getMysqlCnfVolumeMount(dbContainerName),
 			getStartVolumeMount(dbContainerName),
 			getTmpVolumeMount(),
 		},
@@ -109,9 +109,9 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) stri
 	} else if component == constants.IngestDb {
 		image = spec.Ingest.DbImage
 	} else if component == constants.Worker {
-		image = spec.Worker.Image
+		image = spec.Worker.DbImage
 	} else if component == constants.Czar {
-		image = spec.Czar.Image
+		image = spec.Czar.DbImage
 	}
 	return image
 }

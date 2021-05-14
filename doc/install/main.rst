@@ -38,7 +38,7 @@ For a development workstation
 
        sudo usermod -a -G docker <USER>
 
--  Install Kubernetes locally using this `simple k8s install script <https://github.com/k8s-school/kind-travis-ci>`__, based on
+-  Install Kubernetes locally using this `simple k8s install script <https://github.com/k8s-school/kind-helper>`__, based on
    `kind <https://kind.sigs.k8s.io/>`__.
 
 
