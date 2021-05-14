@@ -1797,7 +1797,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:2021.04.0-38-g8703df5
+        image: qserv/qserv-operator:2021.04.0-40-gdc04f53
         imagePullPolicy: IfNotPresent
         name: manager
         resources:
