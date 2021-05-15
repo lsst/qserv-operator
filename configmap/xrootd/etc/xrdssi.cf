@@ -11,7 +11,7 @@ username = qsmaster
 password =
 
 # MySQL socket file path for db connections
-socket = /qserv/data/mysql/mysql.sock 
+socket = /qserv/data/mysql/mysql.sock
 
 [memman]
 
