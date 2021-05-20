@@ -1793,7 +1793,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:2021.05.02-2-ge3e8a29-dirty
+        image: qserv/qserv-operator:2021.05.03-rc1
         imagePullPolicy: Always
         name: manager
         resources:
