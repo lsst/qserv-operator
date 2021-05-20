@@ -54,3 +54,6 @@ make docker-build IMG="$OP_IMAGE"
 # WARN: Hack used to pass CI static code checks
 git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 docker push "$OP_IMAGE"
+
+echo "Run command below to publish the release:"
+echo "git add . &&  git commit -m "Release 2021.05.03-rc1" && git tag 2021.05.03-rc1 && git push --tag"
