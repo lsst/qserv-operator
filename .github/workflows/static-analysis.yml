@@ -6,6 +6,7 @@ on:
   push:
 
 jobs:
+
   imports:
     name: Imports
     runs-on: ubuntu-latest
@@ -13,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: k8s-school/golang-github-actions@v1.1.1
         with:
           run: imports
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,7 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: k8s-school/golang-github-actions@v1.1.1
         with:
           run: errcheck
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +38,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: k8s-school/golang-github-actions@v1.1.1
         with:
           run: lint
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +50,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: k8s-school/golang-github-actions@v1.1.1
         with:
           run: shadow
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -61,7 +62,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: k8s-school/golang-github-actions@v1.1.1
         with:
           run: staticcheck
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,7 +74,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: grandcolline/golang-github-actions@v1.1.0
+        uses: k8s-school/golang-github-actions@v1.1.1
         with:
           run: sec
           token: ${{ secrets.GITHUB_TOKEN }}

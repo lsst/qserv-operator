@@ -219,7 +219,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 	if len(notReadyStatefulSet) != 0 || len(notAvailableDeployment) != 0 {
 		availableCondition.Status = metav1.ConditionFalse
 		availableCondition.Reason = "NotReadyPods"
-		availableCondition.Message = fmt.Sprintf("Pod(s) not ready or available")
+		availableCondition.Message = "Pod(s) not ready or available"
 	}
 
 	qserv.Status.Conditions = []metav1.Condition{availableCondition}

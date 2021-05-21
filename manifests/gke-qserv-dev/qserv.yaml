@@ -21,10 +21,11 @@ spec:
       requests:
         cpu: 24
   queryService:
-      annotations:
-        cloud.google.com/load-balancer-type: Internal
-      loadBalancerIP: 10.134.1.211
-      type: LoadBalancer
+      #annotations:
+      #  cloud.google.com/load-balancer-type: Internal
+      #loadBalancerIP: 10.134.1.211
+      #type: LoadBalancer
+      type: ClusterIP
   worker:
     storage: "2Ti"
     affinity:
@@ -36,7 +37,7 @@ spec:
               operator: In
               values:
               - worker
-    replicas: 5
+    replicas: 10
     replicationresources:
       limits:
         cpu: 14
