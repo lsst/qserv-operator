@@ -20,3 +20,11 @@ Access to [Qserv-operator documentation](https://qserv-operator.lsst.io/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xrootd/xrootd-k8s-operator)](https://goreportcard.com/report/github.com/xrootd/xrootd-k8s-operator)
 
 [Security overview](https://github.com/lsst/qserv-operator/security)
+
+## How to publish a new release
+
+```
+RELEASE="2021.06.01-rc1"
+./publish-release.sh -t "$RELEASE"
+# And then follow instructions printed on stdout
+```
