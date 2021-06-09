@@ -1,3 +1,8 @@
+Migration to go v3 plugin:
+
+https://book.kubebuilder.io/migration/migration_guide_v2tov3.html
+
+
 - implement `kubectl explain qserv`
 
 - Check example: https://gitlab.com/gitlab-org/gl-openshift/gitlab-operator or https://github.com/open-telemetry/opentelemetry-operator

@@ -13,19 +13,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.3'
+      - run: go version
+      - name: Install go dependencies
+        run: |
+          go get golang.org/x/tools/cmd/goimports
       - name: Declare Version Variables
         id: vars
         shell: bash
         run: |
+          OP_VERSION="$(git describe --always)"
+          echo "OP_VERSION=${OP_VERSION}" >> $GITHUB_ENV
           echo "OP_IMAGE=$(. ./env.build.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
       - name: Setup Operator SDK
         run: |
           ./install-operator-sdk.sh
-      - name: Run Unit Tests
-        run: make test
       - name: Build operator image
         run: |
-          git checkout "$PWD"
+          go mod download
           ./build.sh
       - name: Scan operator image
         uses: anchore/scan-action@v2
