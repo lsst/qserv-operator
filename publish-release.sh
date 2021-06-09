@@ -56,4 +56,4 @@ git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 docker push "$OP_IMAGE"
 
 echo "Run command below to publish the release:"
-echo "git add . &&  git commit -m "Release 2021.05.03-rc1" && git tag 2021.05.03-rc1 && git push --tag"
+echo "git add . &&  git commit -m "Release $releasetag" && git tag $releasetag && git push --tag"
