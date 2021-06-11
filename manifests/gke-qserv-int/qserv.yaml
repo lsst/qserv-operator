@@ -7,6 +7,9 @@ spec:
   czar:
     storage: "500Gi"
   queryService:
+      annotations:
+        cloud.google.com/load-balancer-type: Internal
+      type: LoadBalancer
       loadBalancerIP: 10.136.1.211
   worker:
     storage: "2Ti"
