@@ -57,6 +57,6 @@ docker push "$OP_IMAGE"
 
 echo "-- WARNING Update Qserv images in manifests/base/image.yaml!!!"
 echo "-- Then run command below to publish the release:"
-echo "git add . &&  git commit -m "Release $releasetag" && git tag -a "$releasetag" -m "Version $releasetag" && git push --tag
-echo "Rebuild and push Qserv image with release tag"
+echo "git add . &&  git commit -m "Release $releasetag" && git tag -a "$releasetag" -m "Version $releasetag" && git push --tag"
+echo "-- Rebuild and push Qserv image with release tag:"
 echo "./build.sh"
