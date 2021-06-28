@@ -1680,6 +1680,16 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: qserv-operator-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
   name: qserv-operator-proxy-role
 rules:
 - apiGroups:
@@ -1694,16 +1704,6 @@ rules:
   - subjectaccessreviews
   verbs:
   - create
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
-metadata:
-  name: qserv-operator-metrics-reader
-rules:
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -1782,7 +1782,11 @@ spec:
         - --enable-leader-election
         command:
         - /manager
+<<<<<<< HEAD
         image: qserv/qserv-operator:2021.8.1-rc1
+=======
+        image: qserv/qserv-operator:2021.6.4-rc1-9-g058dc64-dirty
+>>>>>>> 2b1aa0a... Release 2021.6.3-rc2
         imagePullPolicy: Always
         name: manager
         resources:
