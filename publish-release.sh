@@ -17,12 +17,19 @@ set -e
 usage() {
   cat << EOD
 
+<<<<<<< HEAD
 Usage: `basename $0` [options] RELEASE_TAG
+=======
+Usage: `basename $0` [options] release-tag
+>>>>>>> 2b1aa0a... Release 2021.6.3-rc2
 
   Available options:
     -h          this message
 
+<<<<<<< HEAD
 Create a qserv-operator release tagged "RELEASE_TAG"
+=======
+>>>>>>> 2b1aa0a... Release 2021.6.3-rc2
 - Release tag template YYYY.M.<i>-rc<j>, i and j are integers
 - Create a git release tag and use it to tag qserv-operator image
 - Push operator image to docker hub
@@ -52,6 +59,7 @@ export OP_VERSION="$releasetag"
 
 make yaml yaml-ns-scoped
 $DIR/build.sh
+make bundle
 # Make file below compliant with goimport requirements
 git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 
@@ -65,3 +73,4 @@ git commit -m "Release $releasetag" || echo "Nothing to commit"
 git tag -a "$releasetag" -m "Version $releasetag"
 git push --tag
 $DIR/push-image.sh
+
