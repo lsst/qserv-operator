@@ -153,4 +153,5 @@ spec:
   provider:
     name: Vera C. Rubin Observatory
     url: https://www.lsst.org/
+  replaces: qserv-operator.v2021.6.1-rc2
   version: 0.0.0
