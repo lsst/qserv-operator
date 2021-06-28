@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
-    alm-examples: |
+    alm-examples: |-
       [
         {
           "apiVersion": "qserv.lsst.org/v1alpha1",
@@ -12,11 +12,11 @@ metadata:
           },
           "spec": {
             "czar": {
-              "image": "qserv/qserv:2021.06.01-rc1",
+              "image": "qserv/qserv:2021.6.3-rc1",
               "replicas": 1
             },
             "dashboard": {
-              "image": "qserv/dashboard:2021.06.01-rc1"
+              "image": "qserv/dashboard:2021.6.3-rc1"
             },
             "imagePullPolicy": "IfNotPresent",
             "ingest": {
@@ -24,16 +24,16 @@ metadata:
             },
             "replication": {
               "dbImage": "mariadb:10.2.16",
-              "image": "qserv/qserv:2021.06.01-rc1"
+              "image": "qserv/qserv:2021.6.3-rc1"
             },
             "storage": "1Gi",
             "storageClassName": "standard",
             "worker": {
-              "image": "qserv/qserv:2021.06.01-rc1",
+              "image": "qserv/qserv:2021.6.3-rc1",
               "replicas": 2
             },
             "xrootd": {
-              "image": "qserv/qserv:2021.06.01-rc1",
+              "image": "qserv/qserv:2021.6.3-rc1",
               "replicas": 2
             }
           }
@@ -78,7 +78,7 @@ spec:
     ```
     - Deploy a basic Qserv cluster by creating a new `Qserv` resource in the namespace where the operator is installed.
     ```
-    IMAGE_TAG="2021.6.1-rc2"
+    IMAGE_TAG="2021.6.3-rc1"
     cat <<EOF > qserv.yaml
     apiVersion: qserv.lsst.org/v1alpha1
     kind: Qserv

@@ -1,0 +1,24 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: example-qserv
+spec:
+  czar:
+    image: qserv/qserv:2021.6.3-rc1
+    replicas: 1
+  dashboard:
+    image: qserv/dashboard:2021.6.3-rc1
+  imagePullPolicy: IfNotPresent
+  ingest:
+    dbImage: mariadb:10.2.16
+  replication:
+    dbImage: mariadb:10.2.16
+    image: qserv/qserv:2021.6.3-rc1
+  storage: 1Gi
+  storageClassName: standard
+  worker:
+    image: qserv/qserv:2021.6.3-rc1
+    replicas: 2
+  xrootd:
+    image: qserv/qserv:2021.6.3-rc1
+    replicas: 2
