@@ -43,7 +43,7 @@ metadata:
       CR"}}'
     capabilities: Basic Install
     categories: Database
-    containerImage: qserv/qserv-operator:2021.6.1-rc2
+    containerImage: qserv/qserv-operator:2021.6.3-rc2
     description: Create and maintain highly-available Qserv clusters on Kubernetes
     repository: https://github.com/lsst/qserv-operator
     support: Qserv team

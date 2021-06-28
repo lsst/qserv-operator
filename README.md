@@ -33,8 +33,24 @@ For each directory, run the following command:
 
 ```
 cd <source_directory>
-RELEASE="2021.8.1-rc1"
+RELEASE="<YYYY>.<M>.<i>-rc<j>"
 ./publish-release.sh "$RELEASE"
 ```
 
 This will automatically push the release tag to the repositories, and push the tagged container images to docker hub.
+
+## How to publish a new release to operatorHub
+
+```
+RELEASE="<YYYY>.<M>.<i>-rc<j>"
+# Edit 'replaces' and 'containerImage' fields in config/manifests/bases/qserv-operator.clusterserviceversion.yaml
+# Edit previous commit and run
+make bundle
+# Clone community-operators and create a branch
+gh repo clone https://github.com/lsst/community-operators.git
+cp -r bundle ../community-operators/upstream-community-operators/qserv-operator/$RELEASE
+cd ../community-operators
+git add .
+git commit --signoff -m "Release $RELEASE for qserv-operator"
+# make a PR: https://github.com/lsst/community-operators/compare
+```
