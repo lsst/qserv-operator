@@ -24,7 +24,23 @@ Access to [Qserv-operator documentation](https://qserv-operator.lsst.io/)
 ## How to publish a new release
 
 ```
-RELEASE="2021.06.01-rc1"
+RELEASE="<YYYY>.<M>.<i>-rc<j>"
 ./publish-release.sh -t "$RELEASE"
 # And then follow instructions printed on stdout
+```
+
+## How to publish a new release to operatorHub
+
+```
+RELEASE="<YYYY>.<M>.<i>-rc<j>"
+# Edit 'replaces' and 'containerImage' fields in config/manifests/bases/qserv-operator.clusterserviceversion.yaml
+# Edit previous commit and run
+make bundle
+# Clone community-operators and create a branch
+gh repo clone https://github.com/lsst/community-operators.git
+cp -r bundle ../community-operators/upstream-community-operators/qserv-operator/$RELEASE
+cd ../community-operators
+git add .
+git commit --signoff -m "Release $RELEASE for qserv-operator"
+# make a PR: https://github.com/lsst/community-operators/compare
 ```
