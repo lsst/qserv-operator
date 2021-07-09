@@ -29,6 +29,19 @@ spec:
   worker:
     storage: "2Ti"
     affinity:
+      podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "component"
+                    operator: In
+                    values:
+                    - worker
+                  - key: "app"
+                    operator: In
+                    values:
+                    - qserv
+              topologyKey: "kubernetes.io/hostname"
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
