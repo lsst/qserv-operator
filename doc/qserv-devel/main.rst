@@ -28,7 +28,7 @@ Store core files in a persistent storage
 
 .. code:: bash
    
-   kubectl apply -k https://github.com/lsst/qserv-operator/overlays/dev
+   kubectl apply -k https://github.com/lsst/qserv-operator/manifests/dev
 
 Core files produced by every Qserv binaries will be stored and available.
 
@@ -54,7 +54,7 @@ This demo rely on a Kubernetes cluster based on kind and the `qserv-operator`:
    docker exec -it -- kind-control-plane sh -c "mkdir -p /tmp/coredump && chmod 777 /tmp/coredump"
 
    # Install Qserv
-   kubectl apply -k qserv-operator/overlays/dev
+   kubectl apply -k qserv-operator/manifests/dev
 
    # Check Qserv is running
    kubectl get pods -o wide
@@ -102,7 +102,7 @@ Install a Qserv instance dedicated to development
 
 .. code:: bash
    
-   kubectl apply -k https://github.com/lsst/qserv-operator/overlays/dev
+   kubectl apply -k https://github.com/lsst/qserv-operator/manifests/dev
 
 Demo
 ====
@@ -136,7 +136,7 @@ First, download `qserv-operator` locally
 Core path
 =========
 
-It is possible to set the core path easily by editing the `corepath` parameter in file `qserv-operator/overlays/dev/qserv.yaml`
+It is possible to set the core path easily by editing the `corepath` parameter in file `qserv-operator/manifests/dev/qserv.yaml`
 
 .. code:: yaml
 
@@ -152,7 +152,7 @@ It is possible to set the core path easily by editing the `corepath` parameter i
 Manual debugging with gdb
 =========================
 
-It is possible to set the component(s) to debug by editing the `debug` parameters in file `qserv-operator/overlays/dev/qserv.yaml`
+It is possible to set the component(s) to debug by editing the `debug` parameters in file `qserv-operator/manifests/dev/qserv.yaml`
 
 .. code:: yaml
 
@@ -177,8 +177,8 @@ start the replication controller process in debug mode and perform debugging ope
 Re-install Qserv
 ================
 
-Once file `qserv-operator/overlays/dev/qserv.yaml` is ready, (re-)install Qserv in the current namespace
+Once file `qserv-operator/manifests/dev/qserv.yaml` is ready, (re-)install Qserv in the current namespace
 
 .. code:: bash
    
-   kubectl apply -k qserv-operator/overlays/dev
+   kubectl apply -k qserv-operator/manifests/dev

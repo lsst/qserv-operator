@@ -20,15 +20,16 @@ Build
 
     git clone https://github.com/lsst/qserv-operator.git
     cd qserv-operator
-    ./build-all.sh
+    ./build.sh
 
 Test qserv-operator
 ~~~~~~~~~~~~~~~~~~~
 
 .. code:: sh
 
-    ./deploy/qserv.sh --dev --install-kubedb
-    ./run-multinode-tests.sh
+    ./deploy.sh
+    kubectl apply -k manifests/base
+    ./tests/e2e/integration.sh
 
 Generate and upload documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
