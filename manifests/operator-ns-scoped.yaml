@@ -1789,11 +1789,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-<<<<<<< HEAD
         image: qserv/qserv-operator:2021.8.1-rc1
-=======
-        image: qserv/qserv-operator:2021.6.4-rc1-9-g058dc64-dirty
->>>>>>> 2b1aa0a... Release 2021.6.3-rc2
         imagePullPolicy: Always
         name: manager
         resources:
