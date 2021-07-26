@@ -5,6 +5,8 @@ metadata:
 spec:
   devel:
     corepath: "/tmp/coredump"
+    enableDebugger: true
+  imagePullPolicy: "Always"
   replication:
     debug: "all"
   worker:

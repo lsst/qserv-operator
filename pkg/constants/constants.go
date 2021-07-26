@@ -52,6 +52,8 @@ const (
 	CmsdName ContainerName = "cmsd"
 	// DashboardName name for dashboard container
 	DashboardName ContainerName = "dashboard"
+	// DebuggerName name for debugger container
+	DebuggerName ContainerName = "debugger"
 	// IngestDbName name for ingest database container
 	IngestDbName ContainerName = "ingest-db"
 	// InitDbName name for database initialization containers

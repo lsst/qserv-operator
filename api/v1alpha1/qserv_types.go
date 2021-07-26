@@ -92,7 +92,13 @@ type DashboardSettings struct {
 
 // DevelSettings defines the specification for development/debug environment
 type DevelSettings struct {
-	CorePath string `json:"corePath,omitempty"`
+	CorePath      string `json:"corePath,omitempty"`
+	DebuggerImage string `json:"debuggerImage"`
+
+	// EnableDebugger allows to share process namespace between containers in a Pod
+	// and adds a debug container to the  pod
+	// See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+	EnableDebugger bool `json:"enableDebugger,omitempty"`
 }
 
 // IngestSettings defines the specification of the ingest workflow

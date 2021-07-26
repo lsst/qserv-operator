@@ -3,10 +3,13 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
+  devel:
+    debuggerImage: k8sschool/debugtools:1.0.0
+    enableDebugger: false
   imagePullPolicy: "IfNotPresent"
   storageClassName: "standard"
   storage: "1Gi"
-  networkPolicies: false 
+  networkPolicies: false
   czar:
     replicas: 1
   ingest:

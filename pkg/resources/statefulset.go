@@ -26,6 +26,8 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	namespace := cr.Namespace
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+
 	storageClass := getValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
 	storageSize := getValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
 
@@ -87,6 +89,8 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 			},
 		},
 	}
+
+	addDebuggerContainer(reqLogger, ss, cr)
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
@@ -170,6 +174,8 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.Stateful
 
 	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
 
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+
 	var replicas int32 = 1
 
 	replCtlContainer, replCtlVolumes := getReplicationCtlContainer(cr)
@@ -206,6 +212,8 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.Stateful
 			},
 		},
 	}
+
+	addDebuggerContainer(reqLogger, ss, cr)
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
@@ -289,6 +297,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 
 	labels := util.GetComponentLabels(constants.Worker, cr.Name)
 
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+
 	replicas := cr.Spec.Worker.Replicas
 
 	storageClass := getValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
@@ -360,6 +370,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 			},
 		}}
 
+	addDebuggerContainer(reqLogger, ss, cr)
+
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
 	return ss
@@ -369,6 +381,8 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	namespace := cr.Namespace
 	name := util.GetName(cr, string(constants.XrootdRedirector))
+
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
 	labels := util.GetComponentLabels(constants.XrootdRedirector, cr.Name)
 
@@ -403,6 +417,8 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 			},
 		},
 	}
+
+	addDebuggerContainer(reqLogger, ss, cr)
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 

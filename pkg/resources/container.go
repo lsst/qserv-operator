@@ -5,12 +5,49 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/go-logr/logr"
 	qservv1alpha1 "github.com/lsst/qserv-operator/api/v1alpha1"
 	"github.com/lsst/qserv-operator/pkg/constants"
 	"github.com/lsst/qserv-operator/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+// addDebuggerContainer perform an in-place update of ss to add a debugger container inside it
+func addDebuggerContainer(reqLogger logr.Logger, ss *appsv1.StatefulSet, cr *qservv1alpha1.Qserv) {
+	if cr.Spec.Devel.EnableDebugger {
+		reqLogger.Info("Debugger enabled")
+		ss.Spec.Template.Spec.ShareProcessNamespace = &cr.Spec.Devel.EnableDebugger
+		ss.Spec.Template.Spec.Containers = append(ss.Spec.Template.Spec.Containers, getDebuggerContainer(reqLogger, cr))
+	}
+}
+
+func getDebuggerContainer(reqLogger logr.Logger, cr *qservv1alpha1.Qserv) v1.Container {
+
+	debuggerContainerName := constants.DebuggerName
+
+	// Container
+
+	reqLogger.Info("Debugger image:", "image", cr.Spec.Devel.DebuggerImage)
+
+	container := v1.Container{
+		Image:           cr.Spec.Devel.DebuggerImage,
+		ImagePullPolicy: cr.Spec.ImagePullPolicy,
+		Name:            string(debuggerContainerName),
+		SecurityContext: &v1.SecurityContext{
+			Capabilities: &v1.Capabilities{
+				Add: []v1.Capability{
+					v1.Capability("SYS_PTRACE"),
+				},
+			},
+		},
+		Stdin: true,
+		TTY:   true,
+	}
+
+	return container
+}
 
 func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1.Container, VolumeSet) {
 	componentName := string(component)
@@ -448,13 +485,6 @@ func setDebug(debug string, name constants.ContainerName, container *v1.Containe
 	switch debug {
 	case string(name), "all":
 		container.Command = constants.CommandDebug
-		container.SecurityContext = &v1.SecurityContext{
-			Capabilities: &v1.Capabilities{
-				Add: []v1.Capability{
-					v1.Capability("SYS_PTRACE"),
-				},
-			},
-		}
 		container.LivenessProbe = nil
 		container.ReadinessProbe = nil
 	}

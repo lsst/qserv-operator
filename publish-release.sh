@@ -12,8 +12,6 @@ releasetag=""
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-set -e
-
 usage() {
   cat << EOD
 

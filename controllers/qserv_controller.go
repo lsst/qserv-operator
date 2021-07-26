@@ -51,15 +51,15 @@ type QservReconciler struct {
 // +kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs/status,verbs=get;update;patch
 
 // Reconcile reconciles a Qserv object
-func (r *QservReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 
-	log := r.Log.WithValues("qserv", req.NamespacedName)
+	log := r.Log.WithValues("qserv", request.NamespacedName)
 
 	log.Info("Reconciling Qserv")
 
 	// Fetch the Qserv instance
 	qserv := &qservv1alpha1.Qserv{}
-	err := r.Get(ctx, req.NamespacedName, qserv)
+	err := r.Get(ctx, request.NamespacedName, qserv)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -76,7 +76,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Manage default values for specification
 	r.Scheme.Default(qserv)
 
-	result, err := r.updateQservStatus(ctx, req, qserv, &log)
+	result, err := r.updateQservStatus(ctx, request, qserv, &log)
 	if err != nil {
 		log.Error(err, "Unable to update Qserv status")
 		return result, err
