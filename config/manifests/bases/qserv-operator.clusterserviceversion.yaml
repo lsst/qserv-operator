@@ -74,11 +74,13 @@ spec:
     ## Usage
     - Create Qserv secrets, using this example script:
     ```
+    RELEASE="2021.6.3-rc1"
+    kubectl apply -k "https://github.com/lsst/qserv-operator/manifests/secrets?ref=$RELEASE"
     kubectl apply -k https://github.com/lsst/qserv-operator/manifests/secrets
     ```
     - Deploy a basic Qserv cluster by creating a new `Qserv` resource in the namespace where the operator is installed.
     ```
-    IMAGE_TAG="2021.6.3-rc1"
+    RELEASE="2021.6.3-rc1"
     cat <<EOF > qserv.yaml
     apiVersion: qserv.lsst.org/v1alpha1
     kind: Qserv
@@ -86,23 +88,23 @@ spec:
       name: qserv
     spec:
       czar:
-        image: qserv/qserv:$IMAGE_TAG
+        image: qserv/qserv:$RELEASE
         replicas: 1
       dashboard:
-        image: qserv/dashboard:$IMAGE_TAG
+        image: qserv/dashboard:$RELEASE
       imagePullPolicy: IfNotPresent
       ingest:
         dbImage: mariadb:10.2.16
       replication:
         dbImage: mariadb:10.2.16
-        image: qserv/qserv:$IMAGE_TAG
+        image: qserv/qserv:$RELEASE
       storage: 1Gi
       storageClassName: standard
       worker:
-        image: qserv/qserv:$IMAGE_TAG
+        image: qserv/qserv:$RELEASE
         replicas: 2
       xrootd:
-        image: qserv/qserv:$IMAGE_TAG
+        image: qserv/qserv:$RELEASE
         replicas: 2
     EOF
     kubectl apply -f qserv.yaml
