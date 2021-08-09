@@ -7,8 +7,8 @@ spec:
     corepath: "/tmp/coredump"
     enableDebugger: true
   imagePullPolicy: "Always"
-  replication:
-    debug: "all"
+  # replication:
+  #   debug: "all"
   worker:
     replicas: 3
   xrootd:
