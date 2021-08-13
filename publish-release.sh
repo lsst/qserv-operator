@@ -55,6 +55,9 @@ git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 
 echo "Update Qserv images in manifests/base/image.yaml"
 sed -ri  "s/^(\s*image: qserv\/.*:).*/\1$releasetag/" $DIR/manifests/base/image.yaml
+echo "Update release number in documentation"
+find $DIR/doc -type f -print0 | xargs -0 sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$releasetag\"/"
+sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$releasetag\"/" $DIR/README.md
 git add .
 git commit -m "Release $releasetag" || echo "Nothing to commit"
 git tag -a "$releasetag" -m "Version $releasetag"
