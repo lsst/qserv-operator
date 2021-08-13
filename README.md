@@ -24,7 +24,6 @@ Access to [Qserv-operator documentation](https://qserv-operator.lsst.io/)
 ## How to publish a new release
 
 ```
-RELEASE="2021.06.01-rc1"
-./publish-release.sh -t "$RELEASE"
-# And then follow instructions printed on stdout
+RELEASE="2021.8.1-rc1"
+./publish-release.sh "$RELEASE"
 ```
