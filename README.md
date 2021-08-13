@@ -21,9 +21,20 @@ Access to [Qserv-operator documentation](https://qserv-operator.lsst.io/)
 
 [Security overview](https://github.com/lsst/qserv-operator/security)
 
-## How to publish a new release
+## How to publish a new release for the whole Qserv stack
+
+### Qserv (and _worker, _master flavor containers), qserv_distrib, qserv_testdata
+
+These are built and published by running the two jenkins jobs  [rebuild-publish-qserv-dev](https://ci.lsst.codes/blue/organizations/jenkins/dax%2Frelease%2Frebuild_publish_qserv-dev/activity) and [build-dev](https://ci.lsst.codes/blue/organizations/jenkins/dax%2Fdocker%2Fbuild-dev/activity), after pushing tags to all the involved repositories. Then release tags must be added to the resulting containers on docker hub.
+
+### qserv-ingest, qserv-operator, qserv_web
+
+For each directory, run the following command:
 
 ```
+cd <source_directory>
 RELEASE="2021.8.1-rc1"
 ./publish-release.sh "$RELEASE"
 ```
+
+This will automatically push the release tag to the repositories, and push the tagged container images to docker hub.
