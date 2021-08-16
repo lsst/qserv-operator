@@ -713,12 +713,15 @@ spec:
               properties:
                 corePath:
                   type: string
-                debuggerimage:
+                debuggerImage:
                   type: string
                 enableDebugger:
-                  description: ShareProcessNamespace allows to share process namespace
-                    between containers in a Pod See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+                  description: EnableDebugger allows to share process namespace between
+                    containers in a Pod and adds a debug container to the  pod See
+                    https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
                   type: boolean
+              required:
+              - debuggerImage
               type: object
             imagePullPolicy:
               description: ImagePullPolicy for all containers
@@ -1788,7 +1791,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: qserv/qserv-operator:2021.7.1-rc2-10-g0a5f1b4
+        image: qserv/qserv-operator:2021.8.1-rc1-18-g4b48585-dirty
         imagePullPolicy: Always
         name: manager
         resources:
