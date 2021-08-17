@@ -33,7 +33,7 @@ For each directory, run the following command:
 
 ```
 cd <source_directory>
-RELEASE="<YYYY>.<M>.<i>-rc<j>"
+RELEASE="2021.8.1-rc2"
 ./publish-release.sh "$RELEASE"
 ```
 
@@ -42,7 +42,7 @@ This will automatically push the release tag to the repositories, and push the t
 ## How to publish a new release to operatorHub
 
 ```
-RELEASE="<YYYY>.<M>.<i>-rc<j>"
+RELEASE="2021.8.1-rc2"
 # Edit 'replaces' and 'containerImage' fields in config/manifests/bases/qserv-operator.clusterserviceversion.yaml
 # Edit previous commit and run
 make bundle
