@@ -15,19 +15,12 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 usage() {
   cat << EOD
 
-<<<<<<< HEAD
 Usage: `basename $0` [options] RELEASE_TAG
-=======
-Usage: `basename $0` [options] release-tag
->>>>>>> 2b1aa0a... Release 2021.6.3-rc2
 
   Available options:
     -h          this message
 
-<<<<<<< HEAD
 Create a qserv-operator release tagged "RELEASE_TAG"
-=======
->>>>>>> 2b1aa0a... Release 2021.6.3-rc2
 - Release tag template YYYY.M.<i>-rc<j>, i and j are integers
 - Create a git release tag and use it to tag qserv-operator image
 - Push operator image to docker hub
@@ -57,7 +50,6 @@ export OP_VERSION="$releasetag"
 
 make yaml yaml-ns-scoped
 $DIR/build.sh
-make bundle
 # Make file below compliant with goimport requirements
 git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
 
@@ -66,9 +58,18 @@ sed -ri  "s/^(\s*image: qserv\/.*:).*/\1$releasetag/" $DIR/manifests/base/image.
 echo "Update release number in documentation"
 find $DIR/doc -type f -print0 | xargs -0 sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$releasetag\"/"
 sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$releasetag\"/" $DIR/README.md
+
+# Prepare operatorHub files
+csv_file="$DIR/config/manifests/bases/qserv-operator.clusterserviceversion.yaml"
+previous_version=$(grep -oP 'qserv\/qserv-operator:([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)' "$csv_file" | cut -d: -f2)
+sed -ri  "s/replaces: qserv-operator\.v([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/replaces: qserv-operator\.v$previous_version/"  "$csv_file"
+sed -ri  "s/qserv\/([a-z\-]+):([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/qserv\/\1:$releasetag/" "$csv_file"
+
 git add .
 git commit -m "Release $releasetag" || echo "Nothing to commit"
 git tag -a "$releasetag" -m "Version $releasetag"
-git push --tag
+#git push --tag
 $DIR/push-image.sh
 
+echo "Publish release to operator hub"
+make bundle

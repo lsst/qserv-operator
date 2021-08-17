@@ -12,11 +12,11 @@ metadata:
           },
           "spec": {
             "czar": {
-              "image": "qserv/qserv:2021.6.3-rc1",
+              "image": "qserv/qserv:2021.8.1-rc2",
               "replicas": 1
             },
             "dashboard": {
-              "image": "qserv/dashboard:2021.6.3-rc1"
+              "image": "qserv/dashboard:2021.8.1-rc2"
             },
             "imagePullPolicy": "IfNotPresent",
             "ingest": {
@@ -24,16 +24,16 @@ metadata:
             },
             "replication": {
               "dbImage": "mariadb:10.2.16",
-              "image": "qserv/qserv:2021.6.3-rc1"
+              "image": "qserv/qserv:2021.8.1-rc2"
             },
             "storage": "1Gi",
             "storageClassName": "standard",
             "worker": {
-              "image": "qserv/qserv:2021.6.3-rc1",
+              "image": "qserv/qserv:2021.8.1-rc2",
               "replicas": 2
             },
             "xrootd": {
-              "image": "qserv/qserv:2021.6.3-rc1",
+              "image": "qserv/qserv:2021.8.1-rc2",
               "replicas": 2
             }
           }
@@ -43,7 +43,7 @@ metadata:
       CR"}}'
     capabilities: Basic Install
     categories: Database
-    containerImage: qserv/qserv-operator:2021.6.3-rc2
+    containerImage: qserv/qserv-operator:2021.8.1-rc2
     description: Create and maintain highly-available Qserv clusters on Kubernetes
     repository: https://github.com/lsst/qserv-operator
     support: Qserv team
@@ -155,5 +155,5 @@ spec:
   provider:
     name: Vera C. Rubin Observatory
     url: https://www.lsst.org/
-  replaces: qserv-operator.v2021.6.1-rc2
+  replaces: qserv-operator.v2021.6.3-rc2
   version: 0.0.0

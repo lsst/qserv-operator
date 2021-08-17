@@ -33,6 +33,7 @@ For each directory, run the following command:
 
 ```
 cd <source_directory>
+# RELEASE format is "<YYYY>.<M>.<i>-rc<j>"
 RELEASE="2021.8.1-rc2"
 ./publish-release.sh "$RELEASE"
 ```
