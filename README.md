@@ -42,16 +42,19 @@ This will automatically push the release tag to the repositories, and push the t
 
 ## How to publish a new release to operatorHub
 
+The above step (i.e. release publishing) must have been completed before doing this one.
+
 ```
 RELEASE="2021.8.1-rc2"
-# Edit 'replaces' and 'containerImage' fields in config/manifests/bases/qserv-operator.clusterserviceversion.yaml
-# Edit previous commit and run
-make bundle
+OPERATOR_SRC_DIR="$PWD"
 # Clone community-operators and create a branch
-gh repo clone https://github.com/lsst/community-operators.git
-cp -r bundle ../community-operators/upstream-community-operators/qserv-operator/$RELEASE
-cd ../community-operators
+gh repo clone https://github.com/lsst/community-operators.git /tmp/community-operators
+cd /tmp/community-operators
+git checkout -b "$RELEASE"
+cp -r $OPERATOR_SRC_DIR/bundle /tmp/community-operators/operators/qserv-operator/"$RELEASE"
 git add .
 git commit --signoff -m "Release $RELEASE for qserv-operator"
-# make a PR: https://github.com/lsst/community-operators/compare
+git push --set-upstream origin "$RELEASE"
+gh repo view --web
+# Then make a PR: https://github.com/lsst/community-operators/compare
 ```

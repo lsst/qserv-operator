@@ -60,6 +60,7 @@ find $DIR/doc -type f -print0 | xargs -0 sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$r
 sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$releasetag\"/" $DIR/README.md
 
 # Prepare operatorHub files
+# Edit 'replaces', 'image' and 'containerImage' fields in config/manifests/bases/qserv-operator.clusterserviceversion.yaml
 csv_file="$DIR/config/manifests/bases/qserv-operator.clusterserviceversion.yaml"
 previous_version=$(grep -oP 'qserv\/qserv-operator:([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)' "$csv_file" | cut -d: -f2)
 sed -ri  "s/replaces: qserv-operator\.v([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/replaces: qserv-operator\.v$previous_version/"  "$csv_file"
@@ -68,7 +69,7 @@ sed -ri  "s/qserv\/([a-z\-]+):([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/qserv\/\1:$rel
 git add .
 git commit -m "Release $releasetag" || echo "Nothing to commit"
 git tag -a "$releasetag" -m "Version $releasetag"
-#git push --tag
+git push --tag
 $DIR/push-image.sh
 
 echo "Publish release to operator hub"
