@@ -23,14 +23,16 @@ Usage: `basename $0` [options] RELEASE_TAG
     -h          this message
 
 Create a qserv-operator release tagged "RELEASE_TAG"
-RELEASE_TAG must be of the form YYYY.M.D-rcX
+- Release tag template YYYY.M.<i>-rc<j>, i and j are integers
+- Create a git release tag and use it to tag qserv-operator image
 - Push operator image to docker hub
 - Produce operator.yaml and operator-ns-scoped.yaml
+- Produce operatorHub bundle in bundle/ directory
 EOD
 }
 
 # get the options
-while getopts ht: c ; do
+while getopts h c ; do
     case $c in
 	    h) usage ; exit 0 ;;
 	    \?) usage ; exit 2 ;;
@@ -43,7 +45,7 @@ if [ $# -ne 1 ] ; then
     exit 2
 fi
 
-releasetag=$1
+releasetag="$1"
 export OP_VERSION="$releasetag"
 
 . "$DIR/env.build.sh"

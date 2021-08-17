@@ -146,6 +146,7 @@ bundle: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	operator-sdk bundle validate ./bundle
+	operator-sdk bundle validate --select-optional name=operatorhub ./bundle
 
 # Build the bundle image.
 .PHONY: bundle-build
