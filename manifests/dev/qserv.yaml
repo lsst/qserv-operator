@@ -5,8 +5,10 @@ metadata:
 spec:
   devel:
     corepath: "/tmp/coredump"
-  replication:
-    debug: "all"
+    enableDebugger: true
+  imagePullPolicy: "Always"
+  # replication:
+  #   debug: "all"
   worker:
     replicas: 3
   xrootd:
