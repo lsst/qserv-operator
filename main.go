@@ -74,7 +74,7 @@ func main() {
 
 	watchNamespace, err := getWatchNamespace()
 	if err != nil {
-		setupLog.Error(err, "unable to get WatchNamespace, "+
+		setupLog.V(0).Info("Unable to get 'WATCH_NAMESPACE' environment variable, " +
 			"the manager will watch and manage resources in all Namespaces")
 	}
 

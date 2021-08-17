@@ -40,7 +40,7 @@ func GetReplCtlServiceName(cr *qservv1alpha1.Qserv) string {
 // GetWorkerNameFilter returns a filter on hostname for mysql user
 // Example: use in "CREATE USER 'qsreplica'@'<filter>'"
 func GetWorkerNameFilter(cr *qservv1alpha1.Qserv) string {
-	filter := cr.Name + "-" + string(constants.Worker) + "-%." + GetWorkerServiceName(cr) + "." + cr.GetNamespace() + ".svc" + getClusterDomain()
+	filter := cr.Name + "-" + string(constants.Worker) + "-%." + GetWorkerServiceName(cr) + "." + cr.GetNamespace() + ".svc." + getClusterDomain()
 	return filter
 }
 
@@ -48,7 +48,7 @@ func GetWorkerNameFilter(cr *qservv1alpha1.Qserv) string {
 // It can be used for mysql authentication
 // Example: use in "CREATE USER 'qsreplica'@'<FQDN>'"
 func GetReplCtlFQDN(cr *qservv1alpha1.Qserv) string {
-	fqdn := cr.Name + "-" + string(constants.ReplCtlName) + "-0." + GetReplCtlServiceName(cr) + "." + cr.GetNamespace() + ".svc" + getClusterDomain()
+	fqdn := cr.Name + "-" + string(constants.ReplCtlName) + "-0." + GetReplCtlServiceName(cr) + "." + cr.GetNamespace() + ".svc." + getClusterDomain()
 	return fqdn
 }
 
@@ -61,16 +61,16 @@ func GetXrootdRedirectorServiceName(cr *qservv1alpha1.Qserv) string {
 func getClusterDomain() string {
 	apiSvc := "kubernetes.default.svc"
 
-	clusterDomain := "cluster.local"
+	defaultClusterDomain := "cluster.local"
 
 	cname, err := net.LookupCNAME(apiSvc)
 	if err != nil {
-		log.V(2).Info("Unable to get fqdn for %v, using '%v'", clusterDomain)
-		return clusterDomain
+		log.V(2).Info("Unable to get fqdn for %v, using '%v'", defaultClusterDomain)
+		return defaultClusterDomain
 	}
 
-	clusterDomain = strings.TrimPrefix(cname, apiSvc)
-	clusterDomain = strings.TrimSuffix(clusterDomain, ".")
+	clusterDomain := strings.TrimPrefix(cname, apiSvc)
+	clusterDomain = strings.TrimPrefix(clusterDomain, ".")
 
 	return clusterDomain
 }
