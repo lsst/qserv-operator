@@ -65,6 +65,7 @@ csv_file="$DIR/config/manifests/bases/qserv-operator.clusterserviceversion.yaml"
 previous_version=$(grep -oP 'qserv\/qserv-operator:([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)' "$csv_file" | cut -d: -f2)
 sed -ri  "s/replaces: qserv-operator\.v([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/replaces: qserv-operator\.v$previous_version/"  "$csv_file"
 sed -ri  "s/qserv\/([a-z\-]+):([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/qserv\/\1:$releasetag/" "$csv_file"
+# TODO Replace §RELEASE env value in CSV documentation
 
 git add .
 git commit -m "Release $releasetag" || echo "Nothing to commit"

@@ -4,7 +4,7 @@ metadata:
   name: qserv
 spec:
   devel:
-    corepath: "/tmp/coredump"
+    corePath: "/tmp/coredump"
     enableDebugger: true
   imagePullPolicy: "Always"
   # replication:
