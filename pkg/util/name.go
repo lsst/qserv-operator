@@ -71,6 +71,7 @@ func getClusterDomain() string {
 
 	clusterDomain := strings.TrimPrefix(cname, apiSvc)
 	clusterDomain = strings.TrimPrefix(clusterDomain, ".")
+	clusterDomain = strings.TrimSuffix(clusterDomain, ".")
 
 	return clusterDomain
 }
