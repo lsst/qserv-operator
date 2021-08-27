@@ -26,9 +26,6 @@ const (
 	ReplicationControllerPort     = 8080
 	ReplicationControllerPortName = "http"
 
-	WmgrPort     = 8080
-	WmgrPortName = "http"
-
 	XrootdAdminPathVolumeName = "xrootd-adminpath"
 	XrootdPort                = 1094
 	XrootdPortName            = string(XrootdName)
@@ -68,8 +65,6 @@ const (
 	ReplDbName ContainerName = "repl-db"
 	// XrootdName name for xrootd container
 	XrootdName ContainerName = "xrootd"
-	// WmgrName name for worker manager container
-	WmgrName ContainerName = "wmgr"
 	// ReplWrkName name for replication worker container
 	ReplWrkName ContainerName = "repl-wrk"
 )
@@ -116,10 +111,10 @@ var CommandDebug = []string{"sleep", "infinity"}
 
 // ContainerConfigmaps contains names of all micro-services which require configmaps named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{DashboardName, IngestDbName, MariadbName, XrootdName, ProxyName, WmgrName, ReplCtlName, ReplDbName, ReplWrkName}
+var ContainerConfigmaps = []ContainerName{DashboardName, IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
 
 // Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
 
 // MicroserviceSecrets contains names of all micro-services which require secrets
-var MicroserviceSecrets = []ContainerName{MariadbName, WmgrName, ReplDbName}
+var MicroserviceSecrets = []ContainerName{MariadbName, ReplDbName}

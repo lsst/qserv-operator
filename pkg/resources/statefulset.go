@@ -34,10 +34,9 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	initContainer, initVolumes := getInitContainer(cr, constants.Czar)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Czar)
 	proxyContainer, proxyVolumes := getProxyContainer(cr)
-	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 
 	var volumes VolumeSet
-	volumes.make(initVolumes, mariadbVolumes, proxyVolumes, wmgrVolumes)
+	volumes.make(initVolumes, mariadbVolumes, proxyVolumes)
 
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -66,7 +65,9 @@ func GenerateCzarStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 					Containers: []v1.Container{
 						mariadbContainer,
 						proxyContainer,
-						wmgrContainer,
+					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
 					},
 					Volumes: volumes.toSlice(),
 				},
@@ -134,11 +135,15 @@ func GenerateIngestDbStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
+					Affinity: &cr.Spec.Ingest.Affinity,
 					InitContainers: []v1.Container{
 						initContainer,
 					},
 					Containers: []v1.Container{
 						mariadbContainer,
+					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
 					},
 					Volumes: volumes.toSlice(),
 				},
@@ -204,6 +209,7 @@ func GenerateReplicationCtlStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.Stateful
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
+					Affinity: &cr.Spec.Replication.Affinity,
 					Containers: []v1.Container{
 						replCtlContainer,
 					},
@@ -257,11 +263,15 @@ func GenerateReplicationDbStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulS
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
+					Affinity: &cr.Spec.Replication.Affinity,
 					InitContainers: []v1.Container{
 						initContainer,
 					},
 					Containers: []v1.Container{
 						mariadbContainer,
+					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
 					},
 					Volumes: volumes.toSlice(),
 				},
@@ -307,12 +317,11 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 	initContainer, initVolumes := getInitContainer(cr, constants.Worker)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Worker)
 	xrootdContainers, xrootdVolumes := getXrootdContainers(cr, constants.Worker)
-	wmgrContainer, wmgrVolumes := getWmgrContainer(cr)
 	replicationWrkContainer, replicationWrkVolumes := getReplicationWrkContainer(cr)
 
 	// Volumes
 	var volumes VolumeSet
-	volumes.make(initVolumes, mariadbVolumes, replicationWrkVolumes, wmgrVolumes, xrootdVolumes)
+	volumes.make(initVolumes, mariadbVolumes, replicationWrkVolumes, xrootdVolumes)
 
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -342,7 +351,6 @@ func GenerateWorkerStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 					Containers: []v1.Container{
 						mariadbContainer,
 						replicationWrkContainer,
-						wmgrContainer,
 						xrootdContainers[0],
 						xrootdContainers[1],
 					},
@@ -411,6 +419,7 @@ func GenerateXrootdStatefulSet(cr *qservv1alpha1.Qserv) *appsv1.StatefulSet {
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
+					Affinity:   &cr.Spec.Xrootd.Affinity,
 					Containers: containers,
 					Volumes:    volumes.toSlice(),
 				},

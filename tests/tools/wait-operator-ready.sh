@@ -41,6 +41,8 @@ done
 while ! kubectl wait deploy -n qserv-operator-system --for=condition=available qserv-operator-controller-manager --timeout="10s"
 do
   echo "Wait for Qserv operator to be available"
+  kubectl get pod -n qserv-operator-system
+  kubectl describe pod -n qserv-operator-system
 done
 
 echo "Qserv operator is available"

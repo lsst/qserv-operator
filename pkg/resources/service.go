@@ -200,11 +200,6 @@ func GenerateWorkerService(cr *qservv1alpha1.Qserv) *v1.Service {
 			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
-					Port:     constants.WmgrPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.WmgrPortName,
-				},
-				{
 					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
 					Name:     constants.XrootdPortName,

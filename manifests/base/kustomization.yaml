@@ -18,9 +18,6 @@ secretGenerator:
 - name: secret-repl-db-qserv
   files:
   - repl-db.secret.sh
-- name: secret-wmgr-qserv
-  files:
-  - wmgr.secret
 - name: secret-repl-creds-qserv
   files:
   - qserv

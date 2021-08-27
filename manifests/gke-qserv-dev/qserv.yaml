@@ -4,10 +4,10 @@ metadata:
   name: qserv
 spec:
   storageClassName: "qserv"
-  storage: "100Gi"
+  storage: "200Gi"
   czar:
     storageClassName: "czar"
-    storage: "500Gi"
+    storage: "1Ti"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -27,7 +27,7 @@ spec:
       #type: LoadBalancer
       type: ClusterIP
   worker:
-    storage: "2Ti"
+    storage: "3Ti"
     affinity:
       podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -54,3 +54,33 @@ spec:
     replicationresources:
       limits:
         cpu: 14
+  # ingest:
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: tier
+  #             operator: In
+  #             values:
+  #             - 'utility'
+  # replication:
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: tier
+  #             operator: In
+  #             values:
+  #             - 'utility'
+  # xrootd:
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: tier
+  #             operator: In
+  #             values:
+  #             - 'utility'

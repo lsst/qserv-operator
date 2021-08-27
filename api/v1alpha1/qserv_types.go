@@ -74,6 +74,7 @@ type QservSpec struct {
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
+	DbImage  string      `json:"dbImage,omitempty"`
 	Image    string      `json:"image,omitempty"`
 	// + kubebuilder:default:=1
 	Replicas       int32                   `json:"replicas,omitempty"`
@@ -87,7 +88,8 @@ type CzarSettings struct {
 
 // DashboardSettings defines the specification for dashoard deployment
 type DashboardSettings struct {
-	Image string `json:"image,omitempty"`
+	Affinity v1.Affinity `json:"affinity,omitempty"`
+	Image    string      `json:"image,omitempty"`
 }
 
 // DevelSettings defines the specification for development/debug environment
@@ -103,7 +105,8 @@ type DevelSettings struct {
 
 // IngestSettings defines the specification of the ingest workflow
 type IngestSettings struct {
-	DbImage string `json:"dbImage,omitempty"`
+	Affinity v1.Affinity `json:"affinity,omitempty"`
+	DbImage  string      `json:"dbImage,omitempty"`
 }
 
 // QueryServiceSettings defines the specification of the service which
@@ -117,14 +120,16 @@ type QueryServiceSettings struct {
 
 // ReplicationSettings defines the specification of the replication framework
 type ReplicationSettings struct {
-	Debug   string `json:"debug,omitempty"`
-	DbImage string `json:"dbImage,omitempty"`
-	Image   string `json:"image,omitempty"`
+	Affinity v1.Affinity `json:"affinity,omitempty"`
+	Debug    string      `json:"debug,omitempty"`
+	DbImage  string      `json:"dbImage,omitempty"`
+	Image    string      `json:"image,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
 	Affinity             v1.Affinity             `json:"affinity,omitempty"`
+	DbImage              string                  `json:"dbImage,omitempty"`
 	Image                string                  `json:"image,omitempty"`
 	Replicas             int32                   `json:"replicas,omitempty"`
 	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`
@@ -136,8 +141,9 @@ type WorkerSettings struct {
 
 // XrootdSettings defines the specification of the xrootd redirectors cluster
 type XrootdSettings struct {
-	Image    string `json:"image,omitempty"`
-	Replicas int32  `json:"replicas,omitempty"`
+	Affinity v1.Affinity `json:"affinity,omitempty"`
+	Image    string      `json:"image,omitempty"`
+	Replicas int32       `json:"replicas,omitempty"`
 }
 
 // QservStatus defines the observed state of Qserv
