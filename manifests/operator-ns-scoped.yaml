@@ -665,6 +665,8 @@ spec:
                           type: array
                       type: object
                   type: object
+                dbImage:
+                  type: string
                 image:
                   type: string
                 proxyResources:
@@ -1412,6 +1414,8 @@ spec:
                           type: array
                       type: object
                   type: object
+                dbImage:
+                  type: string
                 image:
                   type: string
                 replicas:

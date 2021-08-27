@@ -8,8 +8,8 @@ on:
       - master
 jobs:
   build:
-    name: Build qserv-operator
-    runs-on: ubuntu-18.04
+    name: Build image
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -32,10 +32,34 @@ jobs:
       - name: Setup Operator SDK
         run: |
           ./install-operator-sdk.sh
+      # FIXME: see https://github.com/operator-framework/operator-sdk/issues/4856
+      - name: Run Unit Tests
+        run: make test
       - name: Build operator image
         run: |
           go mod download
           ./build.sh
+          mkdir -p artifacts
+          docker save "${{ env.OP_IMAGE }}" > artifacts/qserv-operator-image.tar
+          echo "${{ env.OP_IMAGE }}" > artifacts/qserv-operator-image-tag
+      - uses: actions/upload-artifact@v2
+        with:
+          name: docker-artifact
+          path: artifacts
+  image-analysis:
+    name: Analyze image
+    runs-on: ubuntu-18.04
+    needs: build
+    steps:
+      - name: Download image
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-artifact
+          path: artifacts
+      - name: Load image in local registry
+        run: |
+          docker load --input artifacts/qserv-operator-image.tar
+          echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
       - name: Scan operator image
         uses: anchore/scan-action@v2
         with:
@@ -45,33 +69,77 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: results.sarif
-  # WARN: Github action runner are too weak to run Qserv e2e tests
-  # e2e:
-  #   name: Run e2e tests on qserv-operator
-  #   runs-on: ubuntu-18.04
-  #   needs: build
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #     - name: Create k3s Cluster
-  #       uses: debianmaster/actions-k3s@master
-  #       id: k3s
-  #       with:
-  #         version: 'v0.9.1'
-  #     - run: |
-  #         kubectl get nodes
-  #         kubectl get storageclasses.storage.k8s.io
-  #         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-  #         kubectl get storageclasses.storage.k8s.io
-  #     - name: Setup kustomize
-  #       uses: imranismail/setup-kustomize@v1
-  #       with:
-  #         kustomize-version: "3.1.0"
-  #     - name: Deploy operator
-  #       run: ./deploy.sh
-  #     - name: Apply a sample manifest
-  #       run: kubectl apply -k manifests/k3s
-  #     - name: Wait for Qserv to start
-  #       run: ./tests/tools/wait-qserv-ready.sh -v
-  #     - name: Run E2E Tests
-  #       run: ./tests/e2e/integration.sh
+  e2e:
+    name: Run e2e tests
+    runs-on: ubuntu-20.04
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: apparmor
+        run: |
+          set -x
+          sudo apt-get remove mysql-server --purge
+          sudo apt-get install apparmor-profiles
+          sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.3'
+      - run: go version
+      - name: Install go dependencies
+        run: |
+          go get golang.org/x/tools/cmd/goimports
+      - name: Download qserv-operator image
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-artifact
+          path: artifacts
+      - name: Create k8s/kind cluster
+        run: |
+          git clone --depth 1 -b "k8s-1.21.1-1" --single-branch https://github.com/k8s-school/kind-helper.git
+          ./kind-helper/k8s-create.sh -s
+      - name: Load container image inside kind
+        run: |
+          kind load image-archive artifacts/qserv-operator-image.tar
+          echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
+      - run: |
+          kubectl get nodes
+      - name: Install kustomize
+        run: |
+          VERSION="4.0.5"
+          curl -lO "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
+          chmod +x ./install_kustomize.sh
+          sudo rm -f /usr/local/bin/kustomize
+          sudo ./install_kustomize.sh "$VERSION" /usr/local/bin
+      - name: Deploy operator
+        run: |
+          export OP_IMAGE="${{ env.OP_IMAGE }}"
+          ./deploy.sh
+      - name: Deploy Qserv
+        run: kubectl apply -k manifests/base
+      - name: Wait for Qserv to start
+        run: ./tests/tools/wait-qserv-ready.sh -v
+      - name: Run E2E Tests
+        run: ./tests/e2e/integration.sh
+  push:
+    name: Push qserv-operator image to public registry
+    runs-on: ubuntu-20.04
+    needs: e2e
+    steps:
+      - name: Download qserv-operator image
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-artifact
+          path: artifacts
+      - name: Load image in local registry
+        run: |
+          docker load --input artifacts/qserv-operator-image.tar
+          echo "IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push image to Docker Hub
+        run: |
+          docker push ${{ env.IMAGE }}

@@ -159,19 +159,16 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		client.MatchingLabels(util.GetInstanceLabels(qserv.Name)),
 	}
 
-	availableCondition := metav1.Condition{
-		LastTransitionTime: metav1.Now(),
-		Status:             metav1.ConditionTrue,
-		Type:               "Available",
-		Reason:             "Succeed",
-	}
 	var statefulsets appsv1.StatefulSetList
 	if err := r.List(ctx, &statefulsets, listOpts...); err != nil {
 		(*log).Error(err, "Unable to list Qserv statefulsets")
 		return ctrl.Result{}, err
 	}
+	hasStatefulSet := false
+	hasDeployment := false
 	var notReadyStatefulSet []appsv1.StatefulSet
 	for _, statefulset := range statefulsets.Items {
+		hasStatefulSet = true
 		readyReplicas := statefulset.Status.ReadyReplicas
 		desiredReplicas := *statefulset.Spec.Replicas
 		readyFraction := fmt.Sprintf("%d/%d", readyReplicas, desiredReplicas)
@@ -207,7 +204,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 	}
 	var notAvailableDeployment []appsv1.Deployment
 	for _, deployment := range deployments.Items {
-
+		hasDeployment = true
 		availableReplicas := deployment.Status.AvailableReplicas
 		desiredReplicas := *deployment.Spec.Replicas
 		(*log).Info(fmt.Sprintf("Deployment: %v, %d/%d\n", deployment.Name, availableReplicas, desiredReplicas))
@@ -216,11 +213,24 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	if len(notReadyStatefulSet) != 0 || len(notAvailableDeployment) != 0 {
+	availableCondition := metav1.Condition{
+		Status: metav1.ConditionUnknown,
+		Type:   "Available",
+		Reason: "Succeed",
+	}
+	if !hasStatefulSet || !hasDeployment {
+		availableCondition.Status = metav1.ConditionFalse
+		availableCondition.Reason = "NotCreatedObjects"
+		availableCondition.Message = "Statefulsets and deployment not yet created"
+	} else if len(notReadyStatefulSet) != 0 || len(notAvailableDeployment) != 0 {
 		availableCondition.Status = metav1.ConditionFalse
 		availableCondition.Reason = "NotReadyPods"
 		availableCondition.Message = "Pod(s) not ready or available"
+		availableCondition.Message = "Pod(s) not ready or not available"
+	} else {
+		availableCondition.Status = metav1.ConditionTrue
 	}
+	availableCondition.LastTransitionTime = metav1.Now()
 
 	qserv.Status.Conditions = []metav1.Condition{availableCondition}
 	(*log).Info(fmt.Sprintf("Update status %v", qserv.Status.Conditions))

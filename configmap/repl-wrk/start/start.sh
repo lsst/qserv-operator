@@ -24,9 +24,6 @@ QSERV_WORKER_DB_USER="root"
 QSERV_WORKER_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
 
-# Source pathes to eups packages
-. /qserv/run/etc/sysconfig/qserv
-
 WORKER_ID=$(hostname)
 
 # Required by dataloader
@@ -65,6 +62,13 @@ export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}:${MYSQL_REPLICA_PASSWORD}@${REPL_DB_DN}:${REPL_DB_PORT}/${REPL_DB}"
 QSERV_WORKER_DB_URL="mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}@${QSERV_WORKER_DB_DN}:${QSERV_WORKER_DB_PORT}/${QSERV_WORKER_DB}"
+
+# Hack to upgrade database schema
+# FIXME improve it
+# TODO check for local mysql startup
+entrypoint --log-level DEBUG smig-update --worker-connection "mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}@${QSERV_WORKER_DB_DN}:${QSERV_WORKER_DB_PORT}"
+
+
 qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-worker-db="${QSERV_WORKER_DB_URL}" --debug
 
 # For debug purpose

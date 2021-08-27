@@ -38,7 +38,7 @@ func GenerateDashboardDeployment(cr *qservv1alpha1.Qserv) *appsv1.Deployment {
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
-					Affinity: &cr.Spec.Czar.Affinity,
+					Affinity: &cr.Spec.Dashboard.Affinity,
 					Containers: []v1.Container{
 						dashboardContainer,
 					},
