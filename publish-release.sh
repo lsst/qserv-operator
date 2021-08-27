@@ -70,7 +70,7 @@ sed -ri  "s/replaces: qserv-operator\.v([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/repla
 git add .
 git commit -m "Release $releasetag" || echo "Nothing to commit"
 git tag -a "$releasetag" -m "Version $releasetag"
-git push --tag
+git push --follow-tags
 $DIR/push-image.sh
 
 echo "Publish release to operator hub"

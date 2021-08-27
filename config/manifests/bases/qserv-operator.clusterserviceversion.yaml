@@ -76,7 +76,6 @@ spec:
     ```
     RELEASE="2021.8.1-rc3"
     kubectl apply -k "https://github.com/lsst/qserv-operator/manifests/secrets?ref=$RELEASE"
-    kubectl apply -k https://github.com/lsst/qserv-operator/manifests/secrets
     ```
     - Deploy a basic Qserv cluster by creating a new `Qserv` resource in the namespace where the operator is installed.
     ```
