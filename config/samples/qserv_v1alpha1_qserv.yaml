@@ -4,21 +4,21 @@ metadata:
   name: example-qserv
 spec:
   czar:
-    image: qserv/qserv:2021.6.3-rc1
+    image: qserv/qserv:2021.8.1-rc3
     replicas: 1
   dashboard:
-    image: qserv/dashboard:2021.6.3-rc1
+    image: qserv/dashboard:2021.8.1-rc3
   imagePullPolicy: IfNotPresent
   ingest:
     dbImage: mariadb:10.2.16
   replication:
     dbImage: mariadb:10.2.16
-    image: qserv/qserv:2021.6.3-rc1
+    image: qserv/qserv:2021.8.1-rc3
   storage: 1Gi
   storageClassName: standard
   worker:
-    image: qserv/qserv:2021.6.3-rc1
+    image: qserv/qserv:2021.8.1-rc3
     replicas: 2
   xrootd:
-    image: qserv/qserv:2021.6.3-rc1
+    image: qserv/qserv:2021.8.1-rc3
     replicas: 2

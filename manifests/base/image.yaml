@@ -4,12 +4,12 @@ metadata:
   name: qserv
 spec:
   czar:
-    image: qserv/qserv:2021.8.1-rc2
+    image: qserv/qserv:2021.8.1-rc3
   dashboard:
-    image: qserv/dashboard:2021.8.1-rc2
+    image: qserv/dashboard:2021.8.1-rc3
   worker:
-    image: qserv/qserv:2021.8.1-rc2
+    image: qserv/qserv:2021.8.1-rc3
   replication:
-    image: qserv/qserv:2021.8.1-rc2
+    image: qserv/qserv:2021.8.1-rc3
   xrootd:
-    image: qserv/qserv:2021.8.1-rc2
+    image: qserv/qserv:2021.8.1-rc3

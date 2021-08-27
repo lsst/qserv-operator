@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: qserv/qserv-operator
-  newTag: 2021.8.1-rc2-3-g63c9d50
+  newTag: 2021.8.1-rc3
