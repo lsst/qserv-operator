@@ -49,4 +49,7 @@ do
   kubectl logs $pod -c main
   echo "-----------------------------------------"
 done
+<<<<<<< HEAD
 argo wait @latest
+=======
+>>>>>>> 10ffc23... Use lite qserv/mariadb images
