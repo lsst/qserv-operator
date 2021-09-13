@@ -50,6 +50,12 @@ OPERATOR_SRC_DIR="$PWD"
 # Clone community-operators and create a branch
 gh repo clone https://github.com/lsst/community-operators.git /tmp/community-operators
 cd /tmp/community-operators
+# Synchronize with upstream repository
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+# Prepare a Pull-Request
 git checkout -b "$RELEASE"
 cp -r $OPERATOR_SRC_DIR/bundle /tmp/community-operators/operators/qserv-operator/"$RELEASE"
 git add .
