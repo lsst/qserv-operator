@@ -1,4 +1,0 @@
-bases:
-- ../gke-qserv-dev
-patchesStrategicMerge:
-- qserv.yaml
