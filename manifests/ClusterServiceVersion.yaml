@@ -12,7 +12,7 @@ spec:
   maintainers:
   - email: fabrice.jammes@clermont.in2p3.fr
     name: Laboratoire de Physique de Clermont - UMR 6533
-  maturity: alpha
+  maturity: beta
   provider:
     name: Vera C. Rubin Observatory
     url: https://www.lsst.org/
@@ -20,7 +20,7 @@ spec:
   customresourcedefinitions:
     owned:
     - name: qserv.lsst.org
-      version: v1alpha1
+      version: v1beta1
       kind: Qserv
   installModes:
   - supported: true

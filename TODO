@@ -1,6 +1,5 @@
 Migration to go v3 plugin:
-
-https://book.kubebuilder.io/migration/migration_guide_v2tov3.html
+- add make yaml yaml-ns-scoped target
 
 
 - implement `kubectl explain qserv`
