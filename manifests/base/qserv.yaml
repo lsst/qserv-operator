@@ -1,4 +1,4 @@
-apiVersion: qserv.lsst.org/v1alpha1
+apiVersion: qserv.lsst.org/v1beta1
 kind: Qserv
 metadata:
   name: qserv
