@@ -1,0 +1,16 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storage: "100Gi"
+  czar:
+    storage: "500Gi"
+  queryService:
+      loadBalancerIP: 10.140.1.211
+      annotations:
+        cloud.google.com/load-balancer-type: Internal
+      type: LoadBalancer
+  worker:
+    storage: "2Ti"
+    replicas: 5

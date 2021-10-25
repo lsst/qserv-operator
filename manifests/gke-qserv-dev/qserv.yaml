@@ -1,0 +1,86 @@
+apiVersion: qserv.lsst.org/v1alpha1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storageClassName: "qserv"
+  storage: "200Gi"
+  czar:
+    storageClassName: "czar"
+    storage: "1Ti"
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - czar
+    proxyresources:
+      requests:
+        cpu: 24
+  queryService:
+      #annotations:
+      #  cloud.google.com/load-balancer-type: Internal
+      #loadBalancerIP: 10.134.1.211
+      #type: LoadBalancer
+      type: ClusterIP
+  worker:
+    storage: "3Ti"
+    affinity:
+      podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "component"
+                    operator: In
+                    values:
+                    - worker
+                  - key: "app"
+                    operator: In
+                    values:
+                    - qserv
+              topologyKey: "kubernetes.io/hostname"
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - worker
+    replicas: 10
+    replicationresources:
+      limits:
+        cpu: 14
+  # ingest:
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: tier
+  #             operator: In
+  #             values:
+  #             - 'utility'
+  # replication:
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: tier
+  #             operator: In
+  #             values:
+  #             - 'utility'
+  # xrootd:
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: tier
+  #             operator: In
+  #             values:
+  #             - 'utility'

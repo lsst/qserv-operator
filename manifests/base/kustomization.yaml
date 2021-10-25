@@ -1,0 +1,27 @@
+commonLabels:
+  org: lsst
+  app: qserv
+
+resources:
+- qserv.yaml
+
+patchesStrategicMerge:
+- image.yaml
+
+secretGenerator:
+- name: secret-ingest-db-qserv
+  files:
+  - ingest-db.secret.sh
+- name: secret-mariadb-qserv
+  files:
+  - mariadb.secret.sh
+- name: secret-repl-db-qserv
+  files:
+  - repl-db.secret.sh
+- name: secret-repl-creds-qserv
+  files:
+  - qserv
+generatorOptions:
+  labels:
+    kustomize.generated.resources: qserv
+  disableNameSuffixHash: true

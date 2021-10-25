@@ -1,0 +1,17 @@
+Migration to go v3 plugin:
+
+https://book.kubebuilder.io/migration/migration_guide_v2tov3.html
+
+
+- implement `kubectl explain qserv`
+
+- Check example: https://gitlab.com/gitlab-org/gl-openshift/gitlab-operator or https://github.com/open-telemetry/opentelemetry-operator
+
+- Add init containers for checking other containers starting (dashboard repl-ctl)
+
+- Update build documentation
+
+- Add support for --auth-key: https://confluence.lsstcorp.org/display/DM/Replication%3A+Authorization+Options
+
+- Export metrics:
+https://sdk.operatorframework.io/docs/building-operators/golang/project_migration_guide/#export-metrics
