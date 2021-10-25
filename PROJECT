@@ -14,6 +14,6 @@ resources:
   domain: lsst.org
   group: qserv
   kind: Qserv
-  path: github.com/lsst/qserv-operator/api/v1
-  version: v1
+  path: github.com/lsst/qserv-operator/api/v1beta1
+  version: v1beta1
 version: "3"
