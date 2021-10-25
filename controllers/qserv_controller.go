@@ -18,8 +18,11 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,10 +31,10 @@ import (
 
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
-	"github.com/lsst/qserv-operator/pkg/constants"
-	"github.com/lsst/qserv-operator/pkg/syncer"
-	"github.com/lsst/qserv-operator/pkg/syncers"
-	appsv1 "k8s.io/api/apps/v1"
+	"github.com/lsst/qserv-operator/controllers/constants"
+	"github.com/lsst/qserv-operator/controllers/syncer"
+	"github.com/lsst/qserv-operator/controllers/syncers"
+	"github.com/lsst/qserv-operator/controllers/util"
 )
 
 // QservReconciler reconciles a Qserv object
@@ -144,4 +147,100 @@ func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&qservv1beta1.Qserv{}).
 		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
+}
+
+func (r *QservReconciler) sync(syncers []syncer.Interface) error {
+	for _, s := range syncers {
+		if err := syncer.Sync(context.TODO(), s); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log *logr.Logger) (ctrl.Result, error) {
+	// Manage status
+	// See https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html#2-list-all-active-jobs-and-update-the-status
+	listOpts := []client.ListOption{
+		client.InNamespace(qserv.Namespace),
+		client.MatchingLabels(util.GetInstanceLabels(qserv.Name)),
+	}
+
+	var statefulsets appsv1.StatefulSetList
+	if err := r.List(ctx, &statefulsets, listOpts...); err != nil {
+		(*log).Error(err, "Unable to list Qserv statefulsets")
+		return ctrl.Result{}, err
+	}
+	hasStatefulSet := false
+	hasDeployment := false
+	var notReadyStatefulSet []appsv1.StatefulSet
+	for _, statefulset := range statefulsets.Items {
+		hasStatefulSet = true
+		readyReplicas := statefulset.Status.ReadyReplicas
+		desiredReplicas := *statefulset.Spec.Replicas
+		readyFraction := fmt.Sprintf("%d/%d", readyReplicas, desiredReplicas)
+		(*log).Info(fmt.Sprintf("Statefulset: %v, %s", statefulset.Name, readyFraction))
+		if readyReplicas != desiredReplicas {
+			notReadyStatefulSet = append(notReadyStatefulSet, statefulset)
+		}
+
+		componentLabel := statefulset.Labels["component"]
+		switch componentLabel {
+		case string(constants.Czar):
+			qserv.Status.CzarReadyFraction = readyFraction
+		case string(constants.IngestDb):
+			qserv.Status.IngestDatabaseReadyFraction = readyFraction
+		case string(constants.ReplCtl):
+			qserv.Status.ReplicationControllerReadyFraction = readyFraction
+		case string(constants.ReplDb):
+			qserv.Status.ReplicationDatabaseReadyFraction = readyFraction
+		case string(constants.Worker):
+			qserv.Status.WorkerReadyFraction = readyFraction
+		case string(constants.XrootdRedirector):
+			qserv.Status.XrootdReadyFraction = readyFraction
+		default:
+			(*log).Info(fmt.Sprintf("Statefulset: %s has unknown 'component' label", statefulset.Name))
+		}
+	}
+
+	// For qserv-dashboard deployment
+	var deployments appsv1.DeploymentList
+	if err := r.List(ctx, &deployments, listOpts...); err != nil {
+		(*log).Error(err, "Unable to list Qserv deployments")
+		return ctrl.Result{}, err
+	}
+	var notAvailableDeployment []appsv1.Deployment
+	for _, deployment := range deployments.Items {
+		hasDeployment = true
+		availableReplicas := deployment.Status.AvailableReplicas
+		desiredReplicas := *deployment.Spec.Replicas
+		(*log).Info(fmt.Sprintf("Deployment: %v, %d/%d\n", deployment.Name, availableReplicas, desiredReplicas))
+		if availableReplicas != desiredReplicas {
+			notAvailableDeployment = append(notAvailableDeployment, deployment)
+		}
+	}
+
+	availableCondition := metav1.Condition{
+		Status: metav1.ConditionUnknown,
+		Type:   "Available",
+		Reason: "Succeed",
+	}
+	if !hasStatefulSet || !hasDeployment {
+		availableCondition.Status = metav1.ConditionFalse
+		availableCondition.Reason = "NotCreatedObjects"
+		availableCondition.Message = "Statefulsets and deployment not yet created"
+	} else if len(notReadyStatefulSet) != 0 || len(notAvailableDeployment) != 0 {
+		availableCondition.Status = metav1.ConditionFalse
+		availableCondition.Reason = "NotReadyPods"
+		availableCondition.Message = "Pod(s) not ready or available"
+		availableCondition.Message = "Pod(s) not ready or not available"
+	} else {
+		availableCondition.Status = metav1.ConditionTrue
+	}
+	availableCondition.LastTransitionTime = metav1.Now()
+
+	qserv.Status.Conditions = []metav1.Condition{availableCondition}
+	(*log).Info(fmt.Sprintf("Update status %v", qserv.Status.Conditions))
+	err := r.Status().Update(ctx, qserv)
+	return ctrl.Result{}, err
 }
