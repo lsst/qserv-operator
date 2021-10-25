@@ -37,7 +37,7 @@ BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 
 # Image URL to use all building/pushing image targets
 IMG := $(shell . $(ENVFILE) ; echo $${OP_IMAGE})
-NAMESPACE := $(shell . $(ENVFILE) ; echo $${NAMESPACE}
+NAMESPACE := $(shell . $(ENVFILE) ; echo $${NAMESPACE})
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
