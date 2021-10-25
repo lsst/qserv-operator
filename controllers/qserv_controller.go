@@ -19,17 +19,25 @@ package controllers
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	qservv1 "github.com/lsst/qserv-operator/api/v1"
+	"github.com/go-logr/logr"
+	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
+	"github.com/lsst/qserv-operator/pkg/constants"
+	"github.com/lsst/qserv-operator/pkg/syncer"
+	"github.com/lsst/qserv-operator/pkg/syncers"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 // QservReconciler reconciles a Qserv object
 type QservReconciler struct {
 	client.Client
+	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
@@ -46,10 +54,86 @@ type QservReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.9.2/pkg/reconcile
-func (r *QservReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
+	log := log.FromContext(ctx)
+	// TODO check which log to use
+	// log := r.Log.WithValues("qserv", request.NamespacedName)
 
-	// your logic here
+	log.Info("Reconciling Qserv")
+
+	// Fetch the Qserv instance
+	qserv := &qservv1beta1.Qserv{}
+	err := r.Get(ctx, request.NamespacedName, qserv)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			log.Info("Qserv resource not found. Ignoring since object must be deleted")
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		log.Error(err, "Failed to get Qserv")
+		return ctrl.Result{}, err
+	}
+
+	// Manage default values for specification
+	r.Scheme.Default(qserv)
+
+	result, err := r.updateQservStatus(ctx, request, qserv, &log)
+	if err != nil {
+		log.Error(err, "Unable to update Qserv status")
+		return result, err
+	}
+
+	// Manage syncronisation
+	qservSyncers := []syncer.Interface{
+		syncers.NewCzarStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewDashboardDeploymentSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewDashboardServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewWorkerStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationCtlStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewIngestDbServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewIngestDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationDbServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewReplicationDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewXrootdRedirectorServiceSyncer(qserv, r.Client, r.Scheme),
+		syncers.NewXrootdStatefulSetSyncer(qserv, r.Client, r.Scheme),
+	}
+
+	qservSyncers = append(syncers.NewQservServicesSyncer(qserv, r.Client, r.Scheme), qservSyncers...)
+
+	for _, configmapClass := range constants.ContainerConfigmaps {
+		for _, subpath := range []string{"etc", "start"} {
+			qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, configmapClass, subpath))
+		}
+	}
+	qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, constants.InitDbName, "start"))
+
+	for _, db := range constants.Databases {
+		qservSyncers = append(qservSyncers, syncers.NewSQLConfigMapSyncer(qserv, r.Client, r.Scheme, db))
+	}
+
+	// Specify Network Policies
+	if qserv.Spec.NetworkPolicies {
+		qservSyncers = append(qservSyncers, syncers.NewNetworkPoliciesSyncer(qserv, r.Client, r.Scheme)...)
+	}
+
+	if err = r.sync(qservSyncers); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Update status.Nodes if needed
+	/* 	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {
+		qserv.Status.Nodes = podNames
+		err := r.Status().Update(ctx, qserv)
+		if err != nil {
+			log.Error(err, "Failed to update Qserv status")
+			return ctrl.Result{}, err
+		}
+	} */
 
 	return ctrl.Result{}, nil
 }
@@ -57,6 +141,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 // SetupWithManager sets up the controller with the Manager.
 func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&qservv1.Qserv{}).
+		For(&qservv1beta1.Qserv{}).
+		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }
