@@ -12,5 +12,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: controller
-  newTag: latest
+  newName: qserv/qserv-operator
+  newTag: 2021.9.2-rc1-16-ga024125-dirty
