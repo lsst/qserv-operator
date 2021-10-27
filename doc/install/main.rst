@@ -62,7 +62,7 @@ The operator will manage all Qserv instances across the cluster.
 .. code:: sh
 
     # Deploy qserv-operator at cluster-scope in "qserv-operator-system" namespace
-    RELEASE="2021.9.2-rc1"
+    RELEASE="2021.10.1-rc1"
     kubectl apply -f https://raw.githubusercontent.com/lsst/qserv-operator/$RELEASE/manifests/operator.yaml
 
 At namespace-scope
@@ -79,7 +79,7 @@ However, Qserv CustomResourceDefinitions (CRDs) are cluster-scoped, so a conflic
 .. code:: sh
 
     # Deploy qserv-operator at namespace-scope in "qserv-dev" namespace
-    RELEASE="2021.9.2-rc1"
+    RELEASE="2021.10.1-rc1"
     NAMESPACE="qserv-dev"
     curl https://raw.githubusercontent.com/lsst/qserv-operator/$RELEASE/manifests/operator-ns-scoped.yaml | sed "s/<NAMESPACE>/$NAMESPACE/" | kubectl apply -f -
 
@@ -123,7 +123,7 @@ overlay using instructions below:
 
 .. code:: sh
 
-    RELEASE="2021.9.2-rc1"
+    RELEASE="2021.10.1-rc1"
     git clone --depth 1 --single-branch -b "$RELEASE" https://github.com/lsst/qserv-operator
     cd qserv-operator
     cp -r manifests/base/ manifests/<customized-overlay>
@@ -142,7 +142,7 @@ Run Qserv integration tests
 .. code:: bash
 
     cd "$WORKDIR"
-    RELEASE="2021.9.2-rc1"
+    RELEASE="2021.10.1-rc1"
     git clone --depth 1 --single-branch -b "$RELEASE" https://github.com/lsst/qserv-operator
     cd qserv-operator
     ./tests/tools/wait-qserv-ready.sh

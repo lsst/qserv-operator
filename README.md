@@ -34,7 +34,7 @@ For each directory, run the following command:
 ```
 cd <source_directory>
 # RELEASE format is "<YYYY>.<M>.<i>-rc<j>"
-RELEASE="2021.9.2-rc1"
+RELEASE="2021.10.1-rc1"
 ./publish-release.sh "$RELEASE"
 ```
 
@@ -45,7 +45,7 @@ This will automatically push the release tag to the repositories, and push the t
 The above step (i.e. release publishing) must have been completed before doing this one.
 
 ```
-RELEASE="2021.9.2-rc1"
+RELEASE="2021.10.1-rc1"
 OPERATOR_SRC_DIR="$PWD"
 # Clone community-operators and create a branch
 gh repo clone https://github.com/lsst/community-operators.git /tmp/community-operators
