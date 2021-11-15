@@ -51,6 +51,8 @@ jobs:
     runs-on: ubuntu-18.04
     needs: build
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Download image
         uses: actions/download-artifact@v2
         with:
@@ -61,14 +63,18 @@ jobs:
           docker load --input artifacts/qserv-operator-image.tar
           echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
       - name: Scan operator image
-        uses: anchore/scan-action@v2
+        uses: anchore/scan-action@v3
         with:
           image: "${{ env.OP_IMAGE }}"
           acs-report-enable: true
+      - name: Inspect action SARIF report
+        run: |
+          ls -l
+          cat ${{ steps.scan.outputs.sarif }}
       - name: upload Anchore scan SARIF report
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: results.sarif
+          sarif_file: ${{ steps.scan.outputs.sarif }} 
   e2e:
     name: Run e2e tests
     runs-on: ubuntu-20.04
