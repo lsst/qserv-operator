@@ -187,7 +187,7 @@ COMMENT = 'Metadata about database as a whole, bunch of key-value pairs';
 -- Version 4 migrated 4 TEXT columns `query`, `qTemplate`, `qMerge`
 --   and `resultQuery` of QInfo to the MySQL type MEDIUMTEXT to allow larger
 --   storage capacity.
-INSERT INTO `QMetadata` (`metakey`, `value`) VALUES ('version', '4');
+INSERT INTO `QMetadata` (`metakey`, `value`) VALUES ('version', '3');
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

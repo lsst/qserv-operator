@@ -3,7 +3,6 @@
 name: "Documentation"
 on:
   push:
-  
 jobs:
   doc:
     name: Generate and upload documentation

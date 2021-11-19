@@ -100,7 +100,6 @@ func generateTemplateData(r *qservv1alpha1.Qserv) templateData {
 		ReplicationControllerPort:          constants.ReplicationControllerPort,
 		ReplicationControllerFQDN:          util.GetReplCtlFQDN(r),
 		WorkerDn:                           util.GetWorkerServiceName(r),
-		WmgrPort:                           constants.WmgrPort,
 		WorkerReplicas:                     uint(r.Spec.Worker.Replicas),
 		XrootdRedirectorDn:                 util.GetXrootdRedirectorServiceName(r),
 		XrootdReplicas:                     uint(r.Spec.Xrootd.Replicas),

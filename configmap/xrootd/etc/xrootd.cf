@@ -71,6 +71,8 @@ xrd.network dyndns
 xrd.network cache 0
 
 set xrootddn = {{.XrootdRedirectorDn}}
+
+# Use the kubernetes DNS name for identifying the manager(s)
 {{- range $val := Iterate .XrootdReplicas}}
 all.manager ${xrootddn}-{{$val}}.${xrootddn}:2131
 {{- end}}

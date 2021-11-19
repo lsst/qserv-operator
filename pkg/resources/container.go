@@ -71,7 +71,7 @@ func getInitContainer(cr *qservv1alpha1.Qserv, component constants.PodClass) (v1
 		},
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbContainerName),
+			getMysqlCnfVolumeMount(dbContainerName),
 			// db startup script and root passwords are shared
 			getStartVolumeMount(constants.InitDbName),
 			getSecretVolumeMount(constants.MariadbName),
@@ -129,7 +129,7 @@ func getMariadbContainer(cr *qservv1alpha1.Qserv, pod constants.PodClass) (v1.Co
 		ReadinessProbe: getTCPProbe(constants.MariadbPortName, 5),
 		VolumeMounts: []v1.VolumeMount{
 			getDataVolumeMount(),
-			getEtcVolumeMount(dbContainerName),
+			getMysqlCnfVolumeMount(dbContainerName),
 			getStartVolumeMount(dbContainerName),
 			getTmpVolumeMount(),
 		},
@@ -146,9 +146,9 @@ func getMariadbImage(cr *qservv1alpha1.Qserv, component constants.PodClass) stri
 	} else if component == constants.IngestDb {
 		image = spec.Ingest.DbImage
 	} else if component == constants.Worker {
-		image = spec.Worker.Image
+		image = spec.Worker.DbImage
 	} else if component == constants.Czar {
-		image = spec.Czar.Image
+		image = spec.Czar.DbImage
 	}
 	return image
 }
@@ -321,51 +321,6 @@ func getDashboardContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
 	volumes.make(cr)
 
 	volumes.addEtcStartVolumes(constants.DashboardName)
-
-	return container, volumes.volumeSet
-}
-
-func getWmgrContainer(cr *qservv1alpha1.Qserv) (v1.Container, VolumeSet) {
-	dotQserv := "dot-qserv"
-	dotQservConfigVolume := util.GetConfigVolumeName(dotQserv)
-	container := v1.Container{
-		Name:            string(constants.WmgrName),
-		Image:           cr.Spec.Worker.Image,
-		ImagePullPolicy: cr.Spec.ImagePullPolicy,
-		Ports: []v1.ContainerPort{
-			{
-				Name:          constants.WmgrPortName,
-				ContainerPort: constants.WmgrPort,
-				Protocol:      v1.ProtocolTCP,
-			},
-		},
-		Command:        constants.Command,
-		LivenessProbe:  getTCPProbe(constants.WmgrPortName, 10),
-		ReadinessProbe: getTCPProbe(constants.WmgrPortName, 5),
-		VolumeMounts: []v1.VolumeMount{
-			{
-				MountPath: filepath.Join("/", dotQservConfigVolume),
-				Name:      dotQservConfigVolume,
-				ReadOnly:  true,
-			},
-			getTmpVolumeMount(),
-			getSecretVolumeMount(constants.MariadbName),
-			getSecretVolumeMount(constants.WmgrName),
-			getDataVolumeMount(),
-			getEtcVolumeMount(constants.WmgrName),
-			getStartVolumeMount(constants.WmgrName),
-		},
-	}
-
-	// Volumes
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
-
-	volumes.addConfigMapVolume(dotQserv)
-	volumes.addSecretVolume(constants.MariadbName)
-	volumes.addSecretVolume(constants.WmgrName)
-	volumes.addEmptyDirVolume("tmp-volume")
-	volumes.addEtcStartVolumes(constants.WmgrName)
 
 	return container, volumes.volumeSet
 }

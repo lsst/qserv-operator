@@ -159,16 +159,6 @@ func GenerateWorkerNetworkPolicy(cr *qservv1alpha1.Qserv, labels map[string]stri
 						},
 					},
 				},
-				{
-					// Wmgr port
-					Ports: []v1.NetworkPolicyPort{
-						{
-							Port: &intstr.IntOrString{
-								IntVal: constants.WmgrPort,
-							},
-						},
-					},
-				},
 			},
 		},
 	}

@@ -148,7 +148,15 @@ func getDataVolumeMount() v1.VolumeMount {
 
 func getEtcVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-etc", microservice)
-	return getVolumeMount(volumeName, "/config-etc")
+	return v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"}
+}
+
+func getMysqlCnfVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
+	volumeName := fmt.Sprintf("config-%s-etc", microservice)
+	return v1.VolumeMount{
+		Name:      volumeName,
+		MountPath: "/etc/mysql/my.cnf",
+		SubPath:   "my.cnf"}
 }
 
 func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount {
@@ -161,7 +169,7 @@ func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount 
 
 func getStartVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-start", microservice)
-	return getVolumeMount(volumeName, "/config-start")
+	return v1.VolumeMount{Name: volumeName, MountPath: "/config-start"}
 }
 
 func getTmpVolumeMount() v1.VolumeMount {
@@ -184,8 +192,4 @@ func getXrootdVolumeMounts(component constants.PodClass) []v1.VolumeMount {
 		volumeMounts = append(volumeMounts, getDataVolumeMount())
 	}
 	return volumeMounts
-}
-
-func getVolumeMount(volumeName string, mountPath string) v1.VolumeMount {
-	return v1.VolumeMount{Name: volumeName, MountPath: mountPath}
 }

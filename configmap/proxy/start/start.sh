@@ -11,10 +11,11 @@
 #              Once Qserv czar have returned the results, mysql-proxy \
 #              sends it to mysql-client. \
 
-set -e
+set -ex
 
-# Source pathes to eups packages
-. /qserv/run/etc/sysconfig/qserv
+# Hack to upgrade database schema
+# FIXME improve it
+entrypoint --log-level DEBUG smig-update --czar-connection mysql://root:CHANGEME@localhost:3306
 
 # Run proxy using unix account below
 PROXY_USER=qserv
@@ -46,8 +47,8 @@ fi
 QSERV_CONF="/config-etc/qserv-czar.cnf"
 
 # Set default mysql-proxy configuration.
-PROXY_OPTIONS="--proxy-lua-script=${QSERV_DIR}/share/lua/qserv/mysqlProxy.lua \
-        --lua-cpath=${QSERV_DIR}/lib/lua/qserv/czarProxy.so"
+PROXY_OPTIONS="--proxy-lua-script=/usr/local/lua/qserv/scripts/mysqlProxy.lua \
+        --lua-cpath=/usr/local/lua/qserv/lib/czarProxy.so"
 
 
 # jemalloc profilling
