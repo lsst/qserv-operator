@@ -27,8 +27,8 @@ jobs:
         shell: bash
         run: |
           OP_VERSION="$(git describe --always)"
-          echo "OP_VERSION=${OP_VERSION}" >> $GITHUB_ENV
           echo "OP_IMAGE=$(. ./env.build.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
+          echo "OP_IMAGE=${OP_IMAGE}"
       - name: Setup Operator SDK
         run: |
           ./install-operator-sdk.sh
