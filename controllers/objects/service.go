@@ -71,33 +71,6 @@ func GenerateCzarService(cr *qservv1beta1.Qserv) *v1.Service {
 	}
 }
 
-// GenerateDashboardService generate service specification for Qserv Czar database
-func GenerateDashboardService(cr *qservv1beta1.Qserv) *v1.Service {
-	name := util.GetDashboardServiceName(cr)
-	namespace := cr.Namespace
-
-	labels := util.GetComponentLabels(constants.Dashboard, cr.Name)
-
-	return &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: v1.ServiceSpec{
-			Type: v1.ServiceTypeClusterIP,
-			Ports: []v1.ServicePort{
-				{
-					Port:     constants.DashboardPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.DashboardPortName,
-				},
-			},
-			Selector: labels,
-		},
-	}
-}
-
 // GenerateIngestDbService generate service specification for Qserv Ingest database
 func GenerateIngestDbService(cr *qservv1beta1.Qserv) *v1.Service {
 	name := util.GetName(cr, string(constants.IngestDb))

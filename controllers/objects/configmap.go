@@ -18,8 +18,6 @@ import (
 
 type templateData struct {
 	CzarDomainName            string
-	DashboardDn               string
-	DashboardPort             uint
 	QstatusMysqldHost         string
 	ReplicationControllerPort uint
 	// Example: qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
@@ -94,8 +92,6 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 	cpuLimit := r.Spec.Worker.ReplicationResources.Limits.Cpu()
 	return templateData{
 		CzarDomainName:                     util.GetCzarServiceName(r),
-		DashboardDn:                        util.GetDashboardServiceName(r),
-		DashboardPort:                      constants.DashboardPort,
 		QstatusMysqldHost:                  util.GetCzarServiceName(r),
 		ReplicationControllerPort:          constants.ReplicationControllerPort,
 		ReplicationControllerFQDN:          util.GetReplCtlFQDN(r),

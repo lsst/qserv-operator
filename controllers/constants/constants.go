@@ -10,9 +10,6 @@ const (
 
 	CorePathVolumeName = "corepath"
 
-	DashboardPort     = 8080
-	DashboardPortName = "http"
-
 	DataVolumeClaimTemplateName = QservName + "-data"
 
 	MariadbPort     = 3306
@@ -47,8 +44,6 @@ type ContainerName string
 const (
 	// CmsdName name for cmsd containers
 	CmsdName ContainerName = "cmsd"
-	// DashboardName name for dashboard container
-	DashboardName ContainerName = "dashboard"
 	// DebuggerName name for debugger container
 	DebuggerName ContainerName = "debugger"
 	// IngestDbName name for ingest database container
@@ -89,8 +84,6 @@ func GetDbContainerName(pod PodClass) ContainerName {
 const (
 	// Czar name pods of class Czar
 	Czar PodClass = "czar"
-	// Dashboard name pods of class Dashboard
-	Dashboard PodClass = PodClass(DashboardName)
 	// IngestDb name pods of class Ingest database
 	IngestDb PodClass = PodClass(IngestDbName)
 	// ReplCtl name pods of class Replication controller
@@ -111,7 +104,7 @@ var CommandDebug = []string{"sleep", "infinity"}
 
 // ContainerConfigmaps contains names of all micro-services which require configmaps named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{DashboardName, IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
+var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
 
 // Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
