@@ -98,8 +98,6 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	qservSyncers := []syncer.Interface{
 		syncers.NewCzarStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewDashboardDeploymentSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewDashboardServiceSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewWorkerStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewReplicationCtlStatefulSetSyncer(qserv, r.Client, r.Scheme),
@@ -177,7 +175,6 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	}
 	hasStatefulSet := false
-	hasDeployment := false
 	var notReadyStatefulSet []appsv1.StatefulSet
 	for _, statefulset := range statefulsets.Items {
 		hasStatefulSet = true
@@ -208,33 +205,16 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	// For qserv-dashboard deployment
-	var deployments appsv1.DeploymentList
-	if err := r.List(ctx, &deployments, listOpts...); err != nil {
-		(*log).Error(err, "Unable to list Qserv deployments")
-		return ctrl.Result{}, err
-	}
-	var notAvailableDeployment []appsv1.Deployment
-	for _, deployment := range deployments.Items {
-		hasDeployment = true
-		availableReplicas := deployment.Status.AvailableReplicas
-		desiredReplicas := *deployment.Spec.Replicas
-		(*log).Info(fmt.Sprintf("Deployment: %v, %d/%d\n", deployment.Name, availableReplicas, desiredReplicas))
-		if availableReplicas != desiredReplicas {
-			notAvailableDeployment = append(notAvailableDeployment, deployment)
-		}
-	}
-
 	availableCondition := metav1.Condition{
 		Status: metav1.ConditionUnknown,
 		Type:   "Available",
 		Reason: "Succeed",
 	}
-	if !hasStatefulSet || !hasDeployment {
+	if !hasStatefulSet {
 		availableCondition.Status = metav1.ConditionFalse
 		availableCondition.Reason = "NotCreatedObjects"
-		availableCondition.Message = "Statefulsets and deployment not yet created"
-	} else if len(notReadyStatefulSet) != 0 || len(notAvailableDeployment) != 0 {
+		availableCondition.Message = "Statefulsets not yet created"
+	} else if len(notReadyStatefulSet) != 0 {
 		availableCondition.Status = metav1.ConditionFalse
 		availableCondition.Reason = "NotReadyPods"
 		availableCondition.Message = "Pod(s) not ready or available"

@@ -44,9 +44,6 @@ type QservSpec struct {
 	// + kubebuilder:default:=Always
 	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
-	// Dashboard defines the settings for dashboard deployment
-	Dashboard DashboardSettings `json:"dashboard,omitempty"`
-
 	// Devel defines the settings for development environment
 	Devel DevelSettings `json:"devel,omitempty"`
 
@@ -84,12 +81,6 @@ type CzarSettings struct {
 	StorageClass string `json:"storageClassName,omitempty"`
 	// +kubebuilder:validation:Optional
 	StorageCapacity string `json:"storage,omitempty"`
-}
-
-// DashboardSettings defines the specification for dashoard deployment
-type DashboardSettings struct {
-	Affinity v1.Affinity `json:"affinity,omitempty"`
-	Image    string      `json:"image,omitempty"`
 }
 
 // DevelSettings defines the specification for development/debug environment

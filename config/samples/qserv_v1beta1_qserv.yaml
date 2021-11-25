@@ -1,18 +1,22 @@
 apiVersion: qserv.lsst.org/v1beta1
 kind: Qserv
 metadata:
-  name: qserv
+  name: example-qserv
 spec:
   czar:
     image: qserv/lite-qserv:2021.10.1-rc1-37-g45646a1cb
-    dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
+    replicas: 1
+  imagePullPolicy: IfNotPresent
   ingest:
     dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
   replication:
-    image: qserv/lite-qserv:2021.10.1-rc1-37-g45646a1cb
     dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
+    image: qserv/lite-qserv:2021.10.1-rc1-37-g45646a1cb
+  storage: 1Gi
+  storageClassName: standard
   worker:
     image: qserv/lite-qserv:2021.10.1-rc1-37-g45646a1cb
-    dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
+    replicas: 2
   xrootd:
     image: qserv/lite-qserv:2021.10.1-rc1-37-g45646a1cb
+    replicas: 2
