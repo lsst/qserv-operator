@@ -4,7 +4,7 @@ name: Generate code reports
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   report:
