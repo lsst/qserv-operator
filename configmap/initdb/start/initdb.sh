@@ -4,7 +4,7 @@
 # - create data directory
 # - create root password
 # - create qserv/repl databases and user
-# - deploy scisql plugin (qserv only)
+# - deploy scisql UDF in MySQL database (only for qserv czar(s)/worker(s))
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
