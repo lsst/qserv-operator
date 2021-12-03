@@ -49,6 +49,8 @@ jobs:
   image-analysis:
     name: Analyze image
     runs-on: ubuntu-18.04
+    permissions:
+      security-events: write
     needs: build
     steps:
       - name: Checkout code
@@ -81,6 +83,7 @@ jobs:
         with:
           image: "${{ env.OP_IMAGE }}"
           acs-report-enable: true
+          fail-build: false
       - name: Display SARIF report
         run: |
           cat ${{ steps.scan.outputs.sarif }}
@@ -123,6 +126,10 @@ jobs:
           echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
       - run: |
           kubectl get nodes
+      - name: Install cert-managr
+        run: |
+          VERSION="v1.6.1"
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/$VERSION/cert-manager.yaml
       - name: Install kustomize
         run: |
           VERSION="4.0.5"
