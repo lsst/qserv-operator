@@ -27,7 +27,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
@@ -94,9 +93,14 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		return result, err
 	}
 
+	result, err = r.reconcileCzar(ctx, qserv, &log)
+	if err != nil {
+		log.Error(err, "Unable to reconcile Czar")
+		return result, err
+	}
+
 	// Manage syncronisation
 	qservSyncers := []syncer.Interface{
-		syncers.NewCzarStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewWorkerStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
@@ -128,7 +132,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	}
 
 	if err = r.sync(qservSyncers); err != nil {
-		return reconcile.Result{}, err
+		return ctrl.Result{}, err
 	}
 
 	// Update status.Nodes if needed

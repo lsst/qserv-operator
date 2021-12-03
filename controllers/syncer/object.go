@@ -20,7 +20,7 @@ var (
 type ObjectSyncer struct {
 	Owner          runtime.Object
 	Obj            client.Object
-	SyncFn         controllerutil.MutateFn
+	MutateFn       controllerutil.MutateFn
 	Name           string
 	Client         client.Client
 	Scheme         *runtime.Scheme
@@ -70,7 +70,7 @@ func (s *ObjectSyncer) mutateFn() controllerutil.MutateFn {
 	return func() error {
 		existing := s.Obj
 		s.previousObject = existing.DeepCopyObject()
-		err := s.SyncFn()
+		err := s.MutateFn()
 		if err != nil {
 			return err
 		}
@@ -84,6 +84,7 @@ func (s *ObjectSyncer) mutateFn() controllerutil.MutateFn {
 				return fmt.Errorf("%T is not a metav1.Object", s.Owner)
 			}
 
+			// FIXME might not work in case of concurrent owner deletion.
 			// set owner reference only if owner resource is not being deleted, otherwise the owner
 			// reference will be reset in case of deleting with cascade=false.
 			if ownerMeta.GetDeletionTimestamp().IsZero() {
@@ -105,13 +106,13 @@ func (s *ObjectSyncer) mutateFn() controllerutil.MutateFn {
 // with an owner and persists data using controller-runtime's CreateOrUpdate.
 // The name is used for logging and event emitting purposes and should be an
 // valid go identifier in upper camel case. (eg. MysqlStatefulSet)
-func NewObjectSyncer(name string, owner, obj client.Object, c client.Client, scheme *runtime.Scheme, syncFn controllerutil.MutateFn) Interface {
+func NewObjectSyncer(name string, owner, obj client.Object, c client.Client, scheme *runtime.Scheme, mutateFn controllerutil.MutateFn) Interface {
 	return &ObjectSyncer{
-		Owner:  owner,
-		Obj:    obj,
-		SyncFn: syncFn,
-		Name:   name,
-		Client: c,
-		Scheme: scheme,
+		Owner:    owner,
+		Obj:      obj,
+		MutateFn: mutateFn,
+		Name:     name,
+		Client:   c,
+		Scheme:   scheme,
 	}
 }
