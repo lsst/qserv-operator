@@ -19,26 +19,28 @@ package controllers
 import (
 	"context"
 
-	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
-	"github.com/lsst/qserv-operator/controllers/objects"
+	"github.com/lsst/qserv-operator/controllers/reconciler"
 )
 
-func (r *QservReconciler) reconcileCzar(ctx context.Context, qserv *qservv1beta1.Qserv, log *logr.Logger) (ctrl.Result, error) {
+func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log *logr.Logger, controlled reconciler.ObjectSpec) (ctrl.Result, error) {
 	// Check if the czar statefulset already exists, if not create a new statefulset.
-	found := &appsv1.StatefulSet{}
-	err := r.Get(ctx, types.NamespacedName{Name: qserv.Name + "-" + string(constants.Czar), Namespace: qserv.Namespace}, found)
+	var object client.Object
+	err := r.Get(ctx, types.NamespacedName{Name: qserv.Name + "-" + string(constants.Czar), Namespace: qserv.Namespace}, object)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Define and create a new deployment.
-			object := objects.GenerateCzarStatefulSet(qserv)
+			// Define and create a new object.
+			if err = controlled.Create(qserv, &object); err != nil {
+				return ctrl.Result{}, err
+			}
 			controllerutil.SetControllerReference(qserv, object, r.Scheme)
 			if err = r.Create(ctx, object); err != nil {
 				return ctrl.Result{}, err
@@ -50,10 +52,11 @@ func (r *QservReconciler) reconcileCzar(ctx context.Context, qserv *qservv1beta1
 	}
 
 	// Ensure the statefulset size is the same as the spec.
-	size := qserv.Spec.Czar.Replicas
-	if *found.Spec.Replicas != size {
-		found.Spec.Replicas = &size
-		if err = r.Update(ctx, found); err != nil {
+	if err = controlled.Update(qserv, &object); err != nil {
+		return ctrl.Result{}, err
+	}
+	if object != nil {
+		if err = r.Update(ctx, object); err != nil {
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{Requeue: true}, nil

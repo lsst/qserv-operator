@@ -10,12 +10,6 @@ import (
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
-// NewCzarStatefulSetSyncer returns a new sync.Interface for reconciling Qserv Czar StatefulSet
-func NewCzarStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	statefulSet := objects.GenerateCzarStatefulSet(r)
-	return syncer.NewObjectSyncer("CzarStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
-}
-
 // NewIngestDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv ingest Db StatefulSet
 func NewIngestDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	statefulSet := objects.GenerateIngestDbStatefulSet(r)

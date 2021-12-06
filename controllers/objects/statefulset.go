@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -20,8 +21,12 @@ func getValue(value string, defaultValue string) string {
 	return value
 }
 
+type CzarSpec {
+
+}
+
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
-func GenerateCzarStatefulSet(cr *qservv1beta1.Qserv) *appsv1.StatefulSet {
+func GenerateCzarStatefulSet(cr *qservv1beta1.Qserv, object *client.Object) error {
 	name := cr.Name + "-" + string(constants.Czar)
 	namespace := cr.Namespace
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
@@ -94,8 +99,8 @@ func GenerateCzarStatefulSet(cr *qservv1beta1.Qserv) *appsv1.StatefulSet {
 	addDebuggerContainer(reqLogger, ss, cr)
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
-
-	return ss
+	*object = ss
+	return nil
 }
 
 // GenerateIngestDbStatefulSet generate statefulset specification for Qserv Ingest Database
