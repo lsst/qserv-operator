@@ -31,7 +31,7 @@ import (
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
-	"github.com/lsst/qserv-operator/controllers/reconciler"
+	"github.com/lsst/qserv-operator/controllers/objects"
 	"github.com/lsst/qserv-operator/controllers/syncer"
 	"github.com/lsst/qserv-operator/controllers/syncers"
 	"github.com/lsst/qserv-operator/controllers/util"
@@ -94,8 +94,8 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		return result, err
 	}
 
-	objectSpec := reconciler.NewCzarStatefulSetSyncer()
-	result, err = r.reconcile(ctx, qserv, &log, *objectSpec)
+	objectSpecManager := &objects.CzarSpec{}
+	result, err = r.reconcile(ctx, qserv, &log, objectSpecManager)
 	if err != nil {
 		log.Error(err, "Unable to reconcile Czar")
 		return result, err

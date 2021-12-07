@@ -28,10 +28,14 @@ import (
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
-	"github.com/lsst/qserv-operator/controllers/reconciler"
 )
 
-func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log *logr.Logger, controlled reconciler.ObjectSpec) (ctrl.Result, error) {
+type ObjectSpecManager interface {
+	Create(qserv *qservv1beta1.Qserv, object *client.Object) error
+	Update(qserv *qservv1beta1.Qserv, object *client.Object) (bool, error)
+}
+
+func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log *logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
 	// Check if the czar statefulset already exists, if not create a new statefulset.
 	var object client.Object
 	err := r.Get(ctx, types.NamespacedName{Name: qserv.Name + "-" + string(constants.Czar), Namespace: qserv.Namespace}, object)
@@ -52,10 +56,11 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 	}
 
 	// Ensure the statefulset size is the same as the spec.
-	if err = controlled.Update(qserv, &object); err != nil {
-		return ctrl.Result{}, err
+	update, err2 := controlled.Update(qserv, &object)
+	if err2 != nil {
+		return ctrl.Result{}, err2
 	}
-	if object != nil {
+	if update {
 		if err = r.Update(ctx, object); err != nil {
 			return ctrl.Result{}, err
 		}

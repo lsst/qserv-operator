@@ -21,12 +21,11 @@ func getValue(value string, defaultValue string) string {
 	return value
 }
 
-type CzarSpec {
-
+type CzarSpec struct {
 }
 
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
-func GenerateCzarStatefulSet(cr *qservv1beta1.Qserv, object *client.Object) error {
+func (c *CzarSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
 	name := cr.Name + "-" + string(constants.Czar)
 	namespace := cr.Namespace
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
@@ -101,6 +100,11 @@ func GenerateCzarStatefulSet(cr *qservv1beta1.Qserv, object *client.Object) erro
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 	*object = ss
 	return nil
+}
+
+// GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
+func (c *CzarSpec) Update(cr *qservv1beta1.Qserv, object *client.Object) (bool, error) {
+	return false, nil
 }
 
 // GenerateIngestDbStatefulSet generate statefulset specification for Qserv Ingest Database
