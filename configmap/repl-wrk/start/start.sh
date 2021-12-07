@@ -23,9 +23,6 @@ QSERV_WORKER_DB="qservw_worker"
 QSERV_WORKER_DB_USER="root"
 QSERV_WORKER_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
-
-WORKER_ID=$(hostname)
-
 # Required by dataloader
 mkdir -p "$DATA_DIR/ingest"
 
@@ -69,7 +66,7 @@ QSERV_WORKER_DB_URL="mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}
 entrypoint --log-level DEBUG smig-update --worker-connection "mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}@${QSERV_WORKER_DB_DN}:${QSERV_WORKER_DB_PORT}"
 
 
-qserv-replica-worker ${WORKER_ID} --config=${CONFIG} --qserv-worker-db="${QSERV_WORKER_DB_URL}" --debug
+qserv-replica-worker --config=${CONFIG} --qserv-worker-db="${QSERV_WORKER_DB_URL}" --debug
 
 # For debug purpose
 #while true;
