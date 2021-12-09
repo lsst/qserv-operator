@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,20 +20,21 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	qservv1alpha1 "github.com/lsst/qserv-operator/api/v1alpha1"
-	"github.com/lsst/qserv-operator/pkg/constants"
-	"github.com/lsst/qserv-operator/pkg/syncer"
-	"github.com/lsst/qserv-operator/pkg/syncers"
-	"github.com/lsst/qserv-operator/pkg/util"
+	"github.com/go-logr/logr"
+	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
+	"github.com/lsst/qserv-operator/controllers/constants"
+	"github.com/lsst/qserv-operator/controllers/syncer"
+	"github.com/lsst/qserv-operator/controllers/syncers"
+	"github.com/lsst/qserv-operator/controllers/util"
 )
 
 // QservReconciler reconciles a Qserv object
@@ -42,23 +44,33 @@ type QservReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=apps,resources=statefulsets;deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;create;update
-// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
-// +kubebuilder:rbac:groups=core,resources=services;services/finalizers;configmaps;secrets,verbs=create;delete;get;list;patch;update;watch
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="networking.k8s.io",resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=qserv.lsst.org,resources=qservs/finalizers,verbs=update
 
-// Reconcile reconciles a Qserv object
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
+// TODO(user): Modify the Reconcile function to compare the state specified by
+// the Qserv object against the actual cluster state, and then
+// perform operations to make the cluster state reflect the state specified by
+// the user.
+//
+// For more details, check Reconcile and its Result here:
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.9.2/pkg/reconcile
 func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
-
-	log := r.Log.WithValues("qserv", request.NamespacedName)
+	log := log.FromContext(ctx)
+	// TODO check which log to use
+	// log := r.Log.WithValues("qserv", request.NamespacedName)
 
 	log.Info("Reconciling Qserv")
 
 	// Fetch the Qserv instance
-	qserv := &qservv1alpha1.Qserv{}
+	qserv := &qservv1beta1.Qserv{}
 	err := r.Get(ctx, request.NamespacedName, qserv)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -134,10 +146,10 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager setups Qserv controller for k8s
+// SetupWithManager sets up the controller with the Manager.
 func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&qservv1alpha1.Qserv{}).
+		For(&qservv1beta1.Qserv{}).
 		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }
@@ -151,7 +163,7 @@ func (r *QservReconciler) sync(syncers []syncer.Interface) error {
 	return nil
 }
 
-func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1alpha1.Qserv, log *logr.Logger) (ctrl.Result, error) {
+func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log *logr.Logger) (ctrl.Result, error) {
 	// Manage status
 	// See https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html#2-list-all-active-jobs-and-update-the-status
 	listOpts := []client.ListOption{

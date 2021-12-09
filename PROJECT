@@ -1,18 +1,19 @@
 domain: lsst.org
-layout: go.kubebuilder.io/v2
-projectName: qserv-operator
-repo: github.com/lsst/qserv-operator
-resources:
--
-  # TODO(user): Uncomment the below line if this resource implements a controller, else delete it.
-  # controller: true
-  domain: lsst.org
-  group: qserv
-  kind: Qserv
-  # TODO(user): Update the package path for your API if the below value is incorrect.
-  path: github.com/lsst/qserv-operator/api/v1alpha1
-  version: v1alpha1
-version: "3"
+layout:
+- go.kubebuilder.io/v3
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
+projectName: qserv-operator
+repo: github.com/lsst/qserv-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: lsst.org
+  group: qserv
+  kind: Qserv
+  path: github.com/lsst/qserv-operator/api/v1beta1
+  version: v1beta1
+version: "3"

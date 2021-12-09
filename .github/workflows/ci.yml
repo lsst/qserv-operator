@@ -27,8 +27,8 @@ jobs:
         shell: bash
         run: |
           OP_VERSION="$(git describe --always)"
-          echo "OP_VERSION=${OP_VERSION}" >> $GITHUB_ENV
           echo "OP_IMAGE=$(. ./env.build.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
+          echo "OP_IMAGE=${OP_IMAGE}"
       - name: Setup Operator SDK
         run: |
           ./install-operator-sdk.sh
@@ -64,17 +64,17 @@ jobs:
           echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
       - name: Scan operator image
         uses: anchore/scan-action@v3
+        id: scan
         with:
           image: "${{ env.OP_IMAGE }}"
           acs-report-enable: true
-      - name: Inspect action SARIF report
+      - name: Display SARIF report
         run: |
-          ls -l
           cat ${{ steps.scan.outputs.sarif }}
       - name: upload Anchore scan SARIF report
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }} 
+          sarif_file: ${{ steps.scan.outputs.sarif }}
   e2e:
     name: Run e2e tests
     runs-on: ubuntu-20.04
@@ -113,7 +113,7 @@ jobs:
       - name: Install kustomize
         run: |
           VERSION="4.0.5"
-          curl -lO "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/main/hack/install_kustomize.sh"
+          curl -lO "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
           chmod +x ./install_kustomize.sh
           sudo rm -f /usr/local/bin/kustomize
           sudo ./install_kustomize.sh "$VERSION" /usr/local/bin

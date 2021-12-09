@@ -26,13 +26,12 @@
 set -euxo pipefail
 
 INGEST_DIR="/tmp/qserv-ingest"
-
+INGEST_RELEASE="2021.10.1-rc1-8-g700c317"
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
 
-INGEST_RELEASE=""
-
 echo "Run integration tests for Qserv"
-git clone --single-branch -b tickets/DM-29567 https://github.com/lsst-dm/qserv-ingest "$INGEST_DIR"
+git clone https://github.com/lsst-dm/qserv-ingest "$INGEST_DIR"
+git -C "$INGEST_DIR" checkout "$INGEST_RELEASE" -b ci
 "$INGEST_DIR"/prereq-install.sh
 kubectl apply -f "$INGEST_DIR"/tests/dataserver.yaml
 POD=$(kubectl get pods -l app=dataserver -o jsonpath='{.items[0].metadata.name}')
