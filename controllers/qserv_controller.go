@@ -95,7 +95,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	}
 
 	objectSpecManager := &objects.CzarSpec{}
-	result, err = r.reconcile(ctx, qserv, &log, objectSpecManager)
+	result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
 	if err != nil {
 		log.Error(err, "Unable to reconcile Czar")
 		return result, err

@@ -24,6 +24,11 @@ func getValue(value string, defaultValue string) string {
 type CzarSpec struct {
 }
 
+func (c *CzarSpec) CreateObjectSpec() client.Object {
+	var object client.Object = &appsv1.StatefulSet{}
+	return object
+}
+
 // GenerateCzarStatefulSet generate statefulset specification for Qserv Czar
 func (c *CzarSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
 	name := cr.Name + "-" + string(constants.Czar)

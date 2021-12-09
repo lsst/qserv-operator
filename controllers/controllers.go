@@ -31,14 +31,16 @@ import (
 )
 
 type ObjectSpecManager interface {
+	CreateObjectSpec() client.Object
 	Create(qserv *qservv1beta1.Qserv, object *client.Object) error
 	Update(qserv *qservv1beta1.Qserv, object *client.Object) (bool, error)
 }
 
-func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log *logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
+func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
 	// Check if the czar statefulset already exists, if not create a new statefulset.
-	var object client.Object
+	object := controlled.CreateObjectSpec()
 	err := r.Get(ctx, types.NamespacedName{Name: qserv.Name + "-" + string(constants.Czar), Namespace: qserv.Namespace}, object)
+
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Define and create a new object.
@@ -46,6 +48,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 				return ctrl.Result{}, err
 			}
 			controllerutil.SetControllerReference(qserv, object, r.Scheme)
+			log.V(0).Info("Create Qserv")
 			if err = r.Create(ctx, object); err != nil {
 				return ctrl.Result{}, err
 			}
@@ -61,6 +64,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 		return ctrl.Result{}, err2
 	}
 	if update {
+		log.V(0).Info("Update Qserv")
 		if err = r.Update(ctx, object); err != nil {
 			return ctrl.Result{}, err
 		}
