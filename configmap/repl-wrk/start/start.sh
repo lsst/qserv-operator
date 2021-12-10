@@ -23,9 +23,6 @@ QSERV_WORKER_DB="qservw_worker"
 QSERV_WORKER_DB_USER="root"
 QSERV_WORKER_DB_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
-
-WORKER_ID=$(hostname)
-
 # Required by dataloader
 mkdir -p "$DATA_DIR/ingest"
 
