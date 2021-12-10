@@ -295,36 +295,6 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 	return container, volumes.volumeSet
 }
 
-func getDashboardContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
-	container := v1.Container{
-		Name:            string(constants.DashboardName),
-		Image:           cr.Spec.Dashboard.Image,
-		ImagePullPolicy: cr.Spec.ImagePullPolicy,
-		Ports: []v1.ContainerPort{
-			{
-				Name:          constants.DashboardPortName,
-				ContainerPort: constants.DashboardPort,
-				Protocol:      v1.ProtocolTCP,
-			},
-		},
-		Command:        constants.Command,
-		LivenessProbe:  getTCPProbe(constants.DashboardPortName, 10),
-		ReadinessProbe: getTCPProbe(constants.DashboardPortName, 5),
-		VolumeMounts: []v1.VolumeMount{
-			getEtcVolumeMount(constants.DashboardName),
-			getStartVolumeMount(constants.DashboardName),
-		},
-	}
-
-	// Volumes
-	var volumes InstanceVolumeSet
-	volumes.make(cr)
-
-	volumes.addEtcStartVolumes(constants.DashboardName)
-
-	return container, volumes.volumeSet
-}
-
 func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) ([]v1.Container, VolumeSet) {
 
 	spec := cr.Spec
