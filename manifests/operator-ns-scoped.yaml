@@ -2873,7 +2873,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: qserv/qserv-operator:2021.10.1-rc1-24-g4e47884-dirty
+        image: qserv/qserv-operator:2021.10.1-rc1-25-g68f5f4b
         livenessProbe:
           httpGet:
             path: /healthz
