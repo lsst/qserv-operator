@@ -88,7 +88,7 @@ MALLOC_CONF=${OPT_MALLOC_CONF} LD_PRELOAD=${OPT_LD_PRELOAD} \
 qserv-replica-master-http ${PARAMETERS} --config="${CONFIG}" \
   --qserv-czar-db="${QSERV_CZAR_DB_URL}" \
   --debug \
-  --http-root="/usr/local/qserv/dashboard/www"
+  --http-root="/usr/local/qserv/www"
 
 # For debug purpose
 #while true;
