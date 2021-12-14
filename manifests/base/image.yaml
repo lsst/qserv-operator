@@ -4,15 +4,15 @@ metadata:
   name: qserv
 spec:
   czar:
-    image: qserv/lite-qserv:2021.10.1-rc1-85-gf158df17e
+    image: qserv/lite-qserv:2021.10.1-rc1-105-gd2b80a603
     dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
   ingest:
     dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
   replication:
-    image: qserv/lite-qserv:2021.10.1-rc1-85-gf158df17e
+    image: qserv/lite-qserv:2021.10.1-rc1-105-gd2b80a603
     dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
   worker:
-    image: qserv/lite-qserv:2021.10.1-rc1-85-gf158df17e
+    image: qserv/lite-qserv:2021.10.1-rc1-105-gd2b80a603
     dbImage: qserv/lite-mariadb:2021.10.1-lite-rc2
   xrootd:
-    image: qserv/lite-qserv:2021.10.1-rc1-85-gf158df17e
+    image: qserv/lite-qserv:2021.10.1-rc1-105-gd2b80a603
