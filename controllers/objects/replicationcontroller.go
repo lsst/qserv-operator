@@ -13,6 +13,10 @@ import (
 type ReplicationControllerSpec struct {
 }
 
+func (c *ReplicationControllerSpec) GetName() string {
+	return string(constants.ReplCtl)
+}
+
 func (c *ReplicationControllerSpec) Initialize() client.Object {
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
@@ -20,7 +24,7 @@ func (c *ReplicationControllerSpec) Initialize() client.Object {
 
 // Create generate statefulset specification for Qserv Czar
 func (c *ReplicationControllerSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
-	name := cr.Name + "-" + string(constants.ReplCtlName)
+	name := cr.Name + "-" + c.GetName()
 	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)

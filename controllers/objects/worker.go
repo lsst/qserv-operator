@@ -11,35 +11,40 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type CzarSpec struct {
+type WorkerSpec struct {
 }
 
-func (c *CzarSpec) GetName() string {
-	return string(constants.Czar)
+func (c *WorkerSpec) GetName() string {
+	return string(constants.Worker)
 }
 
-func (c *CzarSpec) Initialize() client.Object {
+func (c *WorkerSpec) Initialize() client.Object {
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
-func (c *CzarSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
+func (c *WorkerSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
 	name := cr.Name + "-" + c.GetName()
 	namespace := cr.Namespace
-	labels := util.GetComponentLabels(constants.Czar, cr.Name)
+
+	labels := util.GetComponentLabels(constants.Worker, cr.Name)
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	storageClass := getValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
-	storageSize := getValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
+	replicas := cr.Spec.Worker.Replicas
 
-	initContainer, initVolumes := getInitContainer(cr, constants.Czar)
-	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Czar)
-	proxyContainer, proxyVolumes := getProxyContainer(cr)
+	storageClass := getValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
+	storageSize := getValue(cr.Spec.Worker.StorageCapacity, cr.Spec.StorageCapacity)
 
+	initContainer, initVolumes := getInitContainer(cr, constants.Worker)
+	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Worker)
+	xrootdContainers, xrootdVolumes := getXrootdContainers(cr, constants.Worker)
+	replicationWrkContainer, replicationWrkVolumes := getReplicationWrkContainer(cr)
+
+	// Volumes
 	var volumes VolumeSet
-	volumes.make(initVolumes, mariadbVolumes, proxyVolumes)
+	volumes.make(initVolumes, mariadbVolumes, replicationWrkVolumes, xrootdVolumes)
 
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -48,8 +53,9 @@ func (c *CzarSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
 			Labels:    labels,
 		},
 		Spec: appsv1.StatefulSetSpec{
-			ServiceName: name,
-			Replicas:    &cr.Spec.Czar.Replicas,
+			PodManagementPolicy: "Parallel",
+			ServiceName:         name,
+			Replicas:            &replicas,
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
@@ -61,13 +67,15 @@ func (c *CzarSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
-					Affinity: &cr.Spec.Czar.Affinity,
+					Affinity: &cr.Spec.Worker.Affinity,
 					InitContainers: []v1.Container{
 						initContainer,
 					},
 					Containers: []v1.Container{
 						mariadbContainer,
-						proxyContainer,
+						replicationWrkContainer,
+						xrootdContainers[0],
+						xrootdContainers[1],
 					},
 					SecurityContext: &v1.PodSecurityContext{
 						FSGroup: &constants.QservGID,
@@ -91,17 +99,17 @@ func (c *CzarSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
 					},
 				},
 			},
-		},
-	}
+		}}
 
 	addDebuggerContainer(reqLogger, ss, cr)
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
+
 	*object = ss
 	return nil
 }
 
 // Update update statefulset specification for Qserv Czar
-func (c *CzarSpec) Update(cr *qservv1beta1.Qserv, object *client.Object) (bool, error) {
+func (c *WorkerSpec) Update(cr *qservv1beta1.Qserv, object *client.Object) (bool, error) {
 	return false, nil
 }

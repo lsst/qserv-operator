@@ -27,19 +27,20 @@ import (
 
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
-	"github.com/lsst/qserv-operator/controllers/constants"
 )
 
 type ObjectSpecManager interface {
-	Initialize() client.Object
 	Create(qserv *qservv1beta1.Qserv, object *client.Object) error
+	GetName() string
+	Initialize() client.Object
 	Update(qserv *qservv1beta1.Qserv, object *client.Object) (bool, error)
 }
 
 func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
 	// Check if the czar statefulset already exists, if not create a new statefulset.
 	object := controlled.Initialize()
-	err := r.Get(ctx, types.NamespacedName{Name: qserv.Name + "-" + string(constants.Czar), Namespace: qserv.Namespace}, object)
+	objectName := qserv.Name + "-" + controlled.GetName()
+	err := r.Get(ctx, types.NamespacedName{Name: objectName, Namespace: qserv.Namespace}, object)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -48,7 +49,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 				return ctrl.Result{}, err
 			}
 			controllerutil.SetControllerReference(qserv, object, r.Scheme)
-			log.V(0).Info("Create Qserv")
+			log.V(0).Info("Create %s", objectName)
 			if err = r.Create(ctx, object); err != nil {
 				return ctrl.Result{}, err
 			}

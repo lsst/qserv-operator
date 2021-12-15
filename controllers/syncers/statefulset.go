@@ -22,12 +22,6 @@ func NewReplicationDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, s
 	return syncer.NewObjectSyncer("ReplicationDbStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
 }
 
-// NewWorkerStatefulSetSyncer returns a new sync.Interface for reconciling Qserv Worker StatefulSet
-func NewWorkerStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	statefulSet := objects.GenerateWorkerStatefulSet(r)
-	return syncer.NewObjectSyncer("WorkerStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
-}
-
 // NewXrootdStatefulSetSyncer returns a new sync.Interface for reconciling xrootd redirectors cluster StatefulSet
 func NewXrootdStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	statefulSet := objects.GenerateXrootdStatefulSet(r)
