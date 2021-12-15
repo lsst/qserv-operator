@@ -94,11 +94,16 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		return result, err
 	}
 
-	objectSpecManager := &objects.CzarSpec{}
-	result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
-	if err != nil {
-		log.Error(err, "Unable to reconcile Czar")
-		return result, err
+	objectSpecManagers := []ObjectSpecManager{
+		&objects.CzarSpec{},
+		&objects.ReplicationControllerSpec{},
+	}
+	for _, objectSpecManager := range objectSpecManagers {
+		result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
+		if err != nil {
+			log.Error(err, "Unable to reconcile Czar")
+			return result, err
+		}
 	}
 
 	// Manage syncronisation
@@ -106,7 +111,6 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewWorkerStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewReplicationCtlStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewIngestDbServiceSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewIngestDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewReplicationDbServiceSyncer(qserv, r.Client, r.Scheme),

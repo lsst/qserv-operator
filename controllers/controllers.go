@@ -31,14 +31,14 @@ import (
 )
 
 type ObjectSpecManager interface {
-	CreateObjectSpec() client.Object
+	Initialize() client.Object
 	Create(qserv *qservv1beta1.Qserv, object *client.Object) error
 	Update(qserv *qservv1beta1.Qserv, object *client.Object) (bool, error)
 }
 
 func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
 	// Check if the czar statefulset already exists, if not create a new statefulset.
-	object := controlled.CreateObjectSpec()
+	object := controlled.Initialize()
 	err := r.Get(ctx, types.NamespacedName{Name: qserv.Name + "-" + string(constants.Czar), Namespace: qserv.Namespace}, object)
 
 	if err != nil {

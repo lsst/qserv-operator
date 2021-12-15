@@ -16,12 +16,6 @@ func NewIngestDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme
 	return syncer.NewObjectSyncer("IngestDbStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
 }
 
-// NewReplicationCtlStatefulSetSyncer returns a new sync.Interface for reconciling Qserv replication controller StatefulSet
-func NewReplicationCtlStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	statefulSet := objects.GenerateReplicationCtlStatefulSet(r)
-	return syncer.NewObjectSyncer("ReplicationCtlStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
-}
-
 // NewReplicationDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv replication Db StatefulSet
 func NewReplicationDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	statefulSet := objects.GenerateReplicationDbStatefulSet(r)
