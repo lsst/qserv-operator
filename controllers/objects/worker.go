@@ -1,6 +1,8 @@
 package objects
 
 import (
+	"fmt"
+
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
@@ -24,7 +26,7 @@ func (c *WorkerSpec) Initialize() client.Object {
 }
 
 // Create generate statefulset specification for Qserv Czar
-func (c *WorkerSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
+func (c *WorkerSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
 	name := cr.Name + "-" + c.GetName()
 	namespace := cr.Namespace
 
@@ -105,11 +107,21 @@ func (c *WorkerSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
-	*object = ss
-	return nil
+	return ss, nil
 }
 
 // Update update statefulset specification for Qserv Czar
-func (c *WorkerSpec) Update(cr *qservv1beta1.Qserv, object *client.Object) (bool, error) {
+func (c *WorkerSpec) Update(qserv *qservv1beta1.Qserv, object client.Object) (bool, error) {
+
+	// Ensure the deployment size is the same as the spec.
+	replicas := qserv.Spec.Worker.Replicas
+	fmt.Println(replicas)
+	ss := object.(*appsv1.StatefulSet)
+
+	if *ss.Spec.Replicas != replicas {
+		ss.Spec.Replicas = &replicas
+		return true, nil
+	}
+
 	return false, nil
 }

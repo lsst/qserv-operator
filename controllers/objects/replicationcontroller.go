@@ -23,7 +23,7 @@ func (c *ReplicationControllerSpec) Initialize() client.Object {
 }
 
 // Create generate statefulset specification for Qserv Czar
-func (c *ReplicationControllerSpec) Create(cr *qservv1beta1.Qserv, object *client.Object) error {
+func (c *ReplicationControllerSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
 	name := cr.Name + "-" + c.GetName()
 	namespace := cr.Namespace
 
@@ -73,11 +73,10 @@ func (c *ReplicationControllerSpec) Create(cr *qservv1beta1.Qserv, object *clien
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 
-	*object = ss
-	return nil
+	return ss, nil
 }
 
 // Update update statefulset specification for Qserv Czar
-func (c *ReplicationControllerSpec) Update(cr *qservv1beta1.Qserv, object *client.Object) (bool, error) {
+func (c *ReplicationControllerSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
 	return false, nil
 }

@@ -30,10 +30,10 @@ import (
 )
 
 type ObjectSpecManager interface {
-	Create(qserv *qservv1beta1.Qserv, object *client.Object) error
+	Create(qserv *qservv1beta1.Qserv) (client.Object, error)
 	GetName() string
 	Initialize() client.Object
-	Update(qserv *qservv1beta1.Qserv, object *client.Object) (bool, error)
+	Update(qserv *qservv1beta1.Qserv, object client.Object) (bool, error)
 }
 
 func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
@@ -45,7 +45,8 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Define and create a new object.
-			if err = controlled.Create(qserv, &object); err != nil {
+			object, err = controlled.Create(qserv)
+			if err != nil {
 				return ctrl.Result{}, err
 			}
 			controllerutil.SetControllerReference(qserv, object, r.Scheme)
@@ -60,7 +61,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 	}
 
 	// Ensure the statefulset size is the same as the spec.
-	update, err2 := controlled.Update(qserv, &object)
+	update, err2 := controlled.Update(qserv, object)
 	if err2 != nil {
 		return ctrl.Result{}, err2
 	}
