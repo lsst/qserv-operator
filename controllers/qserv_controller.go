@@ -64,10 +64,11 @@ type QservReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.9.2/pkg/reconcile
 func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
+	log.V(5).Enabled()
 	// TODO check which log to use
 	// log := r.Log.WithValues("qserv", request.NamespacedName)
 
-	log.Info("Reconciling Qserv")
+	log.V(0).Info("Reconciling Qserv")
 
 	// Fetch the Qserv instance
 	qserv := &qservv1beta1.Qserv{}
