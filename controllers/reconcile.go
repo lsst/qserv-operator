@@ -40,7 +40,8 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 	// Check if the czar statefulset already exists, if not create a new statefulset.
 	object := controlled.Initialize()
 	objectName := qserv.Name + "-" + controlled.GetName()
-	err := r.Get(ctx, types.NamespacedName{Name: objectName, Namespace: qserv.Namespace}, object)
+	key := types.NamespacedName{Name: objectName, Namespace: qserv.Namespace}
+	err := r.Get(ctx, key, object)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -50,7 +51,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 				return ctrl.Result{}, err
 			}
 			controllerutil.SetControllerReference(qserv, object, r.Scheme)
-			log.V(0).Info("Create %s", objectName)
+			log.V(0).Info("Create ", "key", key)
 			if err = r.Create(ctx, object); err != nil {
 				return ctrl.Result{}, err
 			}
@@ -66,7 +67,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 		return ctrl.Result{}, err2
 	}
 	if update {
-		log.V(0).Info("Update Qserv")
+		log.V(0).Info("Update ", "key", key)
 		if err = r.Update(ctx, object); err != nil {
 			return ctrl.Result{}, err
 		}
