@@ -104,21 +104,35 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 	}
 }
 
-// GenerateContainerConfigMap generate 2 configmaps for Qserv containers
+type ContainerConfigMapSpec struct {
+	ContainerName constants.ContainerName
+	Subdir        string
+}
+
+func (c *ContainerConfigMapSpec) Initialize() client.Object {
+	var object client.Object = &v1.ConfigMap{}
+	return object
+}
+
+func (c *ContainerConfigMapSpec) GetName() string {
+	return fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
+}
+
+// Create can generate 2 kind of configmaps for Qserv containers
 // one with startup scripts and one with configuration files
-func GenerateContainerConfigMap(r *qservv1beta1.Qserv, container constants.ContainerName, subdir string) *v1.ConfigMap {
+func (c *ContainerConfigMapSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
 
-	tmplData := generateTemplateData(r)
+	tmplData := generateTemplateData(cr)
 
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := util.PrefixConfigmap(r, fmt.Sprintf("%s-%s", container, subdir))
-	namespace := r.Namespace
+	name := util.PrefixConfigmap(cr, c.GetName())
+	namespace := cr.Namespace
 
-	labels := util.GetContainerLabels(container, r.Name)
-	root := filepath.Join("/", "configmap", string(container), subdir)
+	labels := util.GetContainerLabels(c.ContainerName, cr.Name)
+	root := filepath.Join("/", "configmap", string(c.ContainerName), c.Subdir)
 
-	return &v1.ConfigMap{
+	cm := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -126,6 +140,12 @@ func GenerateContainerConfigMap(r *qservv1beta1.Qserv, container constants.Conta
 		},
 		Data: scanDir(root, reqLogger, &tmplData),
 	}
+	return cm, nil
+}
+
+// Update update configmap specification for Qserv containers
+func (c *ContainerConfigMapSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
+	return false, nil
 }
 
 // GenerateSQLConfigMap generate configmaps for initContainers in charge of databases initializations

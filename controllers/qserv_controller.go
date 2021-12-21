@@ -101,6 +101,24 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		&objects.ReplicationControllerSpec{},
 		&objects.WorkerSpec{},
 	}
+
+	// Manage "*-etc" and "*-start" configmaps
+	for _, containerName := range constants.ContainerConfigmaps {
+		for _, subdir := range []string{"etc", "start"} {
+			cmSpec := objects.ContainerConfigMapSpec{
+				ContainerName: containerName,
+				Subdir:        subdir,
+			}
+			objectSpecManagers = append(objectSpecManagers, &cmSpec)
+		}
+	}
+	cmSpec := objects.ContainerConfigMapSpec{
+		ContainerName: constants.InitDbName,
+		Subdir:        "start",
+	}
+	objectSpecManagers = append(objectSpecManagers, &cmSpec)
+
+	// Reconcile all objects
 	for _, objectSpecManager := range objectSpecManagers {
 		result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
 		if err != nil {
@@ -121,13 +139,6 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	}
 
 	qservSyncers = append(syncers.NewQservServicesSyncer(qserv, r.Client, r.Scheme), qservSyncers...)
-
-	for _, configmapClass := range constants.ContainerConfigmaps {
-		for _, subpath := range []string{"etc", "start"} {
-			qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, configmapClass, subpath))
-		}
-	}
-	qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, constants.InitDbName, "start"))
 
 	for _, db := range constants.Databases {
 		qservSyncers = append(qservSyncers, syncers.NewSQLConfigMapSyncer(qserv, r.Client, r.Scheme, db))
