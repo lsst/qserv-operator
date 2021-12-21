@@ -14,6 +14,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type templateData struct {
@@ -151,8 +152,20 @@ func GenerateSQLConfigMap(r *qservv1beta1.Qserv, db constants.PodClass) *v1.Conf
 	}
 }
 
-// GenerateDotQservConfigMap generate configmap for Qserv client configuration
-func GenerateDotQservConfigMap(cr *qservv1beta1.Qserv) *v1.ConfigMap {
+type DotQservConfigMapSpec struct {
+}
+
+func (c *DotQservConfigMapSpec) GetName() string {
+	return string(constants.DotQserv)
+}
+
+func (c *DotQservConfigMapSpec) Initialize() client.Object {
+	var object client.Object = &v1.ConfigMap{}
+	return object
+}
+
+// Create generate configmap for Qserv client configuration
+func (c *DotQservConfigMapSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
 
 	tmplData := generateTemplateData(cr)
 
@@ -164,7 +177,7 @@ func GenerateDotQservConfigMap(cr *qservv1beta1.Qserv) *v1.ConfigMap {
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 	root := filepath.Join("/", "configmap", "dot-qserv")
 
-	return &v1.ConfigMap{
+	cm := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -172,4 +185,11 @@ func GenerateDotQservConfigMap(cr *qservv1beta1.Qserv) *v1.ConfigMap {
 		},
 		Data: scanDir(root, reqLogger, &tmplData),
 	}
+
+	return cm, nil
+}
+
+// Update update statefulset specification for Qserv Czar
+func (c *DotQservConfigMapSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
+	return false, nil
 }

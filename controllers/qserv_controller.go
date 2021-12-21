@@ -97,6 +97,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 
 	objectSpecManagers := []ObjectSpecManager{
 		&objects.CzarSpec{},
+		&objects.DotQservConfigMapSpec{},
 		&objects.ReplicationControllerSpec{},
 		&objects.WorkerSpec{},
 	}
@@ -110,7 +111,6 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 
 	// Manage syncronisation
 	qservSyncers := []syncer.Interface{
-		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewIngestDbServiceSyncer(qserv, r.Client, r.Scheme),
 		syncers.NewIngestDbStatefulSetSyncer(qserv, r.Client, r.Scheme),

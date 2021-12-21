@@ -22,14 +22,6 @@ func NewContainerConfigMapSyncer(r *qservv1beta1.Qserv, c client.Client, scheme 
 	})
 }
 
-// NewDotQservConfigMapSyncer generate configmap specification for Qserv clients
-func NewDotQservConfigMapSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	cm := objects.GenerateDotQservConfigMap(r)
-	return syncer.NewObjectSyncer("DotQservConfigMap", r, cm, c, scheme, func() error {
-		return nil
-	})
-}
-
 // NewSQLConfigMapSyncer generate configmap specification for initContainer in charge of database initialization
 func NewSQLConfigMapSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme, db constants.PodClass) syncer.Interface {
 	cm := objects.GenerateSQLConfigMap(r, db)

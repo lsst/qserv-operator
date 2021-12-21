@@ -19,6 +19,7 @@ const (
 	ProxyPortName = string(ProxyName)
 
 	QservName = "qserv"
+	DotQserv  = "dot-qserv"
 
 	ReplicationControllerPort     = 8080
 	ReplicationControllerPortName = "http"
