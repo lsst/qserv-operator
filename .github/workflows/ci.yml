@@ -68,6 +68,7 @@ jobs:
         with:
           image: "${{ env.OP_IMAGE }}"
           acs-report-enable: true
+          fail-build: false
       - name: Display SARIF report
         run: |
           cat ${{ steps.scan.outputs.sarif }}

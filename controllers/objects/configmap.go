@@ -105,28 +105,31 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 }
 
 type ContainerConfigMapSpec struct {
+	qserv         *qservv1beta1.Qserv
 	ContainerName constants.ContainerName
 	Subdir        string
 }
 
-func (c *ContainerConfigMapSpec) Initialize() client.Object {
+func (c *ContainerConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
 	var object client.Object = &v1.ConfigMap{}
 	return object
 }
 
 func (c *ContainerConfigMapSpec) GetName() string {
-	return fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
+	suffix := fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
+	return util.PrefixConfigmap(c.qserv, suffix)
 }
 
 // Create can generate 2 kind of configmaps for Qserv containers
 // one with startup scripts and one with configuration files
-func (c *ContainerConfigMapSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
-
+func (c *ContainerConfigMapSpec) Create() (client.Object, error) {
+	cr := c.qserv
 	tmplData := generateTemplateData(cr)
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := util.PrefixConfigmap(cr, c.GetName())
+	name := c.GetName()
 	namespace := cr.Namespace
 
 	labels := util.GetContainerLabels(c.ContainerName, cr.Name)
@@ -144,7 +147,7 @@ func (c *ContainerConfigMapSpec) Create(cr *qservv1beta1.Qserv) (client.Object, 
 }
 
 // Update update configmap specification for Qserv containers
-func (c *ContainerConfigMapSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
+func (c *ContainerConfigMapSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
@@ -173,25 +176,27 @@ func GenerateSQLConfigMap(r *qservv1beta1.Qserv, db constants.PodClass) *v1.Conf
 }
 
 type DotQservConfigMapSpec struct {
+	qserv *qservv1beta1.Qserv
 }
 
 func (c *DotQservConfigMapSpec) GetName() string {
-	return string(constants.DotQserv)
+	return util.PrefixConfigmap(c.qserv, constants.DotQserv)
 }
 
-func (c *DotQservConfigMapSpec) Initialize() client.Object {
+func (c *DotQservConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
 	var object client.Object = &v1.ConfigMap{}
 	return object
 }
 
 // Create generate configmap for Qserv client configuration
-func (c *DotQservConfigMapSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
-
+func (c *DotQservConfigMapSpec) Create() (client.Object, error) {
+	cr := c.qserv
 	tmplData := generateTemplateData(cr)
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := util.PrefixConfigmap(cr, "dot-qserv")
+	name := c.GetName()
 	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
@@ -209,7 +214,7 @@ func (c *DotQservConfigMapSpec) Create(cr *qservv1beta1.Qserv) (client.Object, e
 	return cm, nil
 }
 
-// Update update statefulset specification for Qserv Czar
-func (c *DotQservConfigMapSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
+// Update update configmap for Qserv client configuration
+func (c *DotQservConfigMapSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }

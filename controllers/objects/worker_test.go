@@ -19,10 +19,11 @@ func TestUpdate(t *testing.T) {
 	qserv.Spec.StorageCapacity = "10Gi"
 	qserv.Spec.Worker.Replicas = 1
 
-	object, _ := spec.Create(qserv)
+	spec.Initialize(qserv)
+	object, _ := spec.Create()
 
 	qserv.Spec.Worker.Replicas = 1
-	spec.Update(qserv, object)
+	spec.Update(object)
 
 	ss := object.(*appsv1.StatefulSet)
 

@@ -11,20 +11,23 @@ import (
 )
 
 type ReplicationControllerSpec struct {
+	qserv *qservv1beta1.Qserv
 }
 
 func (c *ReplicationControllerSpec) GetName() string {
-	return string(constants.ReplCtl)
+	return c.qserv.Name + "-" + string(constants.ReplCtl)
 }
 
-func (c *ReplicationControllerSpec) Initialize() client.Object {
+func (c *ReplicationControllerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
-func (c *ReplicationControllerSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
-	name := cr.Name + "-" + c.GetName()
+func (c *ReplicationControllerSpec) Create() (client.Object, error) {
+	name := c.GetName()
+	cr := c.qserv
 	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
@@ -77,6 +80,55 @@ func (c *ReplicationControllerSpec) Create(cr *qservv1beta1.Qserv) (client.Objec
 }
 
 // Update update statefulset specification for Qserv Czar
-func (c *ReplicationControllerSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
+func (c *ReplicationControllerSpec) Update(object client.Object) (bool, error) {
+	return false, nil
+}
+
+type ReplicationControllerServiceSpec struct {
+	qserv *qservv1beta1.Qserv
+}
+
+func (c *ReplicationControllerServiceSpec) GetName() string {
+	return util.GetReplCtlServiceName(c.qserv)
+}
+
+func (c *ReplicationControllerServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
+	var object client.Object = &v1.Service{}
+	return object
+}
+
+// Create generate service specification for Qserv Replication Controller
+func (c *ReplicationControllerServiceSpec) Create() (client.Object, error) {
+	name := c.GetName()
+	cr := c.qserv
+	namespace := cr.Namespace
+
+	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
+
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.ReplicationControllerPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.ReplicationControllerPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+	return service, nil
+}
+
+// Update update service specification for Qserv Replication Controller
+func (c *ReplicationControllerServiceSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }

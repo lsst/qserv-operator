@@ -14,20 +14,23 @@ import (
 )
 
 type WorkerSpec struct {
+	qserv *qservv1beta1.Qserv
 }
 
 func (c *WorkerSpec) GetName() string {
-	return string(constants.Worker)
+	return c.qserv.Name + "-" + string(constants.Worker)
 }
 
-func (c *WorkerSpec) Initialize() client.Object {
+func (c *WorkerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
-func (c *WorkerSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
-	name := cr.Name + "-" + c.GetName()
+func (c *WorkerSpec) Create() (client.Object, error) {
+	name := c.GetName()
+	cr := c.qserv
 	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.Worker, cr.Name)
@@ -111,10 +114,10 @@ func (c *WorkerSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
 }
 
 // Update update statefulset specification for Qserv Czar
-func (c *WorkerSpec) Update(qserv *qservv1beta1.Qserv, object client.Object) (bool, error) {
+func (c *WorkerSpec) Update(object client.Object) (bool, error) {
 
 	// Ensure the deployment size is the same as the spec.
-	replicas := qserv.Spec.Worker.Replicas
+	replicas := c.qserv.Spec.Worker.Replicas
 	fmt.Println(replicas)
 	ss := object.(*appsv1.StatefulSet)
 

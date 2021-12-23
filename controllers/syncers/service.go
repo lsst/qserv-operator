@@ -26,12 +26,6 @@ func NewQservServicesSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runt
 	return syncers
 }
 
-// NewReplicationCtlServiceSyncer returns a new sync.Interface for reconciling Replication Controller Service
-func NewReplicationCtlServiceSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := objects.GenerateReplicationCtlService(r)
-	return syncer.NewObjectSyncer("ReplicationCtlService", r, svc, c, scheme, util.NoFunc)
-}
-
 // NewReplicationDbServiceSyncer returns a new sync.Interface for reconciling Replication Database Service
 func NewReplicationDbServiceSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	svc := objects.GenerateReplicationDbService(r)

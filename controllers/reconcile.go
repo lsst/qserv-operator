@@ -30,23 +30,22 @@ import (
 )
 
 type ObjectSpecManager interface {
-	Create(qserv *qservv1beta1.Qserv) (client.Object, error)
+	Create() (client.Object, error)
 	GetName() string
-	Initialize() client.Object
-	Update(qserv *qservv1beta1.Qserv, object client.Object) (bool, error)
+	Initialize(qserv *qservv1beta1.Qserv) client.Object
+	Update(object client.Object) (bool, error)
 }
 
 func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
 	// Check if the czar statefulset already exists, if not create a new statefulset.
-	object := controlled.Initialize()
-	objectName := qserv.Name + "-" + controlled.GetName()
-	key := types.NamespacedName{Name: objectName, Namespace: qserv.Namespace}
+	object := controlled.Initialize(qserv)
+	key := types.NamespacedName{Name: controlled.GetName(), Namespace: qserv.Namespace}
 	err := r.Get(ctx, key, object)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Define and create a new object.
-			object, err = controlled.Create(qserv)
+			object, err = controlled.Create()
 			if err != nil {
 				return ctrl.Result{}, err
 			}
@@ -62,7 +61,7 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 	}
 
 	// Ensure the statefulset size is the same as the spec.
-	update, err2 := controlled.Update(qserv, object)
+	update, err2 := controlled.Update(object)
 	if err2 != nil {
 		return ctrl.Result{}, err2
 	}

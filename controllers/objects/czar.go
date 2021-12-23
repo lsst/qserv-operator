@@ -12,20 +12,23 @@ import (
 )
 
 type CzarSpec struct {
+	qserv *qservv1beta1.Qserv
 }
 
 func (c *CzarSpec) GetName() string {
-	return string(constants.Czar)
+	return c.qserv.Name + "-" + string(constants.Czar)
 }
 
-func (c *CzarSpec) Initialize() client.Object {
+func (c *CzarSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
-func (c *CzarSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
-	name := cr.Name + "-" + c.GetName()
+func (c *CzarSpec) Create() (client.Object, error) {
+	name := c.GetName()
+	cr := c.qserv
 	namespace := cr.Namespace
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
@@ -101,6 +104,6 @@ func (c *CzarSpec) Create(cr *qservv1beta1.Qserv) (client.Object, error) {
 }
 
 // Update update statefulset specification for Qserv Czar
-func (c *CzarSpec) Update(cr *qservv1beta1.Qserv, object client.Object) (bool, error) {
+func (c *CzarSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }

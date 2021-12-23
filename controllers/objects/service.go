@@ -99,34 +99,6 @@ func GenerateIngestDbService(cr *qservv1beta1.Qserv) *v1.Service {
 	}
 }
 
-// GenerateReplicationCtlService generate service specification for Qserv Replication Controller
-func GenerateReplicationCtlService(cr *qservv1beta1.Qserv) *v1.Service {
-	name := util.GetReplCtlServiceName(cr)
-	namespace := cr.Namespace
-
-	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
-
-	return &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: v1.ServiceSpec{
-			Type:      v1.ServiceTypeClusterIP,
-			ClusterIP: v1.ClusterIPNone,
-			Ports: []v1.ServicePort{
-				{
-					Port:     constants.ReplicationControllerPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.ReplicationControllerPortName,
-				},
-			},
-			Selector: labels,
-		},
-	}
-}
-
 // GenerateReplicationDbService generate service specification for Qserv Replication Controller database
 func GenerateReplicationDbService(cr *qservv1beta1.Qserv) *v1.Service {
 	name := util.GetName(cr, string(constants.ReplDb))
