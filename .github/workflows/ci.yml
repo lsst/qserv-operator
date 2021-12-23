@@ -49,6 +49,8 @@ jobs:
   image-analysis:
     name: Analyze image
     runs-on: ubuntu-18.04
+    permissions:
+      security-events: write
     needs: build
     steps:
       - name: Checkout code

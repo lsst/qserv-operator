@@ -10,12 +10,6 @@ import (
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
-// NewReplicationDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv replication Db StatefulSet
-func NewReplicationDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	statefulSet := objects.GenerateReplicationDbStatefulSet(r)
-	return syncer.NewObjectSyncer("ReplicationDbStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
-}
-
 // NewXrootdStatefulSetSyncer returns a new sync.Interface for reconciling xrootd redirectors cluster StatefulSet
 func NewXrootdStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	statefulSet := objects.GenerateXrootdStatefulSet(r)

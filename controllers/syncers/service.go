@@ -20,12 +20,6 @@ func NewQservServicesSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runt
 	return syncers
 }
 
-// NewReplicationDbServiceSyncer returns a new sync.Interface for reconciling Replication Database Service
-func NewReplicationDbServiceSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := objects.GenerateReplicationDbService(r)
-	return syncer.NewObjectSyncer("ReplicationDbService", r, svc, c, scheme, util.NoFunc)
-}
-
 // NewXrootdRedirectorServiceSyncer returns a new sync.Interface for reconciling Xrootd Redirector Service
 func NewXrootdRedirectorServiceSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	svc := objects.GenerateXrootdRedirectorService(r)
