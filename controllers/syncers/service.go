@@ -10,12 +10,6 @@ import (
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
-// NewIngestDbServiceSyncer returns a new sync.Interface for reconciling Ingest Database Service
-func NewIngestDbServiceSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	svc := objects.GenerateIngestDbService(r)
-	return syncer.NewObjectSyncer("IngestDbService", r, svc, c, scheme, util.NoFunc)
-}
-
 // NewQservServicesSyncer returns a new []sync.Interface for reconciling all Qserv services
 func NewQservServicesSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) []syncer.Interface {
 	syncers := []syncer.Interface{

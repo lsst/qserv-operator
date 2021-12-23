@@ -10,12 +10,6 @@ import (
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
-// NewIngestDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv ingest Db StatefulSet
-func NewIngestDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	statefulSet := objects.GenerateIngestDbStatefulSet(r)
-	return syncer.NewObjectSyncer("IngestDbStatefulSet", r, statefulSet, c, scheme, util.NoFunc)
-}
-
 // NewReplicationDbStatefulSetSyncer returns a new sync.Interface for reconciling Qserv replication Db StatefulSet
 func NewReplicationDbStatefulSetSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 	statefulSet := objects.GenerateReplicationDbStatefulSet(r)
