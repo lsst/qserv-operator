@@ -104,6 +104,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		&objects.ReplicationControllerSpec{},
 		&objects.ReplicationDatabaseSpec{},
 		&objects.ReplicationDatabaseServiceSpec{},
+		&objects.WorkerServiceSpec{},
 		&objects.WorkerSpec{},
 		&objects.XrootdServiceSpec{},
 		&objects.XrootdSpec{},

@@ -15,7 +15,7 @@ type ReplicationControllerSpec struct {
 }
 
 func (c *ReplicationControllerSpec) GetName() string {
-	return c.qserv.Name + "-" + string(constants.ReplCtl)
+	return util.GetName(c.qserv, string(constants.ReplCtl))
 }
 
 func (c *ReplicationControllerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {

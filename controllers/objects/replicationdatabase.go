@@ -16,7 +16,7 @@ type ReplicationDatabaseSpec struct {
 }
 
 func (c *ReplicationDatabaseSpec) GetName() string {
-	return c.qserv.Name + "-" + string(constants.ReplDbName)
+	return util.GetName(c.qserv, string(constants.ReplDbName))
 }
 
 func (c *ReplicationDatabaseSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {

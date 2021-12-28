@@ -19,7 +19,7 @@ type CzarSpec struct {
 }
 
 func (c *CzarSpec) GetName() string {
-	return c.qserv.Name + "-" + string(constants.Czar)
+	return util.GetName(c.qserv, string(constants.Czar))
 }
 
 func (c *CzarSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {

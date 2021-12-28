@@ -70,31 +70,3 @@ func GenerateCzarService(cr *qservv1beta1.Qserv) *v1.Service {
 		},
 	}
 }
-
-// GenerateWorkerService generates headless service for Qserv workers StatefulSet
-func GenerateWorkerService(cr *qservv1beta1.Qserv) *v1.Service {
-	name := util.GetWorkerServiceName(cr)
-	namespace := cr.Namespace
-
-	labels := util.GetComponentLabels(constants.Worker, cr.Name)
-
-	return &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Spec: v1.ServiceSpec{
-			Type:      v1.ServiceTypeClusterIP,
-			ClusterIP: v1.ClusterIPNone,
-			Ports: []v1.ServicePort{
-				{
-					Port:     constants.XrootdPort,
-					Protocol: v1.ProtocolTCP,
-					Name:     constants.XrootdPortName,
-				},
-			},
-			Selector: labels,
-		},
-	}
-}

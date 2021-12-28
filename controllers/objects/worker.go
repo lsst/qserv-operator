@@ -18,7 +18,7 @@ type WorkerSpec struct {
 }
 
 func (c *WorkerSpec) GetName() string {
-	return c.qserv.Name + "-" + string(constants.Worker)
+	return util.GetName(c.qserv, string(constants.Worker))
 }
 
 func (c *WorkerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
@@ -113,7 +113,7 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Czar
+// Update update statefulset specification for Qserv Worker
 func (c *WorkerSpec) Update(object client.Object) (bool, error) {
 
 	// Ensure the deployment size is the same as the spec.
@@ -126,5 +126,55 @@ func (c *WorkerSpec) Update(object client.Object) (bool, error) {
 		return true, nil
 	}
 
+	return false, nil
+}
+
+// WorkerServiceSpec allows to reconcile xrootd service
+type WorkerServiceSpec struct {
+	qserv *qservv1beta1.Qserv
+}
+
+func (c *WorkerServiceSpec) GetName() string {
+	return util.GetName(c.qserv, string(constants.Worker))
+}
+
+func (c *WorkerServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
+	var object client.Object = &v1.Service{}
+	return object
+}
+
+// Create generates headless service for Qserv workers StatefulSet
+func (c *WorkerServiceSpec) Create() (client.Object, error) {
+	cr := c.qserv
+	name := c.GetName()
+	namespace := cr.Namespace
+
+	labels := util.GetComponentLabels(constants.Worker, cr.Name)
+
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.XrootdPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.XrootdPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+	return service, nil
+}
+
+// Update update service specification for Qserv workers
+func (c *WorkerServiceSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }

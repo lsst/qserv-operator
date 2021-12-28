@@ -15,7 +15,6 @@ func NewQservServicesSyncer(r *qservv1beta1.Qserv, c client.Client, scheme *runt
 	syncers := []syncer.Interface{
 		syncer.NewObjectSyncer("QservQueryService", r, objects.GenerateQservQueryService(r), c, scheme, util.NoFunc),
 		syncer.NewObjectSyncer("CzarService", r, objects.GenerateCzarService(r), c, scheme, util.NoFunc),
-		syncer.NewObjectSyncer("WorkerService", r, objects.GenerateWorkerService(r), c, scheme, util.NoFunc),
 	}
 	return syncers
 }
