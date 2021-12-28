@@ -33,7 +33,6 @@ import (
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/objects"
 	"github.com/lsst/qserv-operator/controllers/syncer"
-	"github.com/lsst/qserv-operator/controllers/syncers"
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
@@ -136,6 +135,18 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		objectSpecManagers = append(objectSpecManagers, configmapSpec)
 	}
 
+	// Create Network Policies specification
+	if qserv.Spec.NetworkPolicies {
+		networkPolicySpecManagers := []ObjectSpecManager{
+			&objects.CzarNetworkPolicySpec{},
+			&objects.DefaultNetworkPolicySpec{},
+			&objects.ReplDatabaseNetworkPolicySpec{},
+			&objects.WorkerNetworkPolicySpec{},
+			&objects.XrootdRedirectorNetworkPolicySpec{},
+		}
+		objectSpecManagers = append(objectSpecManagers, networkPolicySpecManagers...)
+	}
+
 	// Reconcile all objects
 	for _, objectSpecManager := range objectSpecManagers {
 		result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
@@ -145,12 +156,8 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		}
 	}
 
+	// TODO: understand event management and implement it
 	qservSyncers := []syncer.Interface{}
-
-	// Specify Network Policies
-	if qserv.Spec.NetworkPolicies {
-		qservSyncers = append(qservSyncers, syncers.NewNetworkPoliciesSyncer(qserv, r.Client, r.Scheme)...)
-	}
 
 	if err = r.sync(qservSyncers); err != nil {
 		return ctrl.Result{}, err
