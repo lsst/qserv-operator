@@ -140,7 +140,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	for _, objectSpecManager := range objectSpecManagers {
 		result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
 		if err != nil {
-			log.Error(err, "Unable to reconcile %s", objectSpecManager.GetName())
+			log.Error(err, "Unable to reconcile", "name", objectSpecManager.GetName())
 			return result, err
 		}
 	}
