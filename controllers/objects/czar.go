@@ -9,7 +9,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+var log = logf.Log.WithName("qserv")
 
 type CzarSpec struct {
 	qserv *qservv1beta1.Qserv
@@ -34,8 +37,8 @@ func (c *CzarSpec) Create() (client.Object, error) {
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	storageClass := getValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
-	storageSize := getValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
+	storageClass := util.GetValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
+	storageSize := util.GetValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
 
 	initContainer, initVolumes := getInitContainer(cr, constants.Czar)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Czar)

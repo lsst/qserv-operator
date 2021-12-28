@@ -105,6 +105,8 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		&objects.ReplicationDatabaseSpec{},
 		&objects.ReplicationDatabaseServiceSpec{},
 		&objects.WorkerSpec{},
+		&objects.XrootdServiceSpec{},
+		&objects.XrootdSpec{},
 	}
 
 	// Manage "*-etc" and "*-start" configmaps
@@ -132,10 +134,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		}
 	}
 
-	qservSyncers := []syncer.Interface{
-		syncers.NewXrootdRedirectorServiceSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewXrootdStatefulSetSyncer(qserv, r.Client, r.Scheme),
-	}
+	qservSyncers := []syncer.Interface{}
 
 	qservSyncers = append(syncers.NewQservServicesSyncer(qserv, r.Client, r.Scheme), qservSyncers...)
 

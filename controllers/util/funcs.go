@@ -20,3 +20,10 @@ func IterateCount(count uint) []int {
 var NoFunc = func() error {
 	return nil
 }
+
+func GetValue(value string, defaultValue string) string {
+	if value == "" {
+		value = defaultValue
+	}
+	return value
+}

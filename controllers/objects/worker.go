@@ -39,8 +39,8 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 
 	replicas := cr.Spec.Worker.Replicas
 
-	storageClass := getValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
-	storageSize := getValue(cr.Spec.Worker.StorageCapacity, cr.Spec.StorageCapacity)
+	storageClass := util.GetValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
+	storageSize := util.GetValue(cr.Spec.Worker.StorageCapacity, cr.Spec.StorageCapacity)
 
 	initContainer, initVolumes := getInitContainer(cr, constants.Worker)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.Worker)
