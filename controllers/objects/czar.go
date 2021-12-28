@@ -110,3 +110,108 @@ func (c *CzarSpec) Create() (client.Object, error) {
 func (c *CzarSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
+
+type CzarServiceSpec struct {
+	qserv *qservv1beta1.Qserv
+}
+
+func (c *CzarServiceSpec) GetName() string {
+	return util.GetName(c.qserv, string(constants.Czar))
+}
+
+func (c *CzarServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
+	var object client.Object = &appsv1.StatefulSet{}
+	return object
+}
+
+// Create generate service specification for Qserv Czar
+func (c *CzarServiceSpec) Create() (client.Object, error) {
+	cr := c.qserv
+	name := c.GetName()
+	namespace := cr.Namespace
+
+	labels := util.GetComponentLabels(constants.Czar, cr.Name)
+
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: v1.ServiceSpec{
+			Type:      v1.ServiceTypeClusterIP,
+			ClusterIP: v1.ClusterIPNone,
+			Ports: []v1.ServicePort{
+				{
+					Port:     constants.MariadbPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.MariadbPortName,
+				},
+				{
+					Port:     constants.ProxyPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.ProxyPortName,
+				},
+			},
+			Selector: labels,
+		},
+	}
+	return service, nil
+}
+
+// Update update service specification for Qserv workers
+func (c *CzarServiceSpec) Update(object client.Object) (bool, error) {
+	return false, nil
+}
+
+type QueryServiceSpec struct {
+	qserv *qservv1beta1.Qserv
+}
+
+func (c *QueryServiceSpec) GetName() string {
+	return util.GetName(c.qserv, string(constants.QservName))
+}
+
+func (c *QueryServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
+	var object client.Object = &appsv1.StatefulSet{}
+	return object
+}
+
+// Create generate service specification for Qserv Czar proxy
+func (c *QueryServiceSpec) Create() (client.Object, error) {
+	cr := c.qserv
+	name := c.GetName()
+	namespace := cr.Namespace
+
+	labels := util.GetComponentLabels(constants.Czar, cr.Name)
+
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: cr.Spec.QueryService.Annotations,
+		},
+		Spec: v1.ServiceSpec{
+			LoadBalancerIP: cr.Spec.QueryService.LoadBalancerIP,
+			Type:           cr.Spec.QueryService.ServiceType,
+			Ports: []v1.ServicePort{
+				{
+					Name:     constants.ProxyPortName,
+					NodePort: cr.Spec.QueryService.NodePort,
+					Port:     constants.ProxyPort,
+					Protocol: v1.ProtocolTCP,
+				},
+			},
+			Selector: labels,
+		},
+	}
+	return service, nil
+}
+
+// Update update statefulset specification for Qserv Czar proxy
+func (c *QueryServiceSpec) Update(object client.Object) (bool, error) {
+	return false, nil
+}
