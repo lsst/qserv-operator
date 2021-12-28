@@ -151,21 +151,37 @@ func (c *ContainerConfigMapSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
-// GenerateSQLConfigMap generate configmaps for initContainers in charge of databases initializations
-func GenerateSQLConfigMap(r *qservv1beta1.Qserv, db constants.PodClass) *v1.ConfigMap {
+type SQLConfigMapSpec struct {
+	qserv    *qservv1beta1.Qserv
+	Database constants.PodClass
+}
 
-	tmplData := generateTemplateData(r)
+func (c *SQLConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
+	var object client.Object = &v1.ConfigMap{}
+	return object
+}
 
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
+func (c *SQLConfigMapSpec) GetName() string {
+	suffix := fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
+	return util.PrefixConfigmap(c.qserv, suffix)
+}
+
+// Create generate configmaps for initContainers in charge of databases initializations
+func (c *SQLConfigMapSpec) Create() (client.Object, error) {
+	cr := c.qserv
+	tmplData := generateTemplateData(cr)
+
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 	// reqLogger.Info("XXXXX %s", "tmplData", tmplData)
 
-	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", db))
+	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", c.Database))
 	namespace := r.Namespace
 
 	labels := util.GetComponentLabels(db, r.Name)
-	root := filepath.Join("/", "configmap", "initdb", "sql", string(db))
+	root := filepath.Join("/", "configmap", "initdb", "sql", string(c.Database))
 
-	return &v1.ConfigMap{
+	configmap := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -173,6 +189,12 @@ func GenerateSQLConfigMap(r *qservv1beta1.Qserv, db constants.PodClass) *v1.Conf
 		},
 		Data: scanDir(root, reqLogger, &tmplData),
 	}
+	return configmap, nil
+}
+
+// Update update configmap for Qserv client configuration
+func (c *SQLConfigMapSpec) Update(object client.Object) (bool, error) {
+	return false, nil
 }
 
 type DotQservConfigMapSpec struct {
