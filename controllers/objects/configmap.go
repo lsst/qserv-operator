@@ -163,7 +163,7 @@ func (c *SQLConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 }
 
 func (c *SQLConfigMapSpec) GetName() string {
-	suffix := fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
+	suffix := fmt.Sprintf("sql-%s", c.Database)
 	return util.PrefixConfigmap(c.qserv, suffix)
 }
 
@@ -175,10 +175,10 @@ func (c *SQLConfigMapSpec) Create() (client.Object, error) {
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 	// reqLogger.Info("XXXXX %s", "tmplData", tmplData)
 
-	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", c.Database))
-	namespace := r.Namespace
+	name := c.GetName()
+	namespace := cr.Namespace
 
-	labels := util.GetComponentLabels(db, r.Name)
+	labels := util.GetComponentLabels(c.Database, cr.Name)
 	root := filepath.Join("/", "configmap", "initdb", "sql", string(c.Database))
 
 	configmap := &v1.ConfigMap{
