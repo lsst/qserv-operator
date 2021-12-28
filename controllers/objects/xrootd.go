@@ -30,9 +30,9 @@ func (c *XrootdSpec) Create() (client.Object, error) {
 	namespace := cr.Namespace
 	name := c.GetName()
 
-	reqLogger := log.WithValues("Request.Namespace", namespace, "Request.Name", name)
+	reqLogger := log.WithValues("Request.Namespace", namespace, "Request.Name", cr.Name)
 
-	labels := util.GetComponentLabels(constants.XrootdRedirector, name)
+	labels := util.GetComponentLabels(constants.XrootdRedirector, cr.Name)
 
 	var replicas int32 = cr.Spec.Xrootd.Replicas
 
