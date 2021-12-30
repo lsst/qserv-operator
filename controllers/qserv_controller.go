@@ -32,7 +32,6 @@ import (
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/objects"
-	"github.com/lsst/qserv-operator/controllers/syncer"
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
@@ -157,11 +156,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	}
 
 	// TODO: understand event management and implement it
-	qservSyncers := []syncer.Interface{}
-
-	if err = r.sync(qservSyncers); err != nil {
-		return ctrl.Result{}, err
-	}
+	// see: https://github.com/kubernetes-sigs/kubebuilder/discussions/2465
 
 	// Update status.Nodes if needed
 	/* 	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {
@@ -182,15 +177,6 @@ func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&qservv1beta1.Qserv{}).
 		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
-}
-
-func (r *QservReconciler) sync(syncers []syncer.Interface) error {
-	for _, s := range syncers {
-		if err := syncer.Sync(context.TODO(), s); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log *logr.Logger) (ctrl.Result, error) {

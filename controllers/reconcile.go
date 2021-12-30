@@ -37,7 +37,7 @@ type ObjectSpecManager interface {
 }
 
 func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
-	// Check if the czar statefulset already exists, if not create a new statefulset.
+	// Check if the current controlled API object exists, if not create it
 	object := controlled.Initialize(qserv)
 	key := types.NamespacedName{Name: controlled.GetName(), Namespace: qserv.Namespace}
 	err := r.Get(ctx, key, object)
@@ -60,12 +60,12 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 		}
 	}
 
-	// Ensure the statefulset size is the same as the spec.
-	update, err2 := controlled.Update(object)
+	// Check if the current controlled API object require an update, and then perform the update
+	requireUpdate, err2 := controlled.Update(object)
 	if err2 != nil {
 		return ctrl.Result{}, err2
 	}
-	if update {
+	if requireUpdate {
 		log.V(0).Info("Update ", "key", key)
 		if err = r.Update(ctx, object); err != nil {
 			return ctrl.Result{}, err

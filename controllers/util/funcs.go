@@ -16,11 +16,6 @@ func IterateCount(count uint) []int {
 	return items
 }
 
-// NoFunc does nothing and returns nil
-var NoFunc = func() error {
-	return nil
-}
-
 func GetValue(value string, defaultValue string) string {
 	if value == "" {
 		value = defaultValue
