@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -66,7 +67,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	// TODO check which log to use
 	// log := r.Log.WithValues("qserv", request.NamespacedName)
 
-	log.V(0).Info("Reconciling Qserv")
+	log.V(0).Info("Reconcile Qserv")
 
 	// Fetch the Qserv instance
 	qserv := &qservv1beta1.Qserv{}
@@ -87,7 +88,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	// Manage default values for specification
 	r.Scheme.Default(qserv)
 
-	result, err := r.updateQservStatus(ctx, request, qserv, &log)
+	result, err := r.updateQservStatus(ctx, request, qserv, log)
 	if err != nil {
 		log.Error(err, "Unable to update Qserv status")
 		return result, err
@@ -175,11 +176,13 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&qservv1beta1.Qserv{}).
+		Owns(&v1.ConfigMap{}).
+		Owns(&v1.Service{}).
 		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }
 
-func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log *logr.Logger) (ctrl.Result, error) {
+func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log logr.Logger) (ctrl.Result, error) {
 	// Manage status
 	// See https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html#2-list-all-active-jobs-and-update-the-status
 	listOpts := []client.ListOption{
@@ -189,7 +192,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 
 	var statefulsets appsv1.StatefulSetList
 	if err := r.List(ctx, &statefulsets, listOpts...); err != nil {
-		(*log).Error(err, "Unable to list Qserv statefulsets")
+		log.Error(err, "Unable to list Qserv Statefulsets")
 		return ctrl.Result{}, err
 	}
 	hasStatefulSet := false
@@ -199,7 +202,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		readyReplicas := statefulset.Status.ReadyReplicas
 		desiredReplicas := *statefulset.Spec.Replicas
 		readyFraction := fmt.Sprintf("%d/%d", readyReplicas, desiredReplicas)
-		(*log).Info(fmt.Sprintf("Statefulset: %v, %s", statefulset.Name, readyFraction))
+		log.Info("Check resource status", "resource kind", "Statefulset", "resource name", statefulset.Name, "ready fraction", readyFraction)
 		if readyReplicas != desiredReplicas {
 			notReadyStatefulSet = append(notReadyStatefulSet, statefulset)
 		}
@@ -219,7 +222,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		case string(constants.XrootdRedirector):
 			qserv.Status.XrootdReadyFraction = readyFraction
 		default:
-			(*log).Info(fmt.Sprintf("Statefulset: %s has unknown 'component' label", statefulset.Name))
+			log.Info("Unknown label", "label-name", "component", "kind", "statefulset", "name", statefulset.Name, "ready fraction", readyFraction)
 		}
 	}
 
@@ -243,7 +246,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 	availableCondition.LastTransitionTime = metav1.Now()
 
 	qserv.Status.Conditions = []metav1.Condition{availableCondition}
-	(*log).Info(fmt.Sprintf("Update status %v", qserv.Status.Conditions))
+	log.Info("Update Qserv conditions", "conditions", qserv.Status.Conditions)
 	err := r.Status().Update(ctx, qserv)
 	return ctrl.Result{}, err
 }

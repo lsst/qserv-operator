@@ -123,15 +123,13 @@ func (c *ReplicationDatabaseServiceSpec) Initialize(qserv *qservv1beta1.Qserv) c
 // Create generate service specification for Qserv Replication Controller database
 func (c *ReplicationDatabaseServiceSpec) Create() (client.Object, error) {
 	cr := c.qserv
-	name := c.GetName()
-	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.ReplDb, cr.Name)
 
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			Name:      c.GetName(),
+			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
 		Spec: v1.ServiceSpec{

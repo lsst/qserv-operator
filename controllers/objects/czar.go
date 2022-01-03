@@ -121,22 +121,20 @@ func (c *CzarServiceSpec) GetName() string {
 
 func (c *CzarServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
-	var object client.Object = &appsv1.StatefulSet{}
+	var object client.Object = &v1.Service{}
 	return object
 }
 
 // Create generate service specification for Qserv Czar
 func (c *CzarServiceSpec) Create() (client.Object, error) {
 	cr := c.qserv
-	name := c.GetName()
-	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			Name:      c.GetName(),
+			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
 		Spec: v1.ServiceSpec{
@@ -175,22 +173,20 @@ func (c *QueryServiceSpec) GetName() string {
 
 func (c *QueryServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
-	var object client.Object = &appsv1.StatefulSet{}
+	var object client.Object = &v1.Service{}
 	return object
 }
 
 // Create generate service specification for Qserv Czar proxy
 func (c *QueryServiceSpec) Create() (client.Object, error) {
 	cr := c.qserv
-	name := c.GetName()
-	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
+			Name:        c.GetName(),
+			Namespace:   cr.Namespace,
 			Labels:      labels,
 			Annotations: cr.Spec.QueryService.Annotations,
 		},
