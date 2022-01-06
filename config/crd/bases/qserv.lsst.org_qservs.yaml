@@ -981,6 +981,7 @@ spec:
                 - debuggerImage
                 type: object
               imagePullPolicy:
+                default: Always
                 description: ImagePullPolicy for all containers
                 type: string
               ingest:

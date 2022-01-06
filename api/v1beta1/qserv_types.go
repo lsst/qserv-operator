@@ -41,7 +41,7 @@ type QservSpec struct {
 	Ingest IngestSettings `json:"ingest,omitempty"`
 
 	// ImagePullPolicy for all containers
-	// + kubebuilder:default:=Always
+	// +kubebuilder:default:=Always
 	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// Devel defines the settings for development environment
