@@ -29,17 +29,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
-	"github.com/lsst/qserv-operator/controllers/objects"
+	"github.com/lsst/qserv-operator/controllers/specs"
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
 // QservReconciler reconciles a Qserv object
 type QservReconciler struct {
 	client.Client
-	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
@@ -88,39 +86,39 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	// Manage default values for specification
 	r.Scheme.Default(qserv)
 
-	result, err := r.updateQservStatus(ctx, request, qserv, log)
+	result, err := r.updateQservStatus(ctx, request, qserv)
 	if err != nil {
 		log.Error(err, "Unable to update Qserv status")
 		return result, err
 	}
 
 	objectSpecManagers := []ObjectSpecManager{
-		&objects.CzarSpec{},
-		&objects.CzarServiceSpec{},
-		&objects.DotQservConfigMapSpec{},
-		&objects.IngestDatabaseSpec{},
-		&objects.IngestDatabaseServiceSpec{},
-		&objects.QueryServiceSpec{},
-		&objects.ReplicationControllerServiceSpec{},
-		&objects.ReplicationControllerSpec{},
-		&objects.ReplicationDatabaseSpec{},
-		&objects.ReplicationDatabaseServiceSpec{},
-		&objects.WorkerServiceSpec{},
-		&objects.WorkerSpec{},
-		&objects.XrootdServiceSpec{},
-		&objects.XrootdSpec{},
+		&specs.CzarSpec{},
+		&specs.CzarServiceSpec{},
+		&specs.DotQservConfigMapSpec{},
+		&specs.IngestDatabaseSpec{},
+		&specs.IngestDatabaseServiceSpec{},
+		&specs.QueryServiceSpec{},
+		&specs.ReplicationControllerServiceSpec{},
+		&specs.ReplicationControllerSpec{},
+		&specs.ReplicationDatabaseSpec{},
+		&specs.ReplicationDatabaseServiceSpec{},
+		&specs.WorkerServiceSpec{},
+		&specs.WorkerSpec{},
+		&specs.XrootdServiceSpec{},
+		&specs.XrootdSpec{},
 	}
 
 	// Manage "*-etc" and "*-start" configmaps
 	var configmapSpec ObjectSpecManager
-	configmapSpec = &objects.ContainerConfigMapSpec{
+	configmapSpec = &specs.ContainerConfigMapSpec{
 		ContainerName: constants.InitDbName,
 		Subdir:        "start",
 	}
 	objectSpecManagers = append(objectSpecManagers, configmapSpec)
 	for _, containerName := range constants.ContainerConfigmaps {
 		for _, subdir := range []string{"etc", "start"} {
-			configmapSpec = &objects.ContainerConfigMapSpec{
+			configmapSpec = &specs.ContainerConfigMapSpec{
 				ContainerName: containerName,
 				Subdir:        subdir,
 			}
@@ -129,7 +127,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	}
 
 	for _, database := range constants.Databases {
-		configmapSpec = &objects.SQLConfigMapSpec{
+		configmapSpec = &specs.SQLConfigMapSpec{
 			Database: database,
 		}
 		objectSpecManagers = append(objectSpecManagers, configmapSpec)
@@ -138,18 +136,18 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	// Create Network Policies specification
 	if qserv.Spec.NetworkPolicies {
 		networkPolicySpecManagers := []ObjectSpecManager{
-			&objects.CzarNetworkPolicySpec{},
-			&objects.DefaultNetworkPolicySpec{},
-			&objects.ReplDatabaseNetworkPolicySpec{},
-			&objects.WorkerNetworkPolicySpec{},
-			&objects.XrootdRedirectorNetworkPolicySpec{},
+			&specs.CzarNetworkPolicySpec{},
+			&specs.DefaultNetworkPolicySpec{},
+			&specs.ReplDatabaseNetworkPolicySpec{},
+			&specs.WorkerNetworkPolicySpec{},
+			&specs.XrootdRedirectorNetworkPolicySpec{},
 		}
 		objectSpecManagers = append(objectSpecManagers, networkPolicySpecManagers...)
 	}
 
 	// Reconcile all objects
 	for _, objectSpecManager := range objectSpecManagers {
-		result, err = r.reconcile(ctx, qserv, log, objectSpecManager)
+		result, err = r.reconcile(ctx, qserv, objectSpecManager)
 		if err != nil {
 			log.Error(err, "Unable to reconcile", "name", objectSpecManager.GetName())
 			return result, err
@@ -182,7 +180,8 @@ func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log logr.Logger) (ctrl.Result, error) {
+func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv) (ctrl.Result, error) {
+	log := log.FromContext(ctx)
 	// Manage status
 	// See https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html#2-list-all-active-jobs-and-update-the-status
 	listOpts := []client.ListOption{

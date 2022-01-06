@@ -1,4 +1,4 @@
-package objects
+package specs
 
 import (
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
@@ -9,10 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-var log = logf.Log.WithName("qserv")
 
 type CzarSpec struct {
 	qserv *qservv1beta1.Qserv
@@ -35,7 +32,8 @@ func (c *CzarSpec) Create() (client.Object, error) {
 	namespace := cr.Namespace
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
-	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+	log := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+	log.Info("Create czar specification")
 
 	storageClass := util.GetValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
 	storageSize := util.GetValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
@@ -100,7 +98,7 @@ func (c *CzarSpec) Create() (client.Object, error) {
 		},
 	}
 
-	addDebuggerContainer(reqLogger, ss, cr)
+	addDebuggerContainer(log, ss, cr)
 
 	ss.Spec.Template.Spec.Tolerations = cr.Spec.Tolerations
 	return ss, nil

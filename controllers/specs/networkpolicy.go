@@ -1,4 +1,4 @@
-package objects
+package specs
 
 import (
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"

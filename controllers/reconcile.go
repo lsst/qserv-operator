@@ -24,8 +24,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 )
 
@@ -36,7 +36,8 @@ type ObjectSpecManager interface {
 	Update(object client.Object) (bool, error)
 }
 
-func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, log logr.Logger, controlled ObjectSpecManager) (ctrl.Result, error) {
+func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qserv, controlled ObjectSpecManager) (ctrl.Result, error) {
+	log := log.FromContext(ctx).WithName("reconcile")
 	// Check if the current controlled API object exists, if not create it
 	object := controlled.Initialize(qserv)
 	key := types.NamespacedName{Name: controlled.GetName(), Namespace: qserv.Namespace}

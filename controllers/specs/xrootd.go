@@ -1,4 +1,4 @@
-package objects
+package specs
 
 import (
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
@@ -10,36 +10,33 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type ReplicationControllerSpec struct {
+type XrootdSpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
-func (c *ReplicationControllerSpec) GetName() string {
-	return util.GetName(c.qserv, string(constants.ReplCtl))
+func (c *XrootdSpec) GetName() string {
+	return util.GetName(c.qserv, string(constants.XrootdRedirector))
 }
 
-func (c *ReplicationControllerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+func (c *XrootdSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
 }
 
-// Create generate statefulset specification for Qserv Czar
-func (c *ReplicationControllerSpec) Create() (client.Object, error) {
-	name := c.GetName()
+// Create generate statefulset specification for xrootd redirectors
+func (c *XrootdSpec) Create() (client.Object, error) {
 	cr := c.qserv
 	namespace := cr.Namespace
+	name := c.GetName()
 
-	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
+	reqLogger := log.WithValues("Request.Namespace", namespace, "Request.Name", cr.Name)
 
-	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+	labels := util.GetComponentLabels(constants.XrootdRedirector, cr.Name)
 
-	var replicas int32 = 1
+	var replicas int32 = cr.Spec.Xrootd.Replicas
 
-	replCtlContainer, replCtlVolumes := getReplicationCtlContainer(cr)
-
-	var volumes VolumeSet
-	volumes.make(replCtlVolumes)
+	containers, volumes := getXrootdContainers(cr, constants.XrootdRedirector)
 
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -62,11 +59,9 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
-					Affinity: &cr.Spec.Replication.Affinity,
-					Containers: []v1.Container{
-						replCtlContainer,
-					},
-					Volumes: volumes.toSlice(),
+					Affinity:   &cr.Spec.Xrootd.Affinity,
+					Containers: containers,
+					Volumes:    volumes.toSlice(),
 				},
 			},
 		},
@@ -79,32 +74,33 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Czar
-func (c *ReplicationControllerSpec) Update(object client.Object) (bool, error) {
+// Update update statefulset specification for Qserv Ingest Database
+func (c *XrootdSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
-type ReplicationControllerServiceSpec struct {
+// XrootdServiceSpec allows to reconcile xrootd service
+type XrootdServiceSpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
-func (c *ReplicationControllerServiceSpec) GetName() string {
-	return util.GetReplCtlServiceName(c.qserv)
+func (c *XrootdServiceSpec) GetName() string {
+	return util.GetName(c.qserv, string(constants.XrootdRedirector))
 }
 
-func (c *ReplicationControllerServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+func (c *XrootdServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.Service{}
 	return object
 }
 
-// Create generate service specification for Qserv Replication Controller
-func (c *ReplicationControllerServiceSpec) Create() (client.Object, error) {
-	name := c.GetName()
+// Create generates headless service specification for xrootd redirectors StatefulSet
+func (c *XrootdServiceSpec) Create() (client.Object, error) {
 	cr := c.qserv
+	name := c.GetName()
 	namespace := cr.Namespace
 
-	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
+	labels := util.GetComponentLabels(constants.XrootdRedirector, cr.Name)
 
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -117,9 +113,14 @@ func (c *ReplicationControllerServiceSpec) Create() (client.Object, error) {
 			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
-					Port:     constants.ReplicationControllerPort,
+					Port:     constants.XrootdPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.ReplicationControllerPortName,
+					Name:     constants.XrootdPortName,
+				},
+				{
+					Port:     constants.CmsdPort,
+					Protocol: v1.ProtocolTCP,
+					Name:     constants.CmsdPortName,
 				},
 			},
 			Selector: labels,
@@ -129,6 +130,6 @@ func (c *ReplicationControllerServiceSpec) Create() (client.Object, error) {
 }
 
 // Update update service specification for Qserv Replication Controller
-func (c *ReplicationControllerServiceSpec) Update(object client.Object) (bool, error) {
+func (c *XrootdServiceSpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
