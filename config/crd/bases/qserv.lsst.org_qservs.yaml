@@ -965,15 +965,20 @@ spec:
                     type: string
                   storageClassName:
                     type: string
+                required:
+                - dbImage
+                - image
                 type: object
               devel:
                 description: Devel defines the settings for development environment
                 properties:
                   corePath:
+                    default: /tmp/coredump
                     type: string
                   debuggerImage:
                     type: string
                   enableDebugger:
+                    default: false
                     description: EnableDebugger allows to share process namespace
                       between containers in a Pod and adds a debug container to the  pod
                       See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
@@ -1855,8 +1860,11 @@ spec:
                     type: object
                   dbImage:
                     type: string
+                required:
+                - dbImage
                 type: object
               networkPolicies:
+                default: false
                 description: NetworkPolicies secures the cluster network using Network
                   Policies. Ensure the Kubernetes cluster has enabled Network plugin.
                 type: boolean
@@ -2753,10 +2761,15 @@ spec:
                     type: string
                   image:
                     type: string
+                required:
+                - dbImage
+                - image
                 type: object
               storage:
+                default: 10Gi
                 type: string
               storageClassName:
+                default: standard
                 description: Common settings
                 type: string
               tolerations:
@@ -3673,6 +3686,7 @@ spec:
                   image:
                     type: string
                   replicas:
+                    default: 2
                     format: int32
                     type: integer
                   replicationResources:
@@ -3706,6 +3720,9 @@ spec:
                     type: string
                   storageClassName:
                     type: string
+                required:
+                - dbImage
+                - image
                 type: object
               xrootd:
                 description: Xrootd defines the settings for worker cluster
@@ -4578,8 +4595,11 @@ spec:
                   image:
                     type: string
                   replicas:
+                    default: 2
                     format: int32
                     type: integer
+                required:
+                - image
                 type: object
             type: object
           status:

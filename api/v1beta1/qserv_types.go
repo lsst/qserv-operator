@@ -15,6 +15,7 @@ limitations under the License.
 
 // Package v1alpha1 contains Qserv custom resource definition generator
 // +k8s:deepcopy-gen=package
+// +kubebuilder:validation:Optional
 package v1beta1
 
 import (
@@ -31,7 +32,9 @@ type QservSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Common settings
-	StorageClass    string `json:"storageClassName,omitempty"`
+	// +kubebuilder:default:="standard"
+	StorageClass string `json:"storageClassName,omitempty"`
+	// +kubebuilder:default:="10Gi"
 	StorageCapacity string `json:"storage,omitempty"`
 
 	// Czar defines the settings for czar cluster
@@ -41,7 +44,7 @@ type QservSpec struct {
 	Ingest IngestSettings `json:"ingest,omitempty"`
 
 	// ImagePullPolicy for all containers
-	// +kubebuilder:default:=Always
+	// +kubebuilder:default:="Always"
 	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// Devel defines the settings for development environment
@@ -54,7 +57,6 @@ type QservSpec struct {
 	Replication ReplicationSettings `json:"replication,omitempty"`
 
 	// Tolerations defines the settings for adding custom tolerations to all pods
-	// +kubebuilder:validation:Optional
 	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
 
 	// Worker defines the settings for worker cluster
@@ -65,39 +67,44 @@ type QservSpec struct {
 
 	// NetworkPolicies secures the cluster network using Network Policies.
 	// Ensure the Kubernetes cluster has enabled Network plugin.
+	// +kubebuilder:default:=false
 	NetworkPolicies bool `json:"networkPolicies,omitempty"`
 }
 
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	DbImage  string      `json:"dbImage,omitempty"`
-	Image    string      `json:"image,omitempty"`
+	// +kubebuilder:validation:Required
+	DbImage string `json:"dbImage,omitempty"`
+	// +kubebuilder:validation:Required
+	Image string `json:"image,omitempty"`
 	// +kubebuilder:default:=1
 	Replicas       int32                   `json:"replicas,omitempty"`
 	ProxyResources v1.ResourceRequirements `json:"proxyResources,omitempty"`
 
-	// +kubebuilder:validation:Optional
-	StorageClass string `json:"storageClassName,omitempty"`
-	// +kubebuilder:validation:Optional
+	StorageClass    string `json:"storageClassName,omitempty"`
 	StorageCapacity string `json:"storage,omitempty"`
 }
 
 // DevelSettings defines the specification for development/debug environment
 type DevelSettings struct {
-	CorePath      string `json:"corePath,omitempty"`
+	// +kubebuilder:default:="/tmp/coredump"
+	CorePath string `json:"corePath,omitempty"`
+	// +kubebuilder:validation:Required
 	DebuggerImage string `json:"debuggerImage"`
 
 	// EnableDebugger allows to share process namespace between containers in a Pod
 	// and adds a debug container to the  pod
 	// See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+	// +kubebuilder:default:=false
 	EnableDebugger bool `json:"enableDebugger,omitempty"`
 }
 
 // IngestSettings defines the specification of the ingest workflow
 type IngestSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	DbImage  string      `json:"dbImage,omitempty"`
+	// +kubebuilder:validation:Required
+	DbImage string `json:"dbImage,omitempty"`
 }
 
 // QueryServiceSettings defines the specification of the service which
@@ -113,18 +120,23 @@ type QueryServiceSettings struct {
 type ReplicationSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
 	Debug    string      `json:"debug,omitempty"`
-	DbImage  string      `json:"dbImage,omitempty"`
-	Image    string      `json:"image,omitempty"`
+	// +kubebuilder:validation:Required
+	DbImage string `json:"dbImage,omitempty"`
+	// +kubebuilder:validation:Required
+	Image string `json:"image,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
-	Affinity             v1.Affinity             `json:"affinity,omitempty"`
-	DbImage              string                  `json:"dbImage,omitempty"`
-	Image                string                  `json:"image,omitempty"`
+	Affinity v1.Affinity `json:"affinity,omitempty"`
+	// +kubebuilder:validation:Required
+	DbImage string `json:"dbImage,omitempty"`
+	// +kubebuilder:validation:Required
+	Image string `json:"image,omitempty"`
+	// +kubebuilder:default:=2
 	Replicas             int32                   `json:"replicas,omitempty"`
 	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`
-	// +kubebuilder:validation:Optional
+
 	StorageClass string `json:"storageClassName,omitempty"`
 	// +kubebuilder:validation:Optional
 	StorageCapacity string `json:"storage,omitempty"`
@@ -133,8 +145,10 @@ type WorkerSettings struct {
 // XrootdSettings defines the specification of the xrootd redirectors cluster
 type XrootdSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	Image    string      `json:"image,omitempty"`
-	Replicas int32       `json:"replicas,omitempty"`
+	// +kubebuilder:validation:Required
+	Image string `json:"image,omitempty"`
+	// +kubebuilder:default:=2
+	Replicas int32 `json:"replicas,omitempty"`
 }
 
 // QservStatus defines the observed state of Qserv
