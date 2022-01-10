@@ -73,7 +73,7 @@ type CzarSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
 	DbImage  string      `json:"dbImage,omitempty"`
 	Image    string      `json:"image,omitempty"`
-	// + kubebuilder:default:=1
+	// +kubebuilder:default:=1
 	Replicas       int32                   `json:"replicas,omitempty"`
 	ProxyResources v1.ResourceRequirements `json:"proxyResources,omitempty"`
 
