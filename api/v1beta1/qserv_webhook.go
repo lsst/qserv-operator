@@ -110,10 +110,13 @@ func (r *Qserv) validateQservSpecUpdate(oldQservSpec QservSpec) field.ErrorList 
 	mungedPodSpec := *r.Spec.DeepCopy()
 	// tolerations are checked before the deep copy, so munge those too
 	mungedPodSpec.Czar.Image = oldQservSpec.Czar.Image
+	mungedPodSpec.Czar.DbImage = oldQservSpec.Czar.DbImage
 	mungedPodSpec.Ingest.DbImage = oldQservSpec.Ingest.DbImage
 	mungedPodSpec.Replication.Image = oldQservSpec.Replication.Image
+	mungedPodSpec.Replication.DbImage = oldQservSpec.Replication.DbImage
 	mungedPodSpec.Tolerations = oldQservSpec.Tolerations // +k8s:verify-mutation:reason=clone
 	mungedPodSpec.Worker.Image = oldQservSpec.Worker.Image
+	mungedPodSpec.Worker.DbImage = oldQservSpec.Worker.DbImage
 	mungedPodSpec.Xrootd.Image = oldQservSpec.Xrootd.Image
 	log.Info("validate ", "name", r.Name)
 	fieldPath := field.NewPath("spec")
