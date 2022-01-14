@@ -1,8 +1,6 @@
 package specs
 
 import (
-	"fmt"
-
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
@@ -115,18 +113,29 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 
 // Update update statefulset specification for Qserv Worker
 func (c *WorkerSpec) Update(object client.Object) (bool, error) {
+	image := c.qserv.Spec.Worker.Image
+	ss := object.(*appsv1.StatefulSet)
 
+	hasUpdate := false
+
+	ssContainers := ss.Spec.Template.Spec.Containers
+	if ssContainers[1].Image != image {
+		ssContainers[1].Image = image
+		ssContainers[2].Image = image
+		ssContainers[3].Image = image
+		hasUpdate = true
+	}
+	// TODO add support for the below feature, which is
+	// currently forbidden by admissionWebhook
 	// Ensure the deployment size is the same as the spec.
 	replicas := c.qserv.Spec.Worker.Replicas
-	fmt.Println(replicas)
-	ss := object.(*appsv1.StatefulSet)
 
 	if *ss.Spec.Replicas != replicas {
 		ss.Spec.Replicas = &replicas
-		return true, nil
+		hasUpdate = true
 	}
 
-	return false, nil
+	return hasUpdate, nil
 }
 
 // WorkerServiceSpec allows to reconcile xrootd service

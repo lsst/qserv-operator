@@ -10,6 +10,6 @@ spec:
   # replication:
   #   debug: "all"
   worker:
-    replicas: 3
+    replicas: 4
   xrootd:
     replicas: 4
