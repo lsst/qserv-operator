@@ -12,7 +12,8 @@ import (
 )
 
 type WorkerSpec struct {
-	qserv *qservv1beta1.Qserv
+	qserv           *qservv1beta1.Qserv
+	qservContainers []constants.ContainerName
 }
 
 func (c *WorkerSpec) GetName() string {
@@ -21,6 +22,7 @@ func (c *WorkerSpec) GetName() string {
 
 func (c *WorkerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
+	c.qservContainers = []constants.ContainerName{constants.CmsdName, constants.XrootdName, constants.ReplWrkName}
 	var object client.Object = &appsv1.StatefulSet{}
 	return object
 }
@@ -111,20 +113,27 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
+// updateContainersImages update container image field with "image" in "containers" list, for containers whose name are in containersNames
+// return true is image has been updated, else false
+func updateContainersImages(image string, containers []v1.Container, containersNames []constants.ContainerName) bool {
+	hasUpdate := false
+	for i, _ := range containers {
+		if containers[i].Image != image && util.HasValue(containers[i].Name, containersNames) {
+			containers[i].Image = image
+			hasUpdate = true
+		}
+	}
+	return hasUpdate
+}
+
 // Update update statefulset specification for Qserv Worker
 func (c *WorkerSpec) Update(object client.Object) (bool, error) {
 	image := c.qserv.Spec.Worker.Image
 	ss := object.(*appsv1.StatefulSet)
 
-	hasUpdate := false
-
 	ssContainers := ss.Spec.Template.Spec.Containers
-	if ssContainers[1].Image != image {
-		ssContainers[1].Image = image
-		ssContainers[2].Image = image
-		ssContainers[3].Image = image
-		hasUpdate = true
-	}
+	hasUpdate := updateContainersImages(image, ssContainers, c.qservContainers)
+
 	// TODO add support for the below feature, which is
 	// currently forbidden by admissionWebhook
 	// Ensure the deployment size is the same as the spec.
