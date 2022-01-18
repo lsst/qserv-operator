@@ -65,8 +65,12 @@ QSERV_WORKER_DB_URL="mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}
 # TODO check for local mysql startup
 entrypoint --log-level DEBUG smig-update --worker-connection "mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}@${QSERV_WORKER_DB_DN}:${QSERV_WORKER_DB_PORT}"
 
-
-qserv-replica-worker --config=${CONFIG} --qserv-worker-db="${QSERV_WORKER_DB_URL}" --debug
+qserv-replica-worker \
+  --config=${CONFIG} \
+  --qserv-worker-db="${QSERV_WORKER_DB_URL}" \
+  --worker-num-loader-processing-threads="{{.ReplicationLoaderProcessingThreads}}" \
+  --worker-num-http-loader-processing-threads="{{.ReplicationLoaderProcessingThreads}}" \
+  --debug
 
 # For debug purpose
 #while true;
