@@ -6,17 +6,6 @@
 CREATE DATABASE qservReplica;
 USE qservReplica;
 
-CREATE TABLE IF NOT EXISTS `config` (
-  `category` VARCHAR(255) NOT NULL ,
-  `param`    VARCHAR(255) NOT NULL ,
-  `value`    VARCHAR(255) NOT NULL ,
-  PRIMARY KEY (`category`,`param`)
-)
-ENGINE = InnoDB
-COMMENT = 'The common parameters and defaults shared by all components
- of the replication system. It also provides default values
- for some critical parameters of the worker-side services';
-
 
 CREATE TABLE IF NOT EXISTS `config_worker` (
   `name`            VARCHAR(255)       NOT NULL ,     -- the name of the worker
@@ -481,4 +470,4 @@ ENGINE = InnoDB
 COMMENT = 'Metadata about database as a whole, key-value pairs' ;
 
 -- Add record for schema version, migration script expects this record to exist
-INSERT INTO `QMetadata` (`metakey`, `value`) VALUES ('version', '6');
+INSERT INTO `QMetadata` (`metakey`, `value`) VALUES ('version', '7');
