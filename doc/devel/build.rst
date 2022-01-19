@@ -7,10 +7,11 @@ Prerequisites
 -  `git <https://git-scm.com/downloads>`__
 -  `go <https://golang.org/dl/>`__ version v1.16+.
 -  `docker <https://docs.docker.com/install/>`__ version 20.10+.
+-  Access to a Kubernetes v1.20+ cluster. For development purpose, `kind <https://kind.sigs.k8s.io/>`__ is recommended.
+   This `kind quickstart <https://github.com/k8s-school/kind-helper#run-kind-on-a-workstation-in-two-lines-of-code>`__ might help.
+-  Operator-sdk v1.15+ (see below for quick install)
 -  `kubectl <https://kubernetes.io/docs/tasks/tools/install-kubectl/>`__
    version v1.20+.
--  Access to a Kubernetes v1.20+ cluster.
--  Operator-sdk v1.15+ (see below for quick install)
 
 Build
 ~~~~~
@@ -25,6 +26,8 @@ Build
     ./install-operator-sdk.sh
     # Build qserv-operator image
     ./build.sh
+    # If using `kind`, push qserv-operator image to it
+    ./push-image.sh -kd
 
 Test qserv-operator
 ~~~~~~~~~~~~~~~~~~~
