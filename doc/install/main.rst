@@ -177,4 +177,9 @@ To delete all Qserv instances inside a namespace:
 
     kubectl delete qserv --all -n "<namespace>"
 
-All qserv storage will remain untouch by this operation.
+Qserv storage will remain untouch by this operation, and a restarting Qserv instance will use the existing storage. To remove the existing Qserv storage and re-initialize Qserv databases from scratch, run:
+
+.. code:: sh
+
+    # Delete all qserv persistent volume claims in current namespace
+    kubectl delete pvc -l app.kubernetes.io/managed-by=qserv-operator
