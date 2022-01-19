@@ -10,6 +10,7 @@ Prerequisites
 -  `kubectl <https://kubernetes.io/docs/tasks/tools/install-kubectl/>`__
    version v1.20+.
 -  Access to a Kubernetes v1.20+ cluster.
+-  Operator-sdk v1.15+ (see below for quick install)
 
 Build
 ~~~~~
@@ -20,6 +21,9 @@ Build
 
     git clone https://github.com/lsst/qserv-operator.git
     cd qserv-operator
+    # Pre-requisite, run it only once
+    ./install-operator-sdk.sh
+    # Build qserv-operator image
     ./build.sh
 
 Test qserv-operator
@@ -27,7 +31,9 @@ Test qserv-operator
 
 .. code:: sh
 
+    # Install qserv-operator
     ./deploy.sh
+    # Install qserv
     kubectl apply -k manifests/base
     ./tests/e2e/integration.sh
 
