@@ -92,3 +92,13 @@ Check if pod worker-0 can connect to replication database and dump it configurat
 .. _Official k8s cheat sheet: https://kubernetes.io/docs/reference/kubectl/cheatsheet
 .. _README: ../install
 .. _Stern: https://github.com/wercker/stern
+
+Delete a qserv instance and related storage
+===========================================
+
+.. code:: sh
+
+    # Delete all qserv instances in current namespace
+    kubectl delete qservs.qserv.lsst.org --all
+    # Delete all qserv persistent volume claims in current namespace
+    kubectl delete pvc -l app.kubernetes.io/managed-by=qserv-operator
