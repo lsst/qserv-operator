@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: qserv/qserv-operator
-  newTag: 2021.10.1-rc1-27-gab6098f-dirty
+  newTag: 2021.10.1-rc1-29-gae4c3c7-dirty
