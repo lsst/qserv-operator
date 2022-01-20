@@ -19,8 +19,8 @@ else
     all.role server
 
     # Get virtual network id, issued from mysql data
-    set vnidfile = $VNID_FILE
-    cms.vnid <${vnidfile}
+    set vnidargs = $VNID_ARGS
+    cms.vnid @/usr/local/lib64/libreplica.so ${vnidargs}
 
     # Use XrdSsi plugin
     xrootd.fslib -2 libXrdSsi.so

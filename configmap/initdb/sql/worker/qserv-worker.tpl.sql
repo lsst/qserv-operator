@@ -34,6 +34,12 @@ CREATE TABLE qservw_worker.Id (
 
 ) ENGINE=InnoDB;
 
+-- TODO: This needs to be changed to generate a unique identifier by calling MySQL function UUID()
+-- insted of the template parameter. The proposed change could be done later after a refined operational
+-- model of Qserv will be implementated. In proposed model there will be a special step for installing
+-- and initializing Qserv databases. This would also include auto-generating worker identities and
+-- populating Replication system's database table "qservReplica.config_worker" with unique identifiers
+-- of workers managed by the system.
 INSERT INTO qservw_worker.Id (`id`) VALUES ('<HOST>');
 
 CREATE TABLE IF NOT EXISTS qservw_worker.QMetadata (

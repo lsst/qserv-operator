@@ -1,4 +1,4 @@
--- TODO solve mysql security in DM-21824: 
+-- TODO solve mysql security in DM-21824:
 --   1. qsmaster and qsreplica should have password authentication when remote.
 --   2. problem with DNS registration (is the pod registered inside DNS when it tries to connect to repl-db)
 --   3. problem with @worker_dn_filter too long:

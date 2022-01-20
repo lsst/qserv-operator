@@ -53,34 +53,13 @@ OPT_XRD_SSI=""
 # choose which type of queries to launch against metadata
 if [ "$COMPONENT_NAME" = 'worker' ]; then
 
-    MYSQLD_USER_QSERV="qsmaster"
-    MYSQLD_SOCKET="/qserv/data/mysql/mysql.sock"
+    QSERV_WORKER_DB_USER="qsmaster"
+    QSERV_WORKER_DB_PASSWORD=
+    QSERV_WORKER_DB_DN="127.0.0.1"
+    QSERV_WORKER_DB_PORT="3306"
+    QSERV_WORKER_DB="qservw_worker"
+    QSERV_WORKER_DB_URL="mysql://${QSERV_WORKER_DB_USER}:${QSERV_WORKER_DB_PASSWORD}@${QSERV_WORKER_DB_DN}:${QSERV_WORKER_DB_PORT}/${QSERV_WORKER_DB}"
     XRDSSI_CONFIG="$CONFIG_DIR/xrdssi.cf"
-
-    # Wait for local mysql to be configured and started
-    while true; do
-        if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
-            -e "SELECT CONCAT('Mariadb is up: ', version())"
-        then
-            break
-        else
-            echo "Wait for MySQL startup"
-        fi
-        sleep 2
-    done
-
-    # TODO move to /qserv/run/tmp when it is managed as a shared volume
-    export VNID_FILE="/qserv/data/mysql/cms_vnid.txt"
-    if [ ! -e "$VNID_FILE" ]
-    then
-        WORKER=$(mysql --socket "$MYSQLD_SOCKET" --batch \
-            --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
-        if [ -z "$WORKER" ]; then
-            >&2 echo "ERROR: unable to extract vnid from database"
-            exit 2
-        fi
-        echo "$WORKER" > "$VNID_FILE"
-    fi
 
     # Wait for at least one xrootd redirector readiness
     until timeout 1 bash -c "cat < /dev/null > /dev/tcp/${XROOTD_RDR_DN}/2131"
@@ -88,6 +67,12 @@ if [ "$COMPONENT_NAME" = 'worker' ]; then
         echo "Wait for xrootd redirector to be up and running  (${XROOTD_RDR_DN})..."
         sleep 2
     done
+
+    # xrootd/cmsd will use this configuration to learn the worker identity directly from
+    # the worker's MySQL database. The plugin will automatically wait before
+    # the database service will start up and be ready. So, it's no loner required to
+    # track the availability and status of the database service by this script.
+    export VNID_ARGS="${QSERV_WORKER_DB_URL} 0 0"
 
     OPT_XRD_SSI="-l @libXrdSsiLog.so -+xrdssi $XRDSSI_CONFIG"
 fi
