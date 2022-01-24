@@ -51,7 +51,7 @@ export OP_VERSION="$releasetag"
 make yaml yaml-ns-scoped
 $DIR/build.sh
 # Make file below compliant with goimport requirements
-git checkout $DIR/api/v1alpha1/zz_generated.deepcopy.go
+git checkout $DIR/api/v1beta1/zz_generated.deepcopy.go
 
 echo "Update Qserv images in manifests/base/image.yaml"
 sed -ri  "s/^(\s*image: qserv\/.*:).*/\1$releasetag/" $DIR/manifests/base/image.yaml
@@ -62,7 +62,7 @@ sed -ri  "s/RELEASE=\".*\"/RELEASE=\"$releasetag\"/" $DIR/README.md
 # Prepare operatorHub files
 # Edit 'replaces', 'image' and 'containerImage' fields in config/manifests/bases/qserv-operator.clusterserviceversion.yaml
 csv_file="$DIR/config/manifests/bases/qserv-operator.clusterserviceversion.yaml"
-sample_file="$DIR/config/samples/qserv_v1alpha1_qserv.yaml"
+sample_file="$DIR/config/samples/qserv_v1beta1_qserv.yaml"
 previous_version=$(grep -oP 'qserv\/qserv-operator:([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)' "$csv_file" | cut -d: -f2)
 sed -ri  "s/(202[0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/$releasetag/" "$sample_file" "$csv_file"
 sed -ri  "s/replaces: qserv-operator\.v([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/replaces: qserv-operator\.v$previous_version/"  "$csv_file"
