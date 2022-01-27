@@ -17,7 +17,7 @@ spec:
               operator: In
               values:
               - czar
-    proxyresources:
+    proxyResources:
       requests:
         cpu: 24
   queryService:
@@ -51,7 +51,7 @@ spec:
               values:
               - worker
     replicas: 10
-    replicationresources:
+    replicationResources:
       limits:
         cpu: 14
   # ingest:

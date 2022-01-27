@@ -58,6 +58,11 @@ spec:
       kind: Qserv
       name: qservs.qserv.lsst.org
       version: v1alpha1
+    - description: Qserv is the Schema for the qservs API
+      displayName: Qserv
+      kind: Qserv
+      name: qservs.qserv.lsst.org
+      version: v1beta1
   description: |
     ## Overview
 
@@ -154,5 +159,5 @@ spec:
   provider:
     name: Vera C. Rubin Observatory
     url: https://www.lsst.org/
-  replaces: qserv-operator.v2022.1.1-rc1
+  replaces: qserv-operator.v2021.10.1-rc1
   version: 0.0.0

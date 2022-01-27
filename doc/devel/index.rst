@@ -6,3 +6,4 @@ Development reference
    :maxdepth: 2
 
    build
+   release

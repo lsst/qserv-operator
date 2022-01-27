@@ -57,6 +57,7 @@ git push origin main
 # Prepare a Pull-Request
 git checkout -b "$RELEASE"
 cp -r $OPERATOR_SRC_DIR/bundle /tmp/community-operators/operators/qserv-operator/"$RELEASE"
+# Edit manually 'version' and 'replaceVersion' fields at the end of file qserv-operator.clusterserviceversion.yaml
 git add .
 git commit --signoff -m "Release $RELEASE for qserv-operator"
 git push --set-upstream origin "$RELEASE"
