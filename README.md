@@ -57,10 +57,20 @@ git push origin main
 # Prepare a Pull-Request
 git checkout -b "$RELEASE"
 cp -r $OPERATOR_SRC_DIR/bundle /tmp/community-operators/operators/qserv-operator/"$RELEASE"
-# Edit manually 'version' and 'replaceVersion' fields at the end of file qserv-operator.clusterserviceversion.yaml
+# WARNING: Edit manually 'version' and 'replaceVersion' fields at the end of file qserv-operator.clusterserviceversion.yaml
 git add .
 git commit --signoff -m "Release $RELEASE for qserv-operator"
 git push --set-upstream origin "$RELEASE"
 gh repo view --web
 # Then make a PR: https://github.com/lsst/community-operators/compare
 ```
+---
+**NOTE**
+
+If a CI test fail in PR for [community-operators](https://github.com/k8s-operatorhub/community-operators) official repository, it is possible to run it locally on a workstation using:
+```
+RELEASE="2022.1.1-rc1"
+OPP_PRODUCTION_TYPE=k8s bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) \
+kiwi operators/qserv-operator/$RELEASE
+```
+---
