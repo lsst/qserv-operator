@@ -113,19 +113,6 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// updateContainersImages update container image field with "image" in "containers" list, for containers whose name are in containersNames
-// return true is image has been updated, else false
-func updateContainersImages(image string, containers []v1.Container, containersNames []constants.ContainerName) bool {
-	hasUpdate := false
-	for i, _ := range containers {
-		if containers[i].Image != image && util.HasValue(containers[i].Name, containersNames) {
-			containers[i].Image = image
-			hasUpdate = true
-		}
-	}
-	return hasUpdate
-}
-
 // Update update statefulset specification for Qserv Worker
 func (c *WorkerSpec) Update(object client.Object) (bool, error) {
 	image := c.qserv.Spec.Worker.Image
