@@ -107,6 +107,9 @@ var CommandDebug = []string{"sleep", "infinity"}
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
 var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
 
+var WithMariadbImage = []ContainerName{IngestDbName, MariadbName, ReplDbName}
+var WithQservImage = []ContainerName{CmsdName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
+
 // Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
 

@@ -43,6 +43,12 @@ type QservSpec struct {
 	// IngestSettings defines the settings for ingest workflow
 	Ingest IngestSettings `json:"ingest,omitempty"`
 
+	// +kubebuilder:validation:Required
+	DbImage string `json:"dbImage,omitempty"`
+
+	// +kubebuilder:validation:Required
+	Image string `json:"image,omitempty"`
+
 	// ImagePullPolicy for all containers
 	// +kubebuilder:default:="Always"
 	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
@@ -74,10 +80,7 @@ type QservSpec struct {
 // CzarSettings defines the specification of the czar cluster
 type CzarSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	// +kubebuilder:validation:Required
-	DbImage string `json:"dbImage,omitempty"`
-	// +kubebuilder:validation:Required
-	Image string `json:"image,omitempty"`
+
 	// +kubebuilder:default:=1
 	Replicas       int32                   `json:"replicas,omitempty"`
 	ProxyResources v1.ResourceRequirements `json:"proxyResources,omitempty"`
@@ -103,8 +106,6 @@ type DevelSettings struct {
 // IngestSettings defines the specification of the ingest workflow
 type IngestSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	// +kubebuilder:validation:Required
-	DbImage string `json:"dbImage,omitempty"`
 }
 
 // QueryServiceSettings defines the specification of the service which
@@ -120,19 +121,11 @@ type QueryServiceSettings struct {
 type ReplicationSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
 	Debug    string      `json:"debug,omitempty"`
-	// +kubebuilder:validation:Required
-	DbImage string `json:"dbImage,omitempty"`
-	// +kubebuilder:validation:Required
-	Image string `json:"image,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
 type WorkerSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	// +kubebuilder:validation:Required
-	DbImage string `json:"dbImage,omitempty"`
-	// +kubebuilder:validation:Required
-	Image string `json:"image,omitempty"`
 	// +kubebuilder:default:=2
 	Replicas             int32                   `json:"replicas,omitempty"`
 	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`
@@ -145,8 +138,6 @@ type WorkerSettings struct {
 // XrootdSettings defines the specification of the xrootd redirectors cluster
 type XrootdSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	// +kubebuilder:validation:Required
-	Image string `json:"image,omitempty"`
 	// +kubebuilder:default:=2
 	Replicas int32 `json:"replicas,omitempty"`
 }

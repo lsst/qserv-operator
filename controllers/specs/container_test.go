@@ -14,15 +14,13 @@ func TestUpdateContainersImages(t *testing.T) {
 
 	qserv := &qservv1beta1.Qserv{}
 	qserv.Name = "qserv"
+	qserv.Spec.Image = "qserv/qserv:nil"
 	qserv.Spec.StorageCapacity = "10Gi"
 	qserv.Spec.Worker.Replicas = 1
 	initContainer, _ := getInitContainer(qserv, constants.Worker)
 	mariadbContainer, _ := getMariadbContainer(qserv, constants.Worker)
 	xrootdContainers, _ := getXrootdContainers(qserv, constants.Worker)
 	replicationWrkContainer, _ := getReplicationWrkContainer(qserv)
-
-	containersNames := []constants.ContainerName{constants.CmsdName, constants.XrootdName, constants.ReplWrkName}
-	image := "qserv/qserv:nil"
 
 	containers := []v1.Container{
 		initContainer,
@@ -32,11 +30,11 @@ func TestUpdateContainersImages(t *testing.T) {
 		xrootdContainers[1],
 	}
 
-	updateContainersImages(image, containers, containersNames)
+	updateContainersImages(qserv, containers)
 
-	assert.NotEqual(t, image, containers[0].Image)
-	assert.NotEqual(t, image, containers[1].Image)
-	assert.Equal(t, image, containers[2].Image)
-	assert.Equal(t, image, containers[3].Image)
-	assert.Equal(t, image, containers[4].Image)
+	assert.NotEqual(t, qserv.Spec.Image, containers[0].Image)
+	assert.NotEqual(t, qserv.Spec.Image, containers[1].Image)
+	assert.Equal(t, qserv.Spec.Image, containers[2].Image)
+	assert.Equal(t, qserv.Spec.Image, containers[3].Image)
+	assert.Equal(t, qserv.Spec.Image, containers[4].Image)
 }

@@ -3,18 +3,7 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
-  czar:
-    image: qserv/lite-qserv:2022.1.1-rc1
-    dbImage: qserv/lite-mariadb:2022.1.1-rc1
+  image: qserv/lite-qserv:2022.1.1-rc1
+  dbImage: qserv/lite-mariadb:2022.1.1-rc1
   devel:
     debuggerImage: k8sschool/debugtools:1.0.0
-  ingest:
-    dbImage: qserv/lite-mariadb:2022.1.1-rc1
-  replication:
-    image: qserv/lite-qserv:2022.1.1-rc1
-    dbImage: qserv/lite-mariadb:2022.1.1-rc1
-  worker:
-    image: qserv/lite-qserv:2022.1.1-rc1
-    dbImage: qserv/lite-mariadb:2022.1.1-rc1
-  xrootd:
-    image: qserv/lite-qserv:2022.1.1-rc1

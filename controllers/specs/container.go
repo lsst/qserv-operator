@@ -58,7 +58,7 @@ func getInitContainer(cr *qservv1beta1.Qserv, component constants.PodClass) (v1.
 
 	container := v1.Container{
 		Name:            string(constants.InitDbName),
-		Image:           getMariadbImage(cr, component),
+		Image:           cr.Spec.DbImage,
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
 		Command: []string{
 			"/config-start/initdb.sh",
@@ -115,7 +115,7 @@ func getMariadbContainer(cr *qservv1beta1.Qserv, pod constants.PodClass) (v1.Con
 	// Container
 	container := v1.Container{
 		Command:         constants.Command,
-		Image:           getMariadbImage(cr, pod),
+		Image:           cr.Spec.DbImage,
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
 		Name:            string(dbContainerName),
 		LivenessProbe:   getTCPProbe(constants.MariadbPortName, 10),
@@ -138,21 +138,6 @@ func getMariadbContainer(cr *qservv1beta1.Qserv, pod constants.PodClass) (v1.Con
 	return container, volumes.volumeSet
 }
 
-func getMariadbImage(cr *qservv1beta1.Qserv, component constants.PodClass) string {
-	spec := cr.Spec
-	var image string
-	if component == constants.ReplDb {
-		image = spec.Replication.DbImage
-	} else if component == constants.IngestDb {
-		image = spec.Ingest.DbImage
-	} else if component == constants.Worker {
-		image = spec.Worker.DbImage
-	} else if component == constants.Czar {
-		image = spec.Czar.DbImage
-	}
-	return image
-}
-
 func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
@@ -172,7 +157,7 @@ func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 
 	container := v1.Container{
 		Command:         constants.Command,
-		Image:           spec.Czar.Image,
+		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Name:            string(constants.ProxyName),
 		Ports: []v1.ContainerPort{
@@ -214,7 +199,7 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		LivenessProbe:   getHTTPProbe(constants.ReplicationControllerPortName, 10, probeTimeoutSeconds, "meta/version"),
 		ReadinessProbe:  getHTTPProbe(constants.ReplicationControllerPortName, 5, probeTimeoutSeconds, "meta/version"),
 		Name:            string(constants.ReplCtlName),
-		Image:           spec.Replication.Image,
+		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Env: []v1.EnvVar{
 			{
@@ -266,7 +251,7 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	container := v1.Container{
 		Name:            string(constants.ReplWrkName),
-		Image:           spec.Replication.Image,
+		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Resources:       cr.Spec.Worker.ReplicationResources,
 		Command:         constants.Command,
@@ -309,7 +294,7 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 	containers := []v1.Container{
 		{
 			Name:            string(constants.CmsdName),
-			Image:           spec.Worker.Image,
+			Image:           spec.Image,
 			ImagePullPolicy: cr.Spec.ImagePullPolicy,
 			Command:         constants.Command,
 			Args:            []string{"-S", "cmsd"},
@@ -324,7 +309,7 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 		},
 		{
 			Name:            string(constants.XrootdName),
-			Image:           spec.Worker.Image,
+			Image:           spec.Image,
 			ImagePullPolicy: cr.Spec.ImagePullPolicy,
 			Ports: []v1.ContainerPort{
 				{
@@ -417,11 +402,14 @@ func setDebug(debug string, name constants.ContainerName, container *v1.Containe
 
 // updateContainersImages update container image field with "image" in "containers" list, only for containers whose name are in containersNames
 // return true is image has been updated, else false
-func updateContainersImages(image string, containers []v1.Container, containersNames []constants.ContainerName) bool {
+func updateContainersImages(qserv *qservv1beta1.Qserv, containers []v1.Container) bool {
 	hasUpdate := false
 	for i, _ := range containers {
-		if containers[i].Image != image && util.HasValue(containers[i].Name, containersNames) {
-			containers[i].Image = image
+		if util.HasValue(containers[i].Name, constants.WithQservImage) && containers[i].Image != qserv.Spec.Image {
+			containers[i].Image = qserv.Spec.Image
+			hasUpdate = true
+		} else if util.HasValue(containers[i].Name, constants.WithMariadbImage) && containers[i].Image != qserv.Spec.DbImage {
+			containers[i].Image = qserv.Spec.DbImage
 			hasUpdate = true
 		}
 	}

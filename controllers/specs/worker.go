@@ -115,11 +115,10 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 
 // Update update statefulset specification for Qserv Worker
 func (c *WorkerSpec) Update(object client.Object) (bool, error) {
-	image := c.qserv.Spec.Worker.Image
 	ss := object.(*appsv1.StatefulSet)
 
 	ssContainers := ss.Spec.Template.Spec.Containers
-	hasUpdate := updateContainersImages(image, ssContainers, c.qservContainers)
+	hasUpdate := updateContainersImages(c.qserv, ssContainers)
 
 	// TODO add support for the below feature, which is
 	// currently forbidden by admissionWebhook

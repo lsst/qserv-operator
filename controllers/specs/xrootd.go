@@ -131,5 +131,9 @@ func (c *XrootdServiceSpec) Create() (client.Object, error) {
 
 // Update update service specification for Qserv Replication Controller
 func (c *XrootdServiceSpec) Update(object client.Object) (bool, error) {
-	return false, nil
+	ss := object.(*appsv1.StatefulSet)
+
+	ssContainers := ss.Spec.Template.Spec.Containers
+	hasUpdate := updateContainersImages(c.qserv, ssContainers)
+	return hasUpdate, nil
 }
