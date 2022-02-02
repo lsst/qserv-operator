@@ -110,7 +110,9 @@ func (r *Qserv) validateQservSpecUpdate(oldQservSpec QservSpec) field.ErrorList 
 	mungedPodSpec := *r.Spec.DeepCopy()
 	// tolerations are checked before the deep copy, so munge those too
 	mungedPodSpec.Image = oldQservSpec.Image
+	mungedPodSpec.Czar.Replicas = oldQservSpec.Czar.Replicas
 	mungedPodSpec.DbImage = oldQservSpec.DbImage
+	mungedPodSpec.Worker.Replicas = oldQservSpec.Worker.Replicas
 	mungedPodSpec.Tolerations = oldQservSpec.Tolerations // +k8s:verify-mutation:reason=clone
 	log.Info("validate ", "name", r.Name)
 	fieldPath := field.NewPath("spec")
@@ -120,9 +122,10 @@ func (r *Qserv) validateQservSpecUpdate(oldQservSpec QservSpec) field.ErrorList 
 		}
 		// This diff isn't perfect, but it's a helluva lot better an "I'm not going to tell you what the difference is".
 		//TODO: Pinpoint the specific field that causes the invalid error after we have strategic merge diff
+		//TODO for tolerations support see https://github.com/kubernetes/kubernetes/pull/107839#issuecomment-1026875596
 		specDiff := cmp.Diff(mungedPodSpec, oldQservSpec)
 		err := field.Forbidden(fieldPath, fmt.Sprintf("Qserv updates may not change fields other than "+
-			"`spec.czar.image`, `spec.ingest.image`, `spec.replication.image`, `spec.worker.image`, `spec.xrootd.image`"+
+			"`spec.czar.image`, `spec.ingest.image`, `spec.replication.image`, `spec.worker.image`, `spec.worker.replicas`, `spec.xrootd.image`"+
 			"`spec.tolerations` (only additions to existing tolerations)\n%v", specDiff))
 		specErrs = append(specErrs, err)
 	}

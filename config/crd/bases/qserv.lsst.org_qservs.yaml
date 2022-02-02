@@ -926,10 +926,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                  image:
-                    type: string
                   proxyResources:
                     description: ResourceRequirements describes the compute resource
                       requirements.
@@ -965,10 +961,9 @@ spec:
                     type: string
                   storageClassName:
                     type: string
-                required:
-                - dbImage
-                - image
                 type: object
+              dbImage:
+                type: string
               devel:
                 description: Devel defines the settings for development environment
                 properties:
@@ -986,6 +981,8 @@ spec:
                 required:
                 - debuggerImage
                 type: object
+              image:
+                type: string
               imagePullPolicy:
                 default: Always
                 description: ImagePullPolicy for all containers
@@ -1858,10 +1855,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                required:
-                - dbImage
                 type: object
               networkPolicies:
                 default: false
@@ -2755,15 +2748,8 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
                   debug:
                     type: string
-                  image:
-                    type: string
-                required:
-                - dbImage
-                - image
                 type: object
               storage:
                 default: 10Gi
@@ -3681,10 +3667,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                  image:
-                    type: string
                   replicas:
                     default: 2
                     format: int32
@@ -3720,9 +3702,6 @@ spec:
                     type: string
                   storageClassName:
                     type: string
-                required:
-                - dbImage
-                - image
                 type: object
               xrootd:
                 description: Xrootd defines the settings for worker cluster
@@ -4592,15 +4571,14 @@ spec:
                             type: array
                         type: object
                     type: object
-                  image:
-                    type: string
                   replicas:
                     default: 2
                     format: int32
                     type: integer
-                required:
-                - image
                 type: object
+            required:
+            - dbImage
+            - image
             type: object
           status:
             description: QservStatus defines the observed state of Qserv

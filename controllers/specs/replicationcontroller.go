@@ -1,7 +1,6 @@
 package specs
 
 import (
-	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -11,17 +10,11 @@ import (
 )
 
 type ReplicationControllerSpec struct {
-	qserv *qservv1beta1.Qserv
+	StatefulSetSpec
 }
 
 func (c *ReplicationControllerSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplCtl))
-}
-
-func (c *ReplicationControllerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &appsv1.StatefulSet{}
-	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
@@ -33,8 +26,6 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
-
-	var replicas int32 = 1
 
 	replCtlContainer, replCtlVolumes := getReplicationCtlContainer(cr)
 
@@ -50,7 +41,7 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 		Spec: appsv1.StatefulSetSpec{
 			PodManagementPolicy: "Parallel",
 			ServiceName:         name,
-			Replicas:            &replicas,
+			Replicas:            &constants.ReplicationControllerReplicas,
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
@@ -79,23 +70,17 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Czar
+// Update update replication controller specification
 func (c *ReplicationControllerSpec) Update(object client.Object) (bool, error) {
-	return false, nil
+	return c.update(object, constants.ReplicationControllerReplicas)
 }
 
 type ReplicationControllerServiceSpec struct {
-	qserv *qservv1beta1.Qserv
+	ServiceSpec
 }
 
 func (c *ReplicationControllerServiceSpec) GetName() string {
 	return util.GetReplCtlServiceName(c.qserv)
-}
-
-func (c *ReplicationControllerServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.Service{}
-	return object
 }
 
 // Create generate service specification for Qserv Replication Controller
@@ -126,9 +111,4 @@ func (c *ReplicationControllerServiceSpec) Create() (client.Object, error) {
 		},
 	}
 	return service, nil
-}
-
-// Update update service specification for Qserv Replication Controller
-func (c *ReplicationControllerServiceSpec) Update(object client.Object) (bool, error) {
-	return false, nil
 }

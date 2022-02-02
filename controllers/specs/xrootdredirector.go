@@ -1,7 +1,6 @@
 package specs
 
 import (
-	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -11,17 +10,11 @@ import (
 )
 
 type XrootdSpec struct {
-	qserv *qservv1beta1.Qserv
+	StatefulSetSpec
 }
 
 func (c *XrootdSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.XrootdRedirector))
-}
-
-func (c *XrootdSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &appsv1.StatefulSet{}
-	return object
 }
 
 // Create generate statefulset specification for xrootd redirectors
@@ -74,24 +67,19 @@ func (c *XrootdSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Ingest Database
+// Update update Xrootd specification
 func (c *XrootdSpec) Update(object client.Object) (bool, error) {
-	return false, nil
+	replicas := c.qserv.Spec.Xrootd.Replicas
+	return c.update(object, replicas)
 }
 
 // XrootdServiceSpec allows to reconcile xrootd service
 type XrootdServiceSpec struct {
-	qserv *qservv1beta1.Qserv
+	ServiceSpec
 }
 
 func (c *XrootdServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.XrootdRedirector))
-}
-
-func (c *XrootdServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.Service{}
-	return object
 }
 
 // Create generates headless service specification for xrootd redirectors StatefulSet
@@ -127,13 +115,4 @@ func (c *XrootdServiceSpec) Create() (client.Object, error) {
 		},
 	}
 	return service, nil
-}
-
-// Update update service specification for Qserv Replication Controller
-func (c *XrootdServiceSpec) Update(object client.Object) (bool, error) {
-	ss := object.(*appsv1.StatefulSet)
-
-	ssContainers := ss.Spec.Template.Spec.Containers
-	hasUpdate := updateContainersImages(c.qserv, ssContainers)
-	return hasUpdate, nil
 }

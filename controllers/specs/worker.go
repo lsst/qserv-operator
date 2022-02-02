@@ -1,7 +1,6 @@
 package specs
 
 import (
-	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -12,19 +11,11 @@ import (
 )
 
 type WorkerSpec struct {
-	qserv           *qservv1beta1.Qserv
-	qservContainers []constants.ContainerName
+	StatefulSetSpec
 }
 
 func (c *WorkerSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Worker))
-}
-
-func (c *WorkerSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	c.qservContainers = []constants.ContainerName{constants.CmsdName, constants.XrootdName, constants.ReplWrkName}
-	var object client.Object = &appsv1.StatefulSet{}
-	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
@@ -113,39 +104,19 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Worker
+// Update update Xrootd specification
 func (c *WorkerSpec) Update(object client.Object) (bool, error) {
-	ss := object.(*appsv1.StatefulSet)
-
-	ssContainers := ss.Spec.Template.Spec.Containers
-	hasUpdate := updateContainersImages(c.qserv, ssContainers)
-
-	// TODO add support for the below feature, which is
-	// currently forbidden by admissionWebhook
-	// Ensure the deployment size is the same as the spec.
 	replicas := c.qserv.Spec.Worker.Replicas
-
-	if *ss.Spec.Replicas != replicas {
-		ss.Spec.Replicas = &replicas
-		hasUpdate = true
-	}
-
-	return hasUpdate, nil
+	return c.update(object, replicas)
 }
 
 // WorkerServiceSpec allows to reconcile xrootd service
 type WorkerServiceSpec struct {
-	qserv *qservv1beta1.Qserv
+	ServiceSpec
 }
 
 func (c *WorkerServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Worker))
-}
-
-func (c *WorkerServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.Service{}
-	return object
 }
 
 // Create generates headless service for Qserv workers StatefulSet
@@ -176,9 +147,4 @@ func (c *WorkerServiceSpec) Create() (client.Object, error) {
 		},
 	}
 	return service, nil
-}
-
-// Update update service specification for Qserv workers
-func (c *WorkerServiceSpec) Update(object client.Object) (bool, error) {
-	return false, nil
 }

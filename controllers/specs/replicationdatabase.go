@@ -1,7 +1,6 @@
 package specs
 
 import (
-	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -12,17 +11,11 @@ import (
 )
 
 type ReplicationDatabaseSpec struct {
-	qserv *qservv1beta1.Qserv
+	StatefulSetSpec
 }
 
 func (c *ReplicationDatabaseSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplDbName))
-}
-
-func (c *ReplicationDatabaseSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &appsv1.StatefulSet{}
-	return object
 }
 
 // Create generate statefulset specification for Qserv Replication Database
@@ -33,7 +26,6 @@ func (c *ReplicationDatabaseSpec) Create() (client.Object, error) {
 
 	labels := util.GetComponentLabels(constants.ReplDb, cr.Name)
 
-	var replicas int32 = 1
 	storageClass := cr.Spec.StorageClass
 	storageSize := cr.Spec.StorageCapacity
 
@@ -51,7 +43,7 @@ func (c *ReplicationDatabaseSpec) Create() (client.Object, error) {
 		},
 		Spec: appsv1.StatefulSetSpec{
 			ServiceName: name,
-			Replicas:    &replicas,
+			Replicas:    &constants.ReplicationDatabaseReplicas,
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: "RollingUpdate",
 			},
@@ -100,24 +92,18 @@ func (c *ReplicationDatabaseSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Ingest Database
+// Update update Replication Database specification
 func (c *ReplicationDatabaseSpec) Update(object client.Object) (bool, error) {
-	return false, nil
+	return c.update(object, constants.ReplicationDatabaseReplicas)
 }
 
 // ReplicationDatabaseServiceSpec allows to reconcile Replication Database Service
 type ReplicationDatabaseServiceSpec struct {
-	qserv *qservv1beta1.Qserv
+	ServiceSpec
 }
 
 func (c *ReplicationDatabaseServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplDb))
-}
-
-func (c *ReplicationDatabaseServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.Service{}
-	return object
 }
 
 // Create generate service specification for Qserv Replication Controller database
@@ -146,9 +132,4 @@ func (c *ReplicationDatabaseServiceSpec) Create() (client.Object, error) {
 		},
 	}
 	return service, nil
-}
-
-// Update update service specification for Qserv Replication Controller
-func (c *ReplicationDatabaseServiceSpec) Update(object client.Object) (bool, error) {
-	return false, nil
 }

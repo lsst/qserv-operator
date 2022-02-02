@@ -39,6 +39,15 @@ var QservGID int64 = 1000
 // QservUID qserv user uid
 var QservUID int64 = 1000
 
+// Number of replicas for ingest database
+var IngestDatabaseReplicas int32 = 1
+
+// Number of replicas for replication controller
+var ReplicationControllerReplicas int32 = 1
+
+// Number of replicas for replication database
+var ReplicationDatabaseReplicas int32 = 1
+
 // ContainerName name all containers
 type ContainerName string
 
@@ -107,8 +116,9 @@ var CommandDebug = []string{"sleep", "infinity"}
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
 var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
 
+// TODO manage image for initContainers!!!
 var WithMariadbImage = []ContainerName{IngestDbName, MariadbName, ReplDbName}
-var WithQservImage = []ContainerName{CmsdName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
+var WithQservImage = []ContainerName{CmsdName, XrootdName, ProxyName, ReplCtlName, ReplWrkName}
 
 // Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}

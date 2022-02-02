@@ -1,7 +1,6 @@
 package specs
 
 import (
-	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -12,17 +11,11 @@ import (
 )
 
 type CzarSpec struct {
-	qserv *qservv1beta1.Qserv
+	StatefulSetSpec
 }
 
 func (c *CzarSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Czar))
-}
-
-func (c *CzarSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &appsv1.StatefulSet{}
-	return object
 }
 
 // Create generate statefulset specification for Qserv Czar
@@ -104,23 +97,18 @@ func (c *CzarSpec) Create() (client.Object, error) {
 	return ss, nil
 }
 
-// Update update statefulset specification for Qserv Czar
+// Update update  Ingest Database specification
 func (c *CzarSpec) Update(object client.Object) (bool, error) {
-	return false, nil
+	replicas := c.qserv.Spec.Czar.Replicas
+	return c.update(object, replicas)
 }
 
 type CzarServiceSpec struct {
-	qserv *qservv1beta1.Qserv
+	ServiceSpec
 }
 
 func (c *CzarServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Czar))
-}
-
-func (c *CzarServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.Service{}
-	return object
 }
 
 // Create generate service specification for Qserv Czar
@@ -156,23 +144,12 @@ func (c *CzarServiceSpec) Create() (client.Object, error) {
 	return service, nil
 }
 
-// Update update service specification for Qserv workers
-func (c *CzarServiceSpec) Update(object client.Object) (bool, error) {
-	return false, nil
-}
-
 type QueryServiceSpec struct {
-	qserv *qservv1beta1.Qserv
+	ServiceSpec
 }
 
 func (c *QueryServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.QservName))
-}
-
-func (c *QueryServiceSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.Service{}
-	return object
 }
 
 // Create generate service specification for Qserv Czar proxy
@@ -203,9 +180,4 @@ func (c *QueryServiceSpec) Create() (client.Object, error) {
 		},
 	}
 	return service, nil
-}
-
-// Update update statefulset specification for Qserv Czar proxy
-func (c *QueryServiceSpec) Update(object client.Object) (bool, error) {
-	return false, nil
 }
