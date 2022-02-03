@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains Qserv custom resource definition generator
+// Package v1beta1 contains Qserv custom resource definition generator
 // +k8s:deepcopy-gen=package
 // +kubebuilder:validation:Optional
 package v1beta1

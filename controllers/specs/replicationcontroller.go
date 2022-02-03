@@ -9,10 +9,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ReplicationControllerSpec provide procedures for Replication Controller StatefulSet specification
 type ReplicationControllerSpec struct {
 	StatefulSetSpec
 }
 
+// GetName return name for Replication Controller StatefulSet
 func (c *ReplicationControllerSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplCtl))
 }
@@ -75,10 +77,12 @@ func (c *ReplicationControllerSpec) Update(object client.Object) (bool, error) {
 	return c.update(object, constants.ReplicationControllerReplicas)
 }
 
+// ReplicationControllerServiceSpec provide procedures for Replication Controller Service specification
 type ReplicationControllerServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Replication Controller Service
 func (c *ReplicationControllerServiceSpec) GetName() string {
 	return util.GetReplCtlServiceName(c.qserv)
 }

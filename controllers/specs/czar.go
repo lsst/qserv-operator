@@ -10,10 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// CzarSpec provide procedures for Czar StatefulSet specification
 type CzarSpec struct {
 	StatefulSetSpec
 }
 
+// GetName return name for Czar StatefulSet
 func (c *CzarSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Czar))
 }
@@ -25,7 +27,6 @@ func (c *CzarSpec) Create() (client.Object, error) {
 	namespace := cr.Namespace
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 
-	log := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 	log.Info("Create czar specification")
 
 	storageClass := util.GetValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
@@ -103,10 +104,12 @@ func (c *CzarSpec) Update(object client.Object) (bool, error) {
 	return c.update(object, replicas)
 }
 
+// CzarServiceSpec provide procedures for Czar Service specification
 type CzarServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Czar Service
 func (c *CzarServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Czar))
 }
@@ -144,10 +147,12 @@ func (c *CzarServiceSpec) Create() (client.Object, error) {
 	return service, nil
 }
 
+// QueryServiceSpec provide procedures for Query Service specification
 type QueryServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Query Service
 func (c *QueryServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.QservName))
 }

@@ -10,10 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ReplicationDatabaseSpec provide procedures for Replication Database StatefulSet specification
 type ReplicationDatabaseSpec struct {
 	StatefulSetSpec
 }
 
+// GetName return name for Replication Database StatefulSet
 func (c *ReplicationDatabaseSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplDbName))
 }
@@ -102,6 +104,7 @@ type ReplicationDatabaseServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Replication Database Service
 func (c *ReplicationDatabaseServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplDb))
 }

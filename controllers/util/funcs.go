@@ -20,6 +20,7 @@ func IterateCount(count uint) []int {
 	return items
 }
 
+// GetValue return value if not empty, else return defaultValue
 func GetValue(value string, defaultValue string) string {
 	if value == "" {
 		value = defaultValue
@@ -27,6 +28,7 @@ func GetValue(value string, defaultValue string) string {
 	return value
 }
 
+// HasValue return true if value is in slice, else return false
 func HasValue(value string, slice []constants.ContainerName) bool {
 	for _, v := range slice {
 		if value == string(v) {

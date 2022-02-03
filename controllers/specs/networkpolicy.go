@@ -10,21 +10,24 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// NetworkPolicy which prevents all incoming network connection to all pods in namespace
+// DefaultNetworkPolicySpec specification for network policy which prevents all incoming network connection to all pods in namespace
 type DefaultNetworkPolicySpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
+// GetName return the name of default NetworkPolicy specification
 func (c *DefaultNetworkPolicySpec) GetName() string {
 	return "default-deny-ingress"
 }
 
+// Initialize initialize the default NetworkPolicy specification
 func (c *DefaultNetworkPolicySpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.NetworkPolicy{}
 	return object
 }
 
+// Create create the default NetworkPolicy specification
 func (c *DefaultNetworkPolicySpec) Create() (client.Object, error) {
 	cr := c.qserv
 	labels := util.GetInstanceLabels(cr.Name)
@@ -44,25 +47,29 @@ func (c *DefaultNetworkPolicySpec) Create() (client.Object, error) {
 	return networkPolicy, nil
 }
 
+// Update update the default NetworkPolicy specification
 func (c *DefaultNetworkPolicySpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
-// NetworkPolicy for Czar Pod
+// CzarNetworkPolicySpec NetworkPolicy specification for Czar Pod
 type CzarNetworkPolicySpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
+// GetName return the name of Czar NetworkPolicy
 func (c *CzarNetworkPolicySpec) GetName() string {
 	return "allow-czar-ingress"
 }
 
+// Initialize initialize the Czar NetworkPolicy specification
 func (c *CzarNetworkPolicySpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.NetworkPolicy{}
 	return object
 }
 
+// Create create the Czar NetworkPolicy specification
 func (c *CzarNetworkPolicySpec) Create() (client.Object, error) {
 	cr := c.qserv
 	labels := util.GetInstanceLabels(cr.Name)
@@ -114,25 +121,29 @@ func (c *CzarNetworkPolicySpec) Create() (client.Object, error) {
 	return networkPolicy, nil
 }
 
+// Update update the Czar NetworkPolicy specification
 func (c *CzarNetworkPolicySpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
-// NetworkPolicy for Replication Database Pod
+// ReplDatabaseNetworkPolicySpec NetworkPolicy specification for Replication Database
 type ReplDatabaseNetworkPolicySpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
+// GetName return the name of Replication Database NetworkPolicy
 func (c *ReplDatabaseNetworkPolicySpec) GetName() string {
 	return "allow-repl-db-ingress"
 }
 
+// Initialize initialize the Replication Database NetworkPolicy specification
 func (c *ReplDatabaseNetworkPolicySpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.NetworkPolicy{}
 	return object
 }
 
+// Create create the Replication Database NetworkPolicy specification
 func (c *ReplDatabaseNetworkPolicySpec) Create() (client.Object, error) {
 	cr := c.qserv
 	labels := util.GetInstanceLabels(cr.Name)
@@ -174,25 +185,29 @@ func (c *ReplDatabaseNetworkPolicySpec) Create() (client.Object, error) {
 	return networkPolicy, nil
 }
 
+// Update update the Replication Database NetworkPolicy specification
 func (c *ReplDatabaseNetworkPolicySpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
-// NetworkPolicy for Worker Pods
+// WorkerNetworkPolicySpec NetworkPolicy specification for Qserv Workers
 type WorkerNetworkPolicySpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
+// GetName return the name of Qserv Workers NetworkPolicy
 func (c *WorkerNetworkPolicySpec) GetName() string {
 	return "allow-worker-ingress"
 }
 
+// Initialize initialize the Qserv Workers NetworkPolicy specification
 func (c *WorkerNetworkPolicySpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.NetworkPolicy{}
 	return object
 }
 
+// Create create the Qserv Workers NetworkPolicy specification
 func (c *WorkerNetworkPolicySpec) Create() (client.Object, error) {
 	cr := c.qserv
 	labels := util.GetInstanceLabels(cr.Name)
@@ -244,25 +259,29 @@ func (c *WorkerNetworkPolicySpec) Create() (client.Object, error) {
 	return networkPolicy, nil
 }
 
+// Update update the Qserv Workers NetworkPolicy specification
 func (c *WorkerNetworkPolicySpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }
 
-// NetworkPolicy for xrootd redirector pods
+// XrootdRedirectorNetworkPolicySpec NetworkPolicy specification for Xrootd Redirectors
 type XrootdRedirectorNetworkPolicySpec struct {
 	qserv *qservv1beta1.Qserv
 }
 
+// GetName return the name of Xrootd Redirectors NetworkPolicy
 func (c *XrootdRedirectorNetworkPolicySpec) GetName() string {
 	return "allow-xrootd-redirector-ingress"
 }
 
+// Initialize initialize the Xrootd Redirectors NetworkPolicy specification
 func (c *XrootdRedirectorNetworkPolicySpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.NetworkPolicy{}
 	return object
 }
 
+// Create create the Xrootd Redirectors NetworkPolicy specification
 func (c *XrootdRedirectorNetworkPolicySpec) Create() (client.Object, error) {
 	cr := c.qserv
 	labels := util.GetInstanceLabels(cr.Name)
@@ -322,6 +341,7 @@ func (c *XrootdRedirectorNetworkPolicySpec) Create() (client.Object, error) {
 	return networkPolicy, nil
 }
 
+// Update update the Xrootd Redirectors NetworkPolicy specification
 func (c *XrootdRedirectorNetworkPolicySpec) Update(object client.Object) (bool, error) {
 	return false, nil
 }

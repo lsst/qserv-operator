@@ -34,6 +34,7 @@ import (
 // log is for logging in this package.
 var log = logf.Log.WithName("webhook").WithName("qserv")
 
+// SetupWebhookWithManager register conversion Webhook, see https://book.kubebuilder.io/multiversion-tutorial/webhooks.html
 func (r *Qserv) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -66,7 +67,7 @@ func (r *Qserv) ValidateCreate() error {
 	return nil
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
+// ValidateUpdate implement webhook.Validator so a webhook will be registered for the type
 func (r *Qserv) ValidateUpdate(old runtime.Object) error {
 
 	log.Info("validate update", "name", r.Name)

@@ -10,10 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// IngestDatabaseSpec provide procedures for Ingest Database StatefulSet specification
 type IngestDatabaseSpec struct {
 	StatefulSetSpec
 }
 
+// GetName return name for Ingest Database StatefulSet
 func (c *IngestDatabaseSpec) GetName() string {
 	return c.qserv.Name + "-" + string(constants.IngestDb)
 }
@@ -102,6 +104,7 @@ type IngestDatabaseServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Ingest Database Service
 func (c *IngestDatabaseServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.IngestDb))
 }

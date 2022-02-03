@@ -33,6 +33,11 @@ func (c *StatefulSetSpec) updateContainersImages(sts *appsv1.StatefulSet) {
 	if !c.hasUpdate {
 		c.hasUpdate = hasUpdate
 	}
+	stsInitContainers := sts.Spec.Template.Spec.InitContainers
+	hasUpdate = updateContainersImages(c.qserv, stsInitContainers)
+	if !c.hasUpdate {
+		c.hasUpdate = hasUpdate
+	}
 }
 
 func (c *StatefulSetSpec) updateReplicas(sts *appsv1.StatefulSet, replicas int32) {

@@ -22,12 +22,13 @@ func TestUpdate(t *testing.T) {
 	spec.Initialize(qserv)
 	object, _ := spec.Create()
 
-	qserv.Spec.Worker.Replicas = 1
-	spec.Update(object)
+	qserv.Spec.Worker.Replicas = 2
 
-	ss := object.(*appsv1.StatefulSet)
+	hasUpdate, err := spec.Update(object)
+	assert.Equal(t, hasUpdate, true)
+	assert.Equal(t, err, nil)
 
-	fmt.Printf("ss %v\n", ss)
-
-	assert.Equal(t, qserv.Spec.Worker.Replicas, *((*ss).Spec.Replicas))
+	sts := object.(*appsv1.StatefulSet)
+	fmt.Printf("ss %v\n", sts)
+	assert.Equal(t, qserv.Spec.Worker.Replicas, *((*sts).Spec.Replicas))
 }

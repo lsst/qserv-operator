@@ -404,7 +404,7 @@ func setDebug(debug string, name constants.ContainerName, container *v1.Containe
 // return true is image has been updated, else false
 func updateContainersImages(qserv *qservv1beta1.Qserv, containers []v1.Container) bool {
 	hasUpdate := false
-	for i, _ := range containers {
+	for i := range containers {
 		if util.HasValue(containers[i].Name, constants.WithQservImage) && containers[i].Image != qserv.Spec.Image {
 			containers[i].Image = qserv.Spec.Image
 			hasUpdate = true

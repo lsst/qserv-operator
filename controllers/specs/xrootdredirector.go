@@ -9,10 +9,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// XrootdSpec provide procedures for Xrootd Redirector StatefulSet specification
 type XrootdSpec struct {
 	StatefulSetSpec
 }
 
+// GetName return name for Xrootd Redirector StatefulSet
 func (c *XrootdSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.XrootdRedirector))
 }
@@ -78,6 +80,7 @@ type XrootdServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Xrootd Redirector Service
 func (c *XrootdServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.XrootdRedirector))
 }

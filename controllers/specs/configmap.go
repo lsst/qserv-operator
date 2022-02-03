@@ -104,18 +104,31 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 	}
 }
 
-type ContainerConfigMapSpec struct {
-	qserv         *qservv1beta1.Qserv
-	ContainerName constants.ContainerName
-	Subdir        string
+// ConfigMapSpec provide default procedures for all Qserv configmaps specifications
+type ConfigMapSpec struct {
+	qserv *qservv1beta1.Qserv
 }
 
-func (c *ContainerConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+// Initialize initialize configmap specification
+func (c *ConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
 	c.qserv = qserv
 	var object client.Object = &v1.ConfigMap{}
 	return object
 }
 
+// Update update configmap specification for Qserv containers
+func (c *ConfigMapSpec) Update(object client.Object) (bool, error) {
+	return false, nil
+}
+
+// ContainerConfigMapSpec provide procedures for all Qserv containers configmaps specifications
+type ContainerConfigMapSpec struct {
+	ConfigMapSpec
+	ContainerName constants.ContainerName
+	Subdir        string
+}
+
+// GetName return name for container ConfigMaps
 func (c *ContainerConfigMapSpec) GetName() string {
 	suffix := fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
 	return util.PrefixConfigmap(c.qserv, suffix)
@@ -146,28 +159,19 @@ func (c *ContainerConfigMapSpec) Create() (client.Object, error) {
 	return cm, nil
 }
 
-// Update update configmap specification for Qserv containers
-func (c *ContainerConfigMapSpec) Update(object client.Object) (bool, error) {
-	return false, nil
-}
-
+// SQLConfigMapSpec provide procedures for all Qserv ConfigMaps related to database initialization
 type SQLConfigMapSpec struct {
-	qserv    *qservv1beta1.Qserv
+	ConfigMapSpec
 	Database constants.PodClass
 }
 
-func (c *SQLConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.ConfigMap{}
-	return object
-}
-
+// GetName return name for SQL ConfigMaps
 func (c *SQLConfigMapSpec) GetName() string {
 	suffix := fmt.Sprintf("sql-%s", c.Database)
 	return util.PrefixConfigmap(c.qserv, suffix)
 }
 
-// Create generate configmaps for initContainers in charge of databases initializations
+// Create generate ConfigMaps for initContainers in charge of databases initializations
 func (c *SQLConfigMapSpec) Create() (client.Object, error) {
 	cr := c.qserv
 	tmplData := generateTemplateData(cr)
@@ -192,23 +196,14 @@ func (c *SQLConfigMapSpec) Create() (client.Object, error) {
 	return configmap, nil
 }
 
-// Update update configmap for Qserv client configuration
-func (c *SQLConfigMapSpec) Update(object client.Object) (bool, error) {
-	return false, nil
-}
-
+// DotQservConfigMapSpec provide procedures for .qserv ConfigMap
 type DotQservConfigMapSpec struct {
-	qserv *qservv1beta1.Qserv
+	ConfigMapSpec
 }
 
+// GetName return name for .qserv ConfigMap
 func (c *DotQservConfigMapSpec) GetName() string {
 	return util.PrefixConfigmap(c.qserv, constants.DotQserv)
-}
-
-func (c *DotQservConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
-	c.qserv = qserv
-	var object client.Object = &v1.ConfigMap{}
-	return object
 }
 
 // Create generate configmap for Qserv client configuration
@@ -234,9 +229,4 @@ func (c *DotQservConfigMapSpec) Create() (client.Object, error) {
 	}
 
 	return cm, nil
-}
-
-// Update update configmap for Qserv client configuration
-func (c *DotQservConfigMapSpec) Update(object client.Object) (bool, error) {
-	return false, nil
 }

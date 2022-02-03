@@ -29,6 +29,8 @@ import (
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 )
 
+// ObjectSpecManager manage creation and update of specifications for standard k8s API objects
+// related to Qserv
 type ObjectSpecManager interface {
 	Create() (client.Object, error)
 	GetName() string
@@ -50,15 +52,17 @@ func (r *QservReconciler) reconcile(ctx context.Context, qserv *qservv1beta1.Qse
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			controllerutil.SetControllerReference(qserv, object, r.Scheme)
+			if err = controllerutil.SetControllerReference(qserv, object, r.Scheme); err != nil {
+				return ctrl.Result{}, err
+			}
 			log.V(0).Info("Create ", "key", key)
 			if err = r.Create(ctx, object); err != nil {
 				return ctrl.Result{}, err
 			}
 			return ctrl.Result{Requeue: true}, nil
-		} else {
-			return ctrl.Result{}, err
 		}
+		return ctrl.Result{}, err
+
 	}
 
 	// Check if the current controlled API object require an update, and then perform the update

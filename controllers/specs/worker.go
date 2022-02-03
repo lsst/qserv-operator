@@ -10,10 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// WorkerSpec provide procedures for Worker StatefulSet specification
 type WorkerSpec struct {
 	StatefulSetSpec
 }
 
+// GetName return name for Worker StatefulSet
 func (c *WorkerSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Worker))
 }
@@ -110,11 +112,12 @@ func (c *WorkerSpec) Update(object client.Object) (bool, error) {
 	return c.update(object, replicas)
 }
 
-// WorkerServiceSpec allows to reconcile xrootd service
+// WorkerServiceSpec allows to reconcile Worker Service
 type WorkerServiceSpec struct {
 	ServiceSpec
 }
 
+// GetName return name for Worker Service
 func (c *WorkerServiceSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.Worker))
 }
