@@ -19,6 +19,7 @@ const (
 	ProxyPortName = string(ProxyName)
 
 	QservName = "qserv"
+	DotQserv  = "dot-qserv"
 
 	ReplicationControllerPort     = 8080
 	ReplicationControllerPortName = "http"
@@ -37,6 +38,15 @@ var QservGID int64 = 1000
 
 // QservUID qserv user uid
 var QservUID int64 = 1000
+
+// IngestDatabaseReplicas Number of replicas for ingest database
+var IngestDatabaseReplicas int32 = 1
+
+// ReplicationControllerReplicas Number of replicas for replication controller
+var ReplicationControllerReplicas int32 = 1
+
+// ReplicationDatabaseReplicas Number of replicas for replication database
+var ReplicationDatabaseReplicas int32 = 1
 
 // ContainerName name all containers
 type ContainerName string
@@ -96,15 +106,21 @@ const (
 	XrootdRedirector PodClass = "xrootd-redirector"
 )
 
-// Command contains the default command used to launch a container
+// Command contain the default command used to launch a container
 var Command = []string{"/config-start/start.sh"}
 
 // CommandDebug is a prerequisite for interactive debugging
 var CommandDebug = []string{"sleep", "infinity"}
 
-// ContainerConfigmaps contains names of all micro-services which require configmaps named:
+// ContainerConfigmaps contain names of all micro-services which require configmaps named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
 var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
+
+// WithMariadbImage list container based on Mariadb image
+var WithMariadbImage = []ContainerName{InitDbName, IngestDbName, MariadbName, ReplDbName}
+
+// WithQservImage list container based on Qserv image
+var WithQservImage = []ContainerName{CmsdName, XrootdName, ProxyName, ReplCtlName, ReplWrkName}
 
 // Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}

@@ -29,10 +29,8 @@ jobs:
           OP_VERSION="$(git describe --always)"
           echo "OP_IMAGE=$(. ./env.build.sh && echo $OP_IMAGE)" >> $GITHUB_ENV
           echo "OP_IMAGE=${OP_IMAGE}"
-      - name: Setup Operator SDK
-        run: |
-          ./install-operator-sdk.sh
-      # FIXME: see https://github.com/operator-framework/operator-sdk/issues/4856
+      - name: Install pre-requisites for build (Operator SDK)
+        run: ./prereq-build.sh
       - name: Run Unit Tests
         run: make test
       - name: Build operator image
@@ -49,6 +47,8 @@ jobs:
   image-analysis:
     name: Analyze image
     runs-on: ubuntu-18.04
+    permissions:
+      security-events: write
     needs: build
     steps:
       - name: Checkout code
@@ -81,6 +81,7 @@ jobs:
         with:
           image: "${{ env.OP_IMAGE }}"
           acs-report-enable: true
+          fail-build: false
       - name: Display SARIF report
         run: |
           cat ${{ steps.scan.outputs.sarif }}
@@ -123,13 +124,8 @@ jobs:
           echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
       - run: |
           kubectl get nodes
-      - name: Install kustomize
-        run: |
-          VERSION="4.0.5"
-          curl -lO "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
-          chmod +x ./install_kustomize.sh
-          sudo rm -f /usr/local/bin/kustomize
-          sudo ./install_kustomize.sh "$VERSION" /usr/local/bin
+      - name: Install pre-requisites (cert-manager, kustomize)
+        run: ./prereq-install.sh
       - name: Deploy operator
         run: |
           export OP_IMAGE="${{ env.OP_IMAGE }}"

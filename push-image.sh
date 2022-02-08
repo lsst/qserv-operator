@@ -21,25 +21,32 @@ Usage: `basename $0` [options] path host [host ...]
   Available options:
     -h          this message
     -k          development mode: load image in kind
-    -d          do not push image to docker hub
+    -d          push image to docker hub (default)
 
 Push image to Docker Hub and/or load it inside kind
 EOD
 }
 
 kind=false
-dockerhub=true
+dockerhub=false
 
 # get the options
 while getopts dhk c ; do
     case $c in
 	    h) usage ; exit 0 ;;
 	    k) kind=true ;;
-	    d) dockerhub=false ;;
+	    d) dockerhub=true ;;
 	    \?) usage ; exit 2 ;;
     esac
 done
 shift `expr $OPTIND - 1`
+
+# Default to dockerhub
+if    [ $kind = false ] && [ $dockerhub = false ]
+then
+    dockerhub=true
+fi;
+
 
 if [ $# -ne 0 ] ; then
     usage

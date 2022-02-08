@@ -21,26 +21,23 @@ import (
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
-	"github.com/lsst/qserv-operator/controllers/syncer"
-	"github.com/lsst/qserv-operator/controllers/syncers"
+	"github.com/lsst/qserv-operator/controllers/specs"
 	"github.com/lsst/qserv-operator/controllers/util"
 )
 
 // QservReconciler reconciles a Qserv object
 type QservReconciler struct {
 	client.Client
-	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
@@ -64,10 +61,11 @@ type QservReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.9.2/pkg/reconcile
 func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
+	log.V(5).Enabled()
 	// TODO check which log to use
 	// log := r.Log.WithValues("qserv", request.NamespacedName)
 
-	log.Info("Reconciling Qserv")
+	log.V(0).Info("Reconcile Qserv")
 
 	// Fetch the Qserv instance
 	qserv := &qservv1beta1.Qserv{}
@@ -88,48 +86,76 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	// Manage default values for specification
 	r.Scheme.Default(qserv)
 
-	result, err := r.updateQservStatus(ctx, request, qserv, &log)
+	result, err := r.updateQservStatus(ctx, request, qserv)
 	if err != nil {
 		log.Error(err, "Unable to update Qserv status")
 		return result, err
 	}
 
-	// Manage syncronisation
-	qservSyncers := []syncer.Interface{
-		syncers.NewCzarStatefulSetSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewDotQservConfigMapSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewWorkerStatefulSetSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewReplicationCtlServiceSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewReplicationCtlStatefulSetSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewIngestDbServiceSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewIngestDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewReplicationDbServiceSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewReplicationDbStatefulSetSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewXrootdRedirectorServiceSyncer(qserv, r.Client, r.Scheme),
-		syncers.NewXrootdStatefulSetSyncer(qserv, r.Client, r.Scheme),
+	objectSpecManagers := []ObjectSpecManager{
+		&specs.CzarSpec{},
+		&specs.CzarServiceSpec{},
+		&specs.DotQservConfigMapSpec{},
+		&specs.IngestDatabaseSpec{},
+		&specs.IngestDatabaseServiceSpec{},
+		&specs.QueryServiceSpec{},
+		&specs.ReplicationControllerServiceSpec{},
+		&specs.ReplicationControllerSpec{},
+		&specs.ReplicationDatabaseSpec{},
+		&specs.ReplicationDatabaseServiceSpec{},
+		&specs.WorkerServiceSpec{},
+		&specs.WorkerSpec{},
+		&specs.XrootdServiceSpec{},
+		&specs.XrootdSpec{},
 	}
 
-	qservSyncers = append(syncers.NewQservServicesSyncer(qserv, r.Client, r.Scheme), qservSyncers...)
-
-	for _, configmapClass := range constants.ContainerConfigmaps {
-		for _, subpath := range []string{"etc", "start"} {
-			qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, configmapClass, subpath))
+	// Manage "*-etc" and "*-start" configmaps
+	var configmapSpec ObjectSpecManager
+	configmapSpec = &specs.ContainerConfigMapSpec{
+		ContainerName: constants.InitDbName,
+		Subdir:        "start",
+	}
+	objectSpecManagers = append(objectSpecManagers, configmapSpec)
+	for _, containerName := range constants.ContainerConfigmaps {
+		for _, subdir := range []string{"etc", "start"} {
+			configmapSpec = &specs.ContainerConfigMapSpec{
+				ContainerName: containerName,
+				Subdir:        subdir,
+			}
+			objectSpecManagers = append(objectSpecManagers, configmapSpec)
 		}
 	}
-	qservSyncers = append(qservSyncers, syncers.NewContainerConfigMapSyncer(qserv, r.Client, r.Scheme, constants.InitDbName, "start"))
 
-	for _, db := range constants.Databases {
-		qservSyncers = append(qservSyncers, syncers.NewSQLConfigMapSyncer(qserv, r.Client, r.Scheme, db))
+	for _, database := range constants.Databases {
+		configmapSpec = &specs.SQLConfigMapSpec{
+			Database: database,
+		}
+		objectSpecManagers = append(objectSpecManagers, configmapSpec)
 	}
 
-	// Specify Network Policies
+	// Create Network Policies specification
 	if qserv.Spec.NetworkPolicies {
-		qservSyncers = append(qservSyncers, syncers.NewNetworkPoliciesSyncer(qserv, r.Client, r.Scheme)...)
+		networkPolicySpecManagers := []ObjectSpecManager{
+			&specs.CzarNetworkPolicySpec{},
+			&specs.DefaultNetworkPolicySpec{},
+			&specs.ReplDatabaseNetworkPolicySpec{},
+			&specs.WorkerNetworkPolicySpec{},
+			&specs.XrootdRedirectorNetworkPolicySpec{},
+		}
+		objectSpecManagers = append(objectSpecManagers, networkPolicySpecManagers...)
 	}
 
-	if err = r.sync(qservSyncers); err != nil {
-		return reconcile.Result{}, err
+	// Reconcile all objects
+	for _, objectSpecManager := range objectSpecManagers {
+		result, err = r.reconcile(ctx, qserv, objectSpecManager)
+		if err != nil {
+			log.Error(err, "Unable to reconcile", "name", objectSpecManager.GetName())
+			return result, err
+		}
 	}
+
+	// TODO: understand event management and implement it
+	// see: https://github.com/kubernetes-sigs/kubebuilder/discussions/2465
 
 	// Update status.Nodes if needed
 	/* 	if !reflect.DeepEqual(podNames, qserv.Status.Nodes) {
@@ -148,20 +174,14 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&qservv1beta1.Qserv{}).
+		Owns(&v1.ConfigMap{}).
+		Owns(&v1.Service{}).
 		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }
 
-func (r *QservReconciler) sync(syncers []syncer.Interface) error {
-	for _, s := range syncers {
-		if err := syncer.Sync(context.TODO(), s); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv, log *logr.Logger) (ctrl.Result, error) {
+func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Request, qserv *qservv1beta1.Qserv) (ctrl.Result, error) {
+	log := log.FromContext(ctx)
 	// Manage status
 	// See https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html#2-list-all-active-jobs-and-update-the-status
 	listOpts := []client.ListOption{
@@ -171,7 +191,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 
 	var statefulsets appsv1.StatefulSetList
 	if err := r.List(ctx, &statefulsets, listOpts...); err != nil {
-		(*log).Error(err, "Unable to list Qserv statefulsets")
+		log.Error(err, "Unable to list Qserv Statefulsets")
 		return ctrl.Result{}, err
 	}
 	hasStatefulSet := false
@@ -181,7 +201,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		readyReplicas := statefulset.Status.ReadyReplicas
 		desiredReplicas := *statefulset.Spec.Replicas
 		readyFraction := fmt.Sprintf("%d/%d", readyReplicas, desiredReplicas)
-		(*log).Info(fmt.Sprintf("Statefulset: %v, %s", statefulset.Name, readyFraction))
+		log.Info("Check resource status", "resource kind", "Statefulset", "resource name", statefulset.Name, "ready fraction", readyFraction)
 		if readyReplicas != desiredReplicas {
 			notReadyStatefulSet = append(notReadyStatefulSet, statefulset)
 		}
@@ -201,7 +221,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		case string(constants.XrootdRedirector):
 			qserv.Status.XrootdReadyFraction = readyFraction
 		default:
-			(*log).Info(fmt.Sprintf("Statefulset: %s has unknown 'component' label", statefulset.Name))
+			log.Info("Unknown label", "label-name", "component", "kind", "statefulset", "name", statefulset.Name, "ready fraction", readyFraction)
 		}
 	}
 
@@ -225,7 +245,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 	availableCondition.LastTransitionTime = metav1.Now()
 
 	qserv.Status.Conditions = []metav1.Condition{availableCondition}
-	(*log).Info(fmt.Sprintf("Update status %v", qserv.Status.Conditions))
+	log.Info("Update Qserv conditions", "conditions", qserv.Status.Conditions)
 	err := r.Status().Update(ctx, qserv)
 	return ctrl.Result{}, err
 }

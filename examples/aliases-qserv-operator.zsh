@@ -13,7 +13,7 @@ alias krq="delete-qserv && kubectl apply -k $QSERV_OPERATOR_SRC_DIR/manifests/ba
 alias gkrq="delete-qserv && kubectl apply -k $QSERV_OPERATOR_SRC_DIR/manifests/gke-qserv-dev"
 
 # Rebuild qserv from scratch
-alias rbo="cdo && ./build.sh -k && ./push-image.sh -d && \
+alias rbo="cdo && ./build.sh -k && ./push-image.sh -k && \
            kubectl delete deployment -n qserv-operator-system --all && \
 	   ./deploy.sh && krq"
 

@@ -1,4 +1,4 @@
-package objects
+package specs
 
 import (
 	"bytes"
@@ -14,6 +14,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type templateData struct {
@@ -103,68 +104,122 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 	}
 }
 
-// GenerateContainerConfigMap generate 2 configmaps for Qserv containers
+// ConfigMapSpec provide default procedures for all Qserv configmaps specifications
+type ConfigMapSpec struct {
+	qserv *qservv1beta1.Qserv
+}
+
+// Initialize initialize configmap specification
+func (c *ConfigMapSpec) Initialize(qserv *qservv1beta1.Qserv) client.Object {
+	c.qserv = qserv
+	var object client.Object = &v1.ConfigMap{}
+	return object
+}
+
+// Update update configmap specification for Qserv containers
+func (c *ConfigMapSpec) Update(object client.Object) (bool, error) {
+	return false, nil
+}
+
+// ContainerConfigMapSpec provide procedures for all Qserv containers configmaps specifications
+type ContainerConfigMapSpec struct {
+	ConfigMapSpec
+	ContainerName constants.ContainerName
+	Subdir        string
+}
+
+// GetName return name for container ConfigMaps
+func (c *ContainerConfigMapSpec) GetName() string {
+	suffix := fmt.Sprintf("%s-%s", c.ContainerName, c.Subdir)
+	return util.PrefixConfigmap(c.qserv, suffix)
+}
+
+// Create can generate 2 kind of configmaps for Qserv containers
 // one with startup scripts and one with configuration files
-func GenerateContainerConfigMap(r *qservv1beta1.Qserv, container constants.ContainerName, subdir string) *v1.ConfigMap {
-
-	tmplData := generateTemplateData(r)
-
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
-
-	name := util.PrefixConfigmap(r, fmt.Sprintf("%s-%s", container, subdir))
-	namespace := r.Namespace
-
-	labels := util.GetContainerLabels(container, r.Name)
-	root := filepath.Join("/", "configmap", string(container), subdir)
-
-	return &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: scanDir(root, reqLogger, &tmplData),
-	}
-}
-
-// GenerateSQLConfigMap generate configmaps for initContainers in charge of databases initializations
-func GenerateSQLConfigMap(r *qservv1beta1.Qserv, db constants.PodClass) *v1.ConfigMap {
-
-	tmplData := generateTemplateData(r)
-
-	reqLogger := log.WithValues("Request.Namespace", r.Namespace, "Request.Name", r.Name)
-	// reqLogger.Info("XXXXX %s", "tmplData", tmplData)
-
-	name := util.PrefixConfigmap(r, fmt.Sprintf("sql-%s", db))
-	namespace := r.Namespace
-
-	labels := util.GetComponentLabels(db, r.Name)
-	root := filepath.Join("/", "configmap", "initdb", "sql", string(db))
-
-	return &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
-		},
-		Data: scanDir(root, reqLogger, &tmplData),
-	}
-}
-
-// GenerateDotQservConfigMap generate configmap for Qserv client configuration
-func GenerateDotQservConfigMap(cr *qservv1beta1.Qserv) *v1.ConfigMap {
-
+func (c *ContainerConfigMapSpec) Create() (client.Object, error) {
+	cr := c.qserv
 	tmplData := generateTemplateData(cr)
 
 	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
 
-	name := util.PrefixConfigmap(cr, "dot-qserv")
+	name := c.GetName()
+	namespace := cr.Namespace
+
+	labels := util.GetContainerLabels(c.ContainerName, cr.Name)
+	root := filepath.Join("/", "configmap", string(c.ContainerName), c.Subdir)
+
+	cm := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Data: scanDir(root, reqLogger, &tmplData),
+	}
+	return cm, nil
+}
+
+// SQLConfigMapSpec provide procedures for all Qserv ConfigMaps related to database initialization
+type SQLConfigMapSpec struct {
+	ConfigMapSpec
+	Database constants.PodClass
+}
+
+// GetName return name for SQL ConfigMaps
+func (c *SQLConfigMapSpec) GetName() string {
+	suffix := fmt.Sprintf("sql-%s", c.Database)
+	return util.PrefixConfigmap(c.qserv, suffix)
+}
+
+// Create generate ConfigMaps for initContainers in charge of databases initializations
+func (c *SQLConfigMapSpec) Create() (client.Object, error) {
+	cr := c.qserv
+	tmplData := generateTemplateData(cr)
+
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+	// reqLogger.Info("XXXXX %s", "tmplData", tmplData)
+
+	name := c.GetName()
+	namespace := cr.Namespace
+
+	labels := util.GetComponentLabels(c.Database, cr.Name)
+	root := filepath.Join("/", "configmap", "initdb", "sql", string(c.Database))
+
+	configmap := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Data: scanDir(root, reqLogger, &tmplData),
+	}
+	return configmap, nil
+}
+
+// DotQservConfigMapSpec provide procedures for .qserv ConfigMap
+type DotQservConfigMapSpec struct {
+	ConfigMapSpec
+}
+
+// GetName return name for .qserv ConfigMap
+func (c *DotQservConfigMapSpec) GetName() string {
+	return util.PrefixConfigmap(c.qserv, constants.DotQserv)
+}
+
+// Create generate configmap for Qserv client configuration
+func (c *DotQservConfigMapSpec) Create() (client.Object, error) {
+	cr := c.qserv
+	tmplData := generateTemplateData(cr)
+
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+
+	name := c.GetName()
 	namespace := cr.Namespace
 
 	labels := util.GetComponentLabels(constants.Czar, cr.Name)
 	root := filepath.Join("/", "configmap", "dot-qserv")
 
-	return &v1.ConfigMap{
+	cm := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -172,4 +227,6 @@ func GenerateDotQservConfigMap(cr *qservv1beta1.Qserv) *v1.ConfigMap {
 		},
 		Data: scanDir(root, reqLogger, &tmplData),
 	}
+
+	return cm, nil
 }

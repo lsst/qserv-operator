@@ -926,10 +926,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                  image:
-                    type: string
                   proxyResources:
                     description: ResourceRequirements describes the compute resource
                       requirements.
@@ -958,6 +954,7 @@ spec:
                         type: object
                     type: object
                   replicas:
+                    default: 1
                     format: int32
                     type: integer
                   storage:
@@ -965,14 +962,18 @@ spec:
                   storageClassName:
                     type: string
                 type: object
+              dbImage:
+                type: string
               devel:
                 description: Devel defines the settings for development environment
                 properties:
                   corePath:
+                    default: /tmp/coredump
                     type: string
                   debuggerImage:
                     type: string
                   enableDebugger:
+                    default: false
                     description: EnableDebugger allows to share process namespace
                       between containers in a Pod and adds a debug container to the  pod
                       See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
@@ -980,7 +981,10 @@ spec:
                 required:
                 - debuggerImage
                 type: object
+              image:
+                type: string
               imagePullPolicy:
+                default: Always
                 description: ImagePullPolicy for all containers
                 type: string
               ingest:
@@ -1851,10 +1855,9 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
                 type: object
               networkPolicies:
+                default: false
                 description: NetworkPolicies secures the cluster network using Network
                   Policies. Ensure the Kubernetes cluster has enabled Network plugin.
                 type: boolean
@@ -2745,16 +2748,14 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
                   debug:
-                    type: string
-                  image:
                     type: string
                 type: object
               storage:
+                default: 10Gi
                 type: string
               storageClassName:
+                default: standard
                 description: Common settings
                 type: string
               tolerations:
@@ -3666,11 +3667,8 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                  image:
-                    type: string
                   replicas:
+                    default: 2
                     format: int32
                     type: integer
                   replicationResources:
@@ -4573,12 +4571,14 @@ spec:
                             type: array
                         type: object
                     type: object
-                  image:
-                    type: string
                   replicas:
+                    default: 2
                     format: int32
                     type: integer
                 type: object
+            required:
+            - dbImage
+            - image
             type: object
           status:
             description: QservStatus defines the observed state of Qserv

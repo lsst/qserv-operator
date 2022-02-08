@@ -1,6 +1,10 @@
 package util
 
-import "text/template"
+import (
+	"text/template"
+
+	"github.com/lsst/qserv-operator/controllers/constants"
+)
 
 // TemplateFunctions contain functions used in templates for Qserv configuration files
 var TemplateFunctions = template.FuncMap{
@@ -16,7 +20,20 @@ func IterateCount(count uint) []int {
 	return items
 }
 
-// NoFunc does nothing and returns nil
-var NoFunc = func() error {
-	return nil
+// GetValue return value if not empty, else return defaultValue
+func GetValue(value string, defaultValue string) string {
+	if value == "" {
+		value = defaultValue
+	}
+	return value
+}
+
+// HasValue return true if value is in slice, else return false
+func HasValue(value string, slice []constants.ContainerName) bool {
+	for _, v := range slice {
+		if value == string(v) {
+			return true
+		}
+	}
+	return false
 }

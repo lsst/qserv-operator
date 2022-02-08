@@ -32,13 +32,6 @@ func GetReplCtlServiceName(cr *qservv1beta1.Qserv) string {
 	return GetName(cr, string(constants.ReplCtl))
 }
 
-// GetWorkerNameFilter returns a filter on hostname for mysql user
-// Example: use in "CREATE USER 'qsreplica'@'<filter>'"
-func GetWorkerNameFilter(cr *qservv1beta1.Qserv) string {
-	filter := cr.Name + "-" + string(constants.Worker) + "-%." + GetWorkerServiceName(cr) + "." + cr.GetNamespace() + ".svc." + getClusterDomain()
-	return filter
-}
-
 // GetReplCtlFQDN returns a Replication Controller FQDN
 // It can be used for mysql authentication
 // Example: use in "CREATE USER 'qsreplica'@'<FQDN>'"

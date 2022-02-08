@@ -11,10 +11,10 @@ import (
 
 func TestGetComponentLabels(t *testing.T) {
 	type args struct {
-		cr_name string
+		crName string
 	}
 
-	cr_name := "qserv"
+	crName := "qserv"
 
 	tests := []struct {
 		name string
@@ -40,7 +40,7 @@ func TestGetComponentLabels(t *testing.T) {
 				fmt.Println(f.Name())
 			}
 
-			got := GetComponentLabels(constants.ReplCtl, cr_name)
+			got := GetComponentLabels(constants.ReplCtl, crName)
 
 			fmt.Println(got)
 			assert.Equal(t, tt.want, got)

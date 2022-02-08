@@ -85,6 +85,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Qserv")
 		os.Exit(1)
 	}
+	if err = (&qservv1beta1.Qserv{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "Qserv")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
