@@ -127,7 +127,7 @@ func (ivs *InstanceVolumeSet) addEtcStartVolumes(containerName constants.Contain
 
 func getAdminPathMount() v1.VolumeMount {
 	return v1.VolumeMount{
-		MountPath: filepath.Join("/", "tmp", "xrd"),
+		MountPath: constants.XrootdAdminPath,
 		Name:      constants.XrootdAdminPathVolumeName,
 		ReadOnly:  false,
 	}
@@ -144,11 +144,6 @@ func getDataVolumeMount() v1.VolumeMount {
 		Name:      constants.DataVolumeClaimTemplateName,
 		ReadOnly:  false,
 	}
-}
-
-func getEtcVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
-	volumeName := fmt.Sprintf("config-%s-etc", microservice)
-	return v1.VolumeMount{Name: volumeName, MountPath: "/config-etc"}
 }
 
 func getMysqlCnfVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
@@ -179,16 +174,14 @@ func getTmpVolumeMount() v1.VolumeMount {
 		ReadOnly:  false,
 	}
 }
-
-func getXrootdVolumeMounts(component constants.PodClass) []v1.VolumeMount {
+func getXrootdVolumeMounts(microservice constants.ContainerName) []v1.VolumeMount {
 	volumeMounts := []v1.VolumeMount{
 		getAdminPathMount(),
-		getEtcVolumeMount(constants.XrootdName),
-		getStartVolumeMount(constants.XrootdName),
+		getStartVolumeMount(microservice),
 	}
 
 	// xrootd/cmsd workers only
-	if component == constants.Worker {
+	if microservice == constants.CmsdServerName || microservice == constants.XrootdServerName {
 		volumeMounts = append(volumeMounts, getDataVolumeMount())
 	}
 	return volumeMounts

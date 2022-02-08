@@ -36,7 +36,6 @@ git -C "$INGEST_DIR" checkout "$INGEST_RELEASE" -b ci
 kubectl apply -f "$INGEST_DIR"/tests/dataserver.yaml
 POD=$(kubectl get pods -l app=dataserver -o jsonpath='{.items[0].metadata.name}')
 kubectl wait --for=condition=available --timeout=600s deployment dataserver
-kubectl cp ""$INGEST_DIR"/tests/data" "$POD":/www
 sed "s/INGEST_RELEASE=.*/INGEST_RELEASE=$INGEST_RELEASE/" "$INGEST_DIR"/env.example.sh > "$INGEST_DIR"/env.sh
 "$INGEST_DIR"/argo-submit.sh
 argo watch @latest

@@ -32,4 +32,9 @@ GRANT ALL ON qservReplica.* TO 'qsreplica'@'%';
 
 CREATE USER 'probe'@'localhost';
 
+-- Grant root access to replication controller pod
+-- FIXME WARNING!!! required by entrypoint for replication controller
+-- cannot be set on DNS name, because replication controller won't be ready yes when the replication controller pod will connect
+GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'CHANGEME' WITH GRANT OPTION;
+
 FLUSH PRIVILEGES;

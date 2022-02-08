@@ -115,6 +115,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		ContainerName: constants.InitDbName,
 		Subdir:        "start",
 	}
+
 	objectSpecManagers = append(objectSpecManagers, configmapSpec)
 	for _, containerName := range constants.ContainerConfigmaps {
 		for _, subdir := range []string{"etc", "start"} {
@@ -124,6 +125,14 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 			}
 			objectSpecManagers = append(objectSpecManagers, configmapSpec)
 		}
+	}
+
+	for _, containerName := range constants.ContainerWithStartConfigmap {
+		configmapSpec = &specs.ContainerConfigMapSpec{
+			ContainerName: containerName,
+			Subdir:        "start",
+		}
+		objectSpecManagers = append(objectSpecManagers, configmapSpec)
 	}
 
 	for _, database := range constants.Databases {

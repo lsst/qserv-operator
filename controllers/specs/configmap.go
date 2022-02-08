@@ -18,17 +18,26 @@ import (
 )
 
 type templateData struct {
+	CzarDatabaseRootURL       string
 	CzarDomainName            string
+	MariadbSocket             string
+	QservInstance             string
 	QstatusMysqldHost         string
 	ReplicationControllerPort uint
 	// Example: qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
 	ReplicationControllerFQDN          string
+	ReplicationDatabaseURL             string
+	ReplicationDatabaseRootURL         string
 	ReplicationLoaderProcessingThreads uint
+	SocketQservUser                    string
+	SocketRootUser                     string
 	WmgrPort                           uint
-	WorkerDn                           string
+	WorkerDatabaseLocalRootURL         string
+	WorkerDatabaseLocalURL             string
+	WorkerDN                           string
 	WorkerReplicas                     uint
-	XrootdRedirectorDn                 string
-	XrootdReplicas                     uint
+	XrootdRedirectorDN                 string
+	XrootdRedirectorReplicas           uint
 }
 
 func fileExists(filename string) bool {
@@ -45,6 +54,8 @@ func applyTemplate(path string, tmplData *templateData) (string, error) {
 		return "", fmt.Errorf("file does not exists: %s", path)
 	}
 
+	// TODO see https://medium.com/@etiennerouzeaud/change-default-delimiters-templating-with-template-delims-857938a0b661
+	// to change template delimiters
 	tmpl, err := template.New(filepath.Base(path)).Funcs(util.TemplateFunctions).ParseFiles(path)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("cannot open template file: %s", path))
@@ -84,7 +95,7 @@ func getReplicationWorkerThread(cpuLimit *resource.Quantity) uint {
 	if limit == 0 {
 		loaderProcessingThreads = constants.ReplicationWorkerDefaultThreads
 	} else {
-		loaderProcessingThreads = 2 * limit
+		loaderProcessingThreads = constants.ReplicationWorkerThreadFactor * limit
 	}
 	return loaderProcessingThreads
 }
@@ -92,14 +103,23 @@ func getReplicationWorkerThread(cpuLimit *resource.Quantity) uint {
 func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 	cpuLimit := r.Spec.Worker.ReplicationResources.Limits.Cpu()
 	return templateData{
+		CzarDatabaseRootURL:                util.GetCzarDatabaseRootURL(r),
 		CzarDomainName:                     util.GetCzarServiceName(r),
+		MariadbSocket:                      constants.MariadbSocket,
+		QservInstance:                      util.GetQservInstanceName(r),
 		QstatusMysqldHost:                  util.GetCzarServiceName(r),
 		ReplicationControllerPort:          constants.ReplicationControllerPort,
 		ReplicationControllerFQDN:          util.GetReplCtlFQDN(r),
-		WorkerDn:                           util.GetWorkerServiceName(r),
+		ReplicationDatabaseURL:             util.GetReplicationDatabaseURL(r),
+		ReplicationDatabaseRootURL:         util.GetReplicationDatabaseRootURL(r),
+		SocketQservUser:                    util.SocketQservUser,
+		SocketRootUser:                     util.SocketRootUser,
+		WorkerDN:                           util.GetWorkerServiceName(r),
+		WorkerDatabaseLocalRootURL:         util.WorkerDatabaseLocalRootURL,
+		WorkerDatabaseLocalURL:             util.WorkerDatabaseLocalURL,
 		WorkerReplicas:                     uint(r.Spec.Worker.Replicas),
-		XrootdRedirectorDn:                 util.GetXrootdRedirectorServiceName(r),
-		XrootdReplicas:                     uint(r.Spec.Xrootd.Replicas),
+		XrootdRedirectorDN:                 util.GetXrootdRedirectorServiceName(r),
+		XrootdRedirectorReplicas:           uint(r.Spec.Xrootd.Replicas),
 		ReplicationLoaderProcessingThreads: getReplicationWorkerThread(cpuLimit),
 	}
 }
