@@ -10,3 +10,4 @@ set -eux
 entrypoint xrootd-manager \
           --cmsd-manager-name "{{.XrootdRedirectorDN}}" \
           --cmsd-manager-count "{{.XrootdRedirectorReplicas}}"
+
