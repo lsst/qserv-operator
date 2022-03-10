@@ -9,10 +9,20 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    cert-manager.io/inject-ca-from: qserv-operator-system/qserv-operator-serving-cert
     controller-gen.kubebuilder.io/version: v0.6.1
-  creationTimestamp: null
   name: qservs.qserv.lsst.org
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: qserv-operator-webhook-service
+          namespace: qserv-operator-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
   group: qserv.lsst.org
   names:
     kind: Qserv
@@ -523,10 +533,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                  image:
-                    type: string
                   proxyResources:
                     description: ResourceRequirements describes the compute resource requirements.
                     properties:
@@ -550,6 +556,7 @@ spec:
                         type: object
                     type: object
                   replicas:
+                    default: 1
                     format: int32
                     type: integer
                   storage:
@@ -557,20 +564,27 @@ spec:
                   storageClassName:
                     type: string
                 type: object
+              dbImage:
+                type: string
               devel:
                 description: Devel defines the settings for development environment
                 properties:
                   corePath:
+                    default: /tmp/coredump
                     type: string
                   debuggerImage:
                     type: string
                   enableDebugger:
+                    default: false
                     description: EnableDebugger allows to share process namespace between containers in a Pod and adds a debug container to the  pod See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
                     type: boolean
                 required:
                 - debuggerImage
                 type: object
+              image:
+                type: string
               imagePullPolicy:
+                default: Always
                 description: ImagePullPolicy for all containers
                 type: string
               ingest:
@@ -1037,10 +1051,9 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
                 type: object
               networkPolicies:
+                default: false
                 description: NetworkPolicies secures the cluster network using Network Policies. Ensure the Kubernetes cluster has enabled Network plugin.
                 type: boolean
               queryService:
@@ -1523,16 +1536,14 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
                   debug:
-                    type: string
-                  image:
                     type: string
                 type: object
               storage:
+                default: 10Gi
                 type: string
               storageClassName:
+                default: standard
                 description: Common settings
                 type: string
               tolerations:
@@ -2022,11 +2033,8 @@ spec:
                             type: array
                         type: object
                     type: object
-                  dbImage:
-                    type: string
-                  image:
-                    type: string
                   replicas:
+                    default: 2
                     format: int32
                     type: integer
                   replicationResources:
@@ -2520,12 +2528,14 @@ spec:
                             type: array
                         type: object
                     type: object
-                  image:
-                    type: string
                   replicas:
+                    default: 1
                     format: int32
                     type: integer
                 type: object
+            required:
+            - dbImage
+            - image
             type: object
           status:
             description: QservStatus defines the observed state of Qserv
@@ -2842,6 +2852,19 @@ spec:
   selector:
     control-plane: controller-manager
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qserv-operator-webhook-service
+  namespace: qserv-operator-system
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 9443
+  selector:
+    control-plane: controller-manager
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -2877,7 +2900,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: qserv/qserv-operator:2022.1.1-rc1
+        image: qserv/qserv-operator:2022.1.1-rc1-15-gcc239da
         livenessProbe:
           httpGet:
             path: /healthz
@@ -2885,6 +2908,10 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
         name: manager
+        ports:
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
         readinessProbe:
           httpGet:
             path: /readyz
@@ -2900,7 +2927,94 @@ spec:
             memory: 20Mi
         securityContext:
           allowPrivilegeEscalation: false
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
       securityContext:
         runAsNonRoot: true
       serviceAccountName: qserv-operator-controller-manager
       terminationGracePeriodSeconds: 10
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: qserv-operator-serving-cert
+  namespace: qserv-operator-system
+spec:
+  dnsNames:
+  - qserv-operator-webhook-service.qserv-operator-system.svc
+  - qserv-operator-webhook-service.qserv-operator-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: qserv-operator-selfsigned-issuer
+  secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: qserv-operator-selfsigned-issuer
+  namespace: qserv-operator-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: qserv-operator-system/qserv-operator-serving-cert
+  name: qserv-operator-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: qserv-operator-webhook-service
+      namespace: qserv-operator-system
+      path: /mutate-qserv-lsst-org-v1beta1-qserv
+  failurePolicy: Fail
+  name: mqserv.kb.io
+  rules:
+  - apiGroups:
+    - qserv.lsst.org
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - qservs
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: qserv-operator-system/qserv-operator-serving-cert
+  name: qserv-operator-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: qserv-operator-webhook-service
+      namespace: qserv-operator-system
+      path: /validate-qserv-lsst-org-v1beta1-qserv
+  failurePolicy: Fail
+  name: vqserv.kb.io
+  rules:
+  - apiGroups:
+    - qserv.lsst.org
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - qservs
+  sideEffects: None
