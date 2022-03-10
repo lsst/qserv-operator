@@ -8,7 +8,8 @@ import (
 
 // TemplateFunctions contain functions used in templates for Qserv configuration files
 var TemplateFunctions = template.FuncMap{
-	"Iterate": IterateCount,
+	"Iterate":           IterateCount,
+	"WorkerDatabaseUrl": WorkerDatabaseURL,
 }
 
 // IterateCount return a list of integer in the  for [0, 1, ..., n]

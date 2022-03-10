@@ -14,8 +14,8 @@ alias gkrq="delete-qserv && kubectl apply -k $QSERV_OPERATOR_SRC_DIR/manifests/g
 
 # Rebuild qserv from scratch
 alias rbo="cdo && ./build.sh -k && ./push-image.sh -k && \
-           kubectl delete deployment -n qserv-operator-system --all && \
-	   ./deploy.sh && krq"
+           kubectl delete deployment,pod -n qserv-operator-system --all && \
+           ./deploy.sh && krq"
 
 # Relaunch ingest
 alias ri="cdi && ./build-image.sh && ./argo-submit.sh"

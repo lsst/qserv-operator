@@ -1,7 +1,11 @@
--- WARN all '<user>'@'%' must be removed in production
+-- FIXME WARN all '<user>'@'%' must be removed in production
+
+
 
 CREATE USER IF NOT EXISTS 'qsmaster'@'localhost';
 CREATE USER IF NOT EXISTS 'qsmaster'@'%';
+-- FIXME required by new configuration system, could be removed?
+GRANT SELECT ON *.* TO 'qsmaster'@'localhost';
 GRANT ALL ON `q\_memoryLockDb`.* TO 'qsmaster'@'localhost';
 GRANT ALL ON `q\_memoryLockDb`.* TO 'qsmaster'@'%';
 -- Subchunks databases

@@ -2,6 +2,7 @@
 /bundle
 /checksums.txt
 /checksums.txt.asc
+/install_kustomize.sh
 /testbin
 
 # Binaries for programs and plugins

@@ -3,7 +3,6 @@ package specs
 import (
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/go-logr/logr"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
@@ -145,7 +144,6 @@ func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 		// Used for mysql socket access
 		// TODO move mysql socket in emptyDir?
 		getDataVolumeMount(),
-		getEtcVolumeMount(constants.ProxyName),
 		getStartVolumeMount(constants.ProxyName),
 	}
 
@@ -173,7 +171,7 @@ func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 		VolumeMounts:   volumeMounts,
 	}
 
-	volumes.addEtcStartVolumes(constants.ProxyName)
+	volumes.addStartVolume(constants.ProxyName)
 
 	return container, volumes.volumeSet
 }
@@ -183,7 +181,6 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	var probeTimeoutSeconds int32 = 3
 	volumeMounts := []v1.VolumeMount{
-		getEtcVolumeMount(constants.ReplCtlName),
 		getStartVolumeMount(constants.ReplCtlName),
 		getSecretVolumeMount(constants.ReplDbName),
 		getSecretVolumeMount(constants.MariadbName),
@@ -201,16 +198,6 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		Name:            string(constants.ReplCtlName),
 		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
-		Env: []v1.EnvVar{
-			{
-				Name:  "WORKER_COUNT",
-				Value: strconv.FormatInt(int64(spec.Worker.Replicas), 10),
-			},
-			{
-				Name:  "REPL_DB_DN",
-				Value: util.GetName(cr, string(constants.ReplDbName)),
-			},
-		},
 		Ports: []v1.ContainerPort{
 			{
 				Name:          constants.ReplicationControllerPortName,
@@ -225,7 +212,7 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
 
-	volumes.addEtcStartVolumes(constants.ReplCtlName)
+	volumes.addStartVolume(constants.ReplCtlName)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
@@ -238,7 +225,6 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	volumeMounts := []v1.VolumeMount{
 		getDataVolumeMount(),
-		getEtcVolumeMount(constants.ReplWrkName),
 		getStartVolumeMount(constants.ReplWrkName),
 		getSecretVolumeMount(constants.MariadbName),
 		getSecretVolumeMount(constants.ReplDbName),
@@ -255,16 +241,6 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Resources:       cr.Spec.Worker.ReplicationResources,
 		Command:         constants.Command,
-		Env: []v1.EnvVar{
-			{
-				Name:  "WORKER_COUNT",
-				Value: strconv.FormatInt(int64(spec.Worker.Replicas), 10),
-			},
-			{
-				Name:  "REPL_DB_DN",
-				Value: util.GetName(cr, string(constants.ReplDbName)),
-			},
-		},
 		// TODO add ports
 		SecurityContext: &v1.SecurityContext{
 			RunAsUser: &constants.QservUID,
@@ -272,7 +248,7 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		VolumeMounts: volumeMounts,
 	}
 
-	volumes.addEtcStartVolumes(constants.ReplWrkName)
+	volumes.addStartVolume(constants.ReplWrkName)
 	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.ReplDbName)
 
@@ -284,16 +260,36 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 
 	spec := cr.Spec
 
-	volumeMounts := getXrootdVolumeMounts(component)
+	var cmsdVolumeMounts []v1.VolumeMount
+	var xrootdVolumeMounts []v1.VolumeMount
+	var cmsdContainerName constants.ContainerName
+	var xrootdContainerName constants.ContainerName
+
 	// Volumes
 	var volumes InstanceVolumeSet
 	volumes.make(cr)
 
-	setCorePath(spec.Devel.CorePath, &volumeMounts, &volumes)
+	if component == constants.XrootdRedirector {
+		cmsdVolumeMounts = getXrootdVolumeMounts(constants.CmsdRedirectorName)
+		xrootdVolumeMounts = getXrootdVolumeMounts(constants.XrootdRedirectorName)
+		cmsdContainerName = constants.CmsdRedirectorName
+		xrootdContainerName = constants.XrootdRedirectorName
+	} else if component == constants.Worker {
+		cmsdVolumeMounts = getXrootdVolumeMounts(constants.CmsdServerName)
+		xrootdVolumeMounts = getXrootdVolumeMounts(constants.XrootdServerName)
+		cmsdContainerName = constants.CmsdServerName
+		xrootdContainerName = constants.XrootdServerName
+	} else {
+		var noVolume map[string]v1.Volume
+		return []v1.Container{}, noVolume
+	}
+
+	setCorePath(spec.Devel.CorePath, &cmsdVolumeMounts, &volumes)
+	setCorePath(spec.Devel.CorePath, &xrootdVolumeMounts, &volumes)
 
 	containers := []v1.Container{
 		{
-			Name:            string(constants.CmsdName),
+			Name:            string(cmsdContainerName),
 			Image:           spec.Image,
 			ImagePullPolicy: cr.Spec.ImagePullPolicy,
 			Command:         constants.Command,
@@ -305,10 +301,10 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 					},
 				},
 			},
-			VolumeMounts: volumeMounts,
+			VolumeMounts: cmsdVolumeMounts,
 		},
 		{
-			Name:            string(constants.XrootdName),
+			Name:            string(xrootdContainerName),
 			Image:           spec.Image,
 			ImagePullPolicy: cr.Spec.ImagePullPolicy,
 			Ports: []v1.ContainerPort{
@@ -329,7 +325,7 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 					},
 				},
 			},
-			VolumeMounts: volumeMounts,
+			VolumeMounts: xrootdVolumeMounts,
 		},
 	}
 
@@ -346,7 +342,8 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 		containers[0].ReadinessProbe = getTCPProbe(constants.CmsdPortName, 5)
 	}
 
-	volumes.addEtcStartVolumes(constants.XrootdName)
+	volumes.addStartVolume(cmsdContainerName)
+	volumes.addStartVolume(xrootdContainerName)
 	volumes.addEmptyDirVolume(constants.XrootdAdminPathVolumeName)
 
 	return containers, volumes.volumeSet

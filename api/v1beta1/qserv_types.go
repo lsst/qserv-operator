@@ -138,7 +138,7 @@ type WorkerSettings struct {
 // XrootdSettings defines the specification of the xrootd redirectors cluster
 type XrootdSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
-	// +kubebuilder:default:=2
+	// +kubebuilder:default:=1
 	Replicas int32 `json:"replicas,omitempty"`
 }
 

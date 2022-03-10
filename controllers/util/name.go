@@ -12,14 +12,19 @@ import (
 
 var log = logf.Log.WithName("name")
 
+// GetCzarServiceName returns name of Qserv czar headless service
+func GetCzarServiceName(cr *qservv1beta1.Qserv) string {
+	return GetName(cr, string(constants.Czar))
+}
+
 // GetName returns a name whose prefix is instance name and suffix typeName
 func GetName(r *qservv1beta1.Qserv, typeName string) string {
 	return fmt.Sprintf("%s-%s", r.Name, typeName)
 }
 
-// GetCzarServiceName returns name of Qserv czar headless service
-func GetCzarServiceName(cr *qservv1beta1.Qserv) string {
-	return GetName(cr, string(constants.Czar))
+// GetQservInstanceName returns name for Qserv instance, unique accross the k8s cluster
+func GetQservInstanceName(r *qservv1beta1.Qserv) string {
+	return fmt.Sprintf("%s-%s", r.Namespace, r.Name)
 }
 
 // GetWorkerServiceName returns name of Qserv workers headless service

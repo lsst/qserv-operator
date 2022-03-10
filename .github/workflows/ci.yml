@@ -74,6 +74,13 @@ jobs:
                 version: v1.26.0
                 type: go-module
                 location: "/manager"
+            - vulnerability: CVE-2021-22570
+              fix-state: unknown
+              package:
+                name: google.golang.org/protobuf
+                version: v1.26.0
+                type: go-module
+                location: "/manager"
           EOF
       - name: Scan operator image
         uses: anchore/scan-action@v3

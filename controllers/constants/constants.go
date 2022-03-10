@@ -5,15 +5,30 @@ package constants
 const (
 	BaseName = "lsst"
 
+	CmsdName     = "cmsd"
 	CmsdPort     = 2131
 	CmsdPortName = string(CmsdName)
 
 	CorePathVolumeName = "corepath"
 
+	DatabaseURLFormat = "mysql://%s:%s@%s:%d"
+
+	CzarDatabase = "qservMeta"
+
 	DataVolumeClaimTemplateName = QservName + "-data"
 
-	MariadbPort     = 3306
-	MariadbPortName = string(MariadbName)
+	Localhost = "127.0.0.1"
+
+	MariadbPort                = 3306
+	MariadbPortName            = string(MariadbName)
+	MariadbQservPassword       = ""
+	MariadbQservUser           = "qsmaster"
+	MariadbReplicationPassword = ""
+	MariadbReplicationUser     = "qsreplica"
+	MariadbRootUser            = "root"
+	/* #nosec G101 no hard-coded password but environment variable */
+	MariadbRootPassword = "${MYSQL_ROOT_PASSWORD}"
+	MariadbSocket       = "/qserv/data/mysql/mysql.sock"
 
 	ProxyPort     = 4040
 	ProxyPortName = string(ProxyName)
@@ -24,13 +39,19 @@ const (
 	ReplicationControllerPort     = 8080
 	ReplicationControllerPortName = "http"
 
+	XrootdAdminPath           = "/var/run/xrootd"
 	XrootdAdminPathVolumeName = "xrootd-adminpath"
+	XrootdName                = "xrootd"
 	XrootdPort                = 1094
 	XrootdPortName            = string(XrootdName)
 
 	GraceTime = 30
 
+	ReplicationDatabase             = "qservReplica"
 	ReplicationWorkerDefaultThreads = 16
+	ReplicationWorkerThreadFactor   = 2
+
+	WorkerDatabase = "qservw_worker"
 )
 
 // QservGID qserv user gid
@@ -52,8 +73,10 @@ var ReplicationDatabaseReplicas int32 = 1
 type ContainerName string
 
 const (
-	// CmsdName name for cmsd containers
-	CmsdName ContainerName = "cmsd"
+	// CmsdRedirectorName name for cmsd containers
+	CmsdRedirectorName ContainerName = "cmsd-redirector"
+	// CmsdServerName name for cmsd containers
+	CmsdServerName ContainerName = "cmsd-server"
 	// DebuggerName name for debugger container
 	DebuggerName ContainerName = "debugger"
 	// IngestDbName name for ingest database container
@@ -68,8 +91,10 @@ const (
 	ReplCtlName ContainerName = "repl-ctl"
 	// ReplDbName name for replication database container
 	ReplDbName ContainerName = "repl-db"
-	// XrootdName name for xrootd container
-	XrootdName ContainerName = "xrootd"
+	// XrootdRedirectorName Name name for xrootd manager container
+	XrootdRedirectorName ContainerName = "xrootd-redirector"
+	// XrootdServerName name for xrootd containers
+	XrootdServerName ContainerName = "xrootd-server"
 	// ReplWrkName name for replication worker container
 	ReplWrkName ContainerName = "repl-wrk"
 )
@@ -112,15 +137,19 @@ var Command = []string{"/config-start/start.sh"}
 // CommandDebug is a prerequisite for interactive debugging
 var CommandDebug = []string{"sleep", "infinity"}
 
-// ContainerConfigmaps contain names of all micro-services which require configmaps named:
+// ContainerConfigmaps contain names of all containers which require configmaps both named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, XrootdName, ProxyName, ReplCtlName, ReplDbName, ReplWrkName}
+var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, ReplDbName}
+
+// ContainerWithStartConfigmap contain names of all containers which require configmaps named:
+// '<prefix>-<microservice-name>-start'
+var ContainerWithStartConfigmap = []ContainerName{CmsdRedirectorName, CmsdServerName, ProxyName, ReplCtlName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
 
 // WithMariadbImage list container based on Mariadb image
 var WithMariadbImage = []ContainerName{InitDbName, IngestDbName, MariadbName, ReplDbName}
 
 // WithQservImage list container based on Qserv image
-var WithQservImage = []ContainerName{CmsdName, XrootdName, ProxyName, ReplCtlName, ReplWrkName}
+var WithQservImage = []ContainerName{CmsdRedirectorName, CmsdServerName, XrootdName, ProxyName, ReplCtlName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
 
 // Databases contains names of all Qserv pods which embed a database container
 var Databases = []PodClass{Czar, ReplDb, Worker, IngestDb}
