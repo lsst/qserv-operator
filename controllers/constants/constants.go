@@ -36,8 +36,8 @@ const (
 	QservName = "qserv"
 	DotQserv  = "dot-qserv"
 
-	ReplicationControllerPort     = 8080
-	ReplicationControllerPortName = "http"
+	HTTPPort     = 8080
+	HTTPPortName = "http"
 
 	XrootdAdminPath           = "/var/run/xrootd"
 	XrootdAdminPathVolumeName = "xrootd-adminpath"
@@ -60,6 +60,8 @@ var QservGID int64 = 1000
 // QservUID qserv user uid
 var QservUID int64 = 1000
 
+var ProbeInitialDelaySeconds int32 = 30
+
 // IngestDatabaseReplicas Number of replicas for ingest database
 var IngestDatabaseReplicas int32 = 1
 
@@ -68,6 +70,9 @@ var ReplicationControllerReplicas int32 = 1
 
 // ReplicationDatabaseReplicas Number of replicas for replication database
 var ReplicationDatabaseReplicas int32 = 1
+
+// ReplicationRegistryReplicas Number of replicas for replication registry
+var ReplicationRegistryReplicas int32 = 1
 
 // ContainerName name all containers
 type ContainerName string
@@ -91,6 +96,8 @@ const (
 	ReplCtlName ContainerName = "repl-ctl"
 	// ReplDbName name for replication database container
 	ReplDbName ContainerName = "repl-db"
+	// ReplRegistry name for replication registry container
+	ReplRegistryName ContainerName = "repl-registry"
 	// XrootdRedirectorName Name name for xrootd manager container
 	XrootdRedirectorName ContainerName = "xrootd-redirector"
 	// XrootdServerName name for xrootd containers
@@ -126,7 +133,9 @@ const (
 	// ReplDb name pods of class Replication database
 	ReplDb PodClass = PodClass(ReplDbName)
 	// Worker name pods of class Replication worker
-	Worker PodClass = "worker"
+	// ReplRegistry name pods of class Replication registry
+	ReplRegistry PodClass = PodClass(ReplRegistryName)
+	Worker       PodClass = "worker"
 	// XrootdRedirector name pods of class Xrootd redirector
 	XrootdRedirector PodClass = "xrootd-redirector"
 )
@@ -143,7 +152,7 @@ var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, ReplDbName}
 
 // ContainerWithStartConfigmap contain names of all containers which require configmaps named:
 // '<prefix>-<microservice-name>-start'
-var ContainerWithStartConfigmap = []ContainerName{CmsdRedirectorName, CmsdServerName, ProxyName, ReplCtlName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
+var ContainerWithStartConfigmap = []ContainerName{CmsdRedirectorName, CmsdServerName, ProxyName, ReplCtlName, ReplRegistryName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
 
 // WithMariadbImage list container based on Mariadb image
 var WithMariadbImage = []ContainerName{InitDbName, IngestDbName, MariadbName, ReplDbName}

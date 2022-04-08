@@ -21,3 +21,4 @@ alias rbo="cdo && ./build.sh -k && ./push-image.sh -k && \
 alias ri="cdi && ./build-image.sh && ./argo-submit.sh"
 alias aw="argo watch @latest"
 alias ag="argo get @latest"
+alias ada="argo delete --all && kubectl delete job --all"

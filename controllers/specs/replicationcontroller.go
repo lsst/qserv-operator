@@ -19,7 +19,7 @@ func (c *ReplicationControllerSpec) GetName() string {
 	return util.GetName(c.qserv, string(constants.ReplCtl))
 }
 
-// Create generate statefulset specification for Qserv Czar
+// Create generate Statefulset specification for Replication Controller
 func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 	name := c.GetName()
 	cr := c.qserv
@@ -106,9 +106,9 @@ func (c *ReplicationControllerServiceSpec) Create() (client.Object, error) {
 			ClusterIP: v1.ClusterIPNone,
 			Ports: []v1.ServicePort{
 				{
-					Port:     constants.ReplicationControllerPort,
+					Port:     constants.HTTPPort,
 					Protocol: v1.ProtocolTCP,
-					Name:     constants.ReplicationControllerPortName,
+					Name:     constants.HTTPPortName,
 				},
 			},
 			Selector: labels,

@@ -1,15 +1,9 @@
 #!/bin/bash
 
-# Start Qserv replication controller service inside pod
-
+# Start Qserv replication controller
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -exo pipefail
-
-# Load parameters of the setup into the corresponding environment
-# variables
-
-# Start master controller
 
 . /secret-mariadb/mariadb.secret.sh
 . /secret-repl-db/repl-db.secret.sh
@@ -21,17 +15,17 @@ entrypoint --log-level DEBUG smig-update --repl-connection "{{.ReplicationDataba
 entrypoint --log-level DEBUG replication-controller \
     --db-uri "{{.ReplicationDatabaseURL}}" \
     --db-admin-uri "{{.ReplicationDatabaseRootURL}}" \
-{{- range $val := Iterate .WorkerReplicas}}{{$workerFQDN := print $.WorkerDN "-" $val "." $.WorkerDN}}
-    --worker qserv_worker_db=mysql://qsmaster@{{$workerFQDN}}:3306/qservw_worker,host={{$workerFQDN}} \
-{{- end}}
     --qserv-czar-db="{{.CzarDatabaseRootURL}}" \
     -- \
-    --instance-id="{{.QservInstance}}" \
-    --xrootd-host="{{.XrootdRedirectorDN}}" \
-    --controller-http-server-port="{{.ReplicationControllerPort}}" \
-    --controller-request-timeout-sec=57600 \
+    --controller-auto-register-workers=1 \
+    --controller-http-server-port="{{.HTTPPort}}" \
     --controller-job-timeout-sec=57600 \
-    --worker-evict-timeout=3600 \
+    --controller-request-timeout-sec=57600 \
     --health-probe-interval=120 \
-    --replication-interval=1200
+    --instance-id="{{.QservInstance}}" \
+    --registry-host="{{.ReplicationRegistryDN}}" \
+    --registry-port="{{.HTTPPort}}" \
+    --replication-interval=1200 \
+    --worker-evict-timeout=3600 \
+    --xrootd-host="{{.XrootdRedirectorDN}}"
 

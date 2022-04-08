@@ -19,7 +19,7 @@ entrypoint worker-repl \
   --db-admin-uri "{{.WorkerDatabaseLocalRootURL}}" \
   --repl-connection "{{.ReplicationDatabaseURL}}" \
   -- \
-  --worker-num-loader-processing-threads="{{.ReplicationLoaderProcessingThreads}}" \
-  --worker-num-http-loader-processing-threads="{{.ReplicationLoaderProcessingThreads}}" \
+  --registry-host="{{.ReplicationRegistryDN}}" \
+  --registry-port="{{.HTTPPort}}" \
   --instance-id="{{.QservInstance}}" \
   --debug \

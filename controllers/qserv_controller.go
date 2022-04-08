@@ -101,6 +101,8 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		&specs.QueryServiceSpec{},
 		&specs.ReplicationControllerServiceSpec{},
 		&specs.ReplicationControllerSpec{},
+		&specs.ReplicationRegistrySpec{},
+		&specs.ReplicationRegistryServiceSpec{},
 		&specs.ReplicationDatabaseSpec{},
 		&specs.ReplicationDatabaseServiceSpec{},
 		&specs.WorkerServiceSpec{},
@@ -185,6 +187,7 @@ func (r *QservReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&qservv1beta1.Qserv{}).
 		Owns(&v1.ConfigMap{}).
 		Owns(&v1.Service{}).
+		Owns(&appsv1.Deployment{}).
 		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }
@@ -200,7 +203,7 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 
 	var statefulsets appsv1.StatefulSetList
 	if err := r.List(ctx, &statefulsets, listOpts...); err != nil {
-		log.Error(err, "Unable to list Qserv Statefulsets")
+		log.Error(err, "Unable to list Qserv StatefulSets")
 		return ctrl.Result{}, err
 	}
 	hasStatefulSet := false
@@ -234,6 +237,32 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 		}
 	}
 
+	var deployments appsv1.DeploymentList
+	if err := r.List(ctx, &deployments, listOpts...); err != nil {
+		log.Error(err, "Unable to list Qserv Deployments")
+		return ctrl.Result{}, err
+	}
+	hasDeployment := false
+	var notReadyDeployment []appsv1.Deployment
+	for _, deployment := range deployments.Items {
+		hasDeployment = true
+		readyReplicas := deployment.Status.ReadyReplicas
+		desiredReplicas := *deployment.Spec.Replicas
+		readyFraction := fmt.Sprintf("%d/%d", readyReplicas, desiredReplicas)
+		log.Info("Check resource status", "resource kind", "Deployment", "resource name", deployment.Name, "ready fraction", readyFraction)
+		if readyReplicas != desiredReplicas {
+			notReadyDeployment = append(notReadyDeployment, deployment)
+		}
+
+		componentLabel := deployment.Labels["component"]
+		switch componentLabel {
+		case string(constants.ReplRegistry):
+			qserv.Status.ReplicationRegistryReadyFraction = readyFraction
+		default:
+			log.Info("Unknown label", "label-name", "component", "kind", "deployment", "name", deployment.Name, "ready fraction", readyFraction)
+		}
+	}
+
 	availableCondition := metav1.Condition{
 		Status: metav1.ConditionUnknown,
 		Type:   "Available",
@@ -241,12 +270,15 @@ func (r *QservReconciler) updateQservStatus(ctx context.Context, req ctrl.Reques
 	}
 	if !hasStatefulSet {
 		availableCondition.Status = metav1.ConditionFalse
-		availableCondition.Reason = "NotCreatedObjects"
+		availableCondition.Reason = "NotCreatedStatefulsets"
 		availableCondition.Message = "Statefulsets not yet created"
-	} else if len(notReadyStatefulSet) != 0 {
+	} else if !hasDeployment {
+		availableCondition.Status = metav1.ConditionFalse
+		availableCondition.Reason = "NotCreatedDeployment"
+		availableCondition.Message = "Deployment not yet created"
+	} else if len(notReadyStatefulSet) != 0 || len(notReadyDeployment) != 0 {
 		availableCondition.Status = metav1.ConditionFalse
 		availableCondition.Reason = "NotReadyPods"
-		availableCondition.Message = "Pod(s) not ready or available"
 		availableCondition.Message = "Pod(s) not ready or not available"
 	} else {
 		availableCondition.Status = metav1.ConditionTrue

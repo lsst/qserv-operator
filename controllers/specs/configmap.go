@@ -18,16 +18,15 @@ import (
 )
 
 type templateData struct {
-	CzarDatabaseRootURL       string
-	CzarDomainName            string
-	MariadbSocket             string
-	QservInstance             string
-	QstatusMysqldHost         string
-	ReplicationControllerPort uint
-	// Example: qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
-	ReplicationControllerFQDN          string
+	CzarDatabaseRootURL                string
+	MariadbSocket                      string
+	QservInstance                      string
+	QstatusMysqldHost                  string
+	HTTPPort                           uint
+	ReplicationControllerFQDN          string // Example: qserv-repl-ctl-0.qserv-repl-ctl.default.svc.cluster.local
 	ReplicationDatabaseURL             string
 	ReplicationDatabaseRootURL         string
+	ReplicationRegistryDN              string
 	ReplicationLoaderProcessingThreads uint
 	SocketQservUser                    string
 	SocketRootUser                     string
@@ -104,14 +103,14 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 	cpuLimit := r.Spec.Worker.ReplicationResources.Limits.Cpu()
 	return templateData{
 		CzarDatabaseRootURL:                util.GetCzarDatabaseRootURL(r),
-		CzarDomainName:                     util.GetCzarServiceName(r),
 		MariadbSocket:                      constants.MariadbSocket,
 		QservInstance:                      util.GetQservInstanceName(r),
 		QstatusMysqldHost:                  util.GetCzarServiceName(r),
-		ReplicationControllerPort:          constants.ReplicationControllerPort,
+		HTTPPort:                           constants.HTTPPort,
 		ReplicationControllerFQDN:          util.GetReplCtlFQDN(r),
 		ReplicationDatabaseURL:             util.GetReplicationDatabaseURL(r),
 		ReplicationDatabaseRootURL:         util.GetReplicationDatabaseRootURL(r),
+		ReplicationRegistryDN:              util.GetReplicationRegistryServiceName(r),
 		SocketQservUser:                    util.SocketQservUser,
 		SocketRootUser:                     util.SocketRootUser,
 		WorkerDN:                           util.GetWorkerServiceName(r),

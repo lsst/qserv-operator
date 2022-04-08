@@ -193,15 +193,15 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	container := v1.Container{
 		Command:         constants.Command,
-		LivenessProbe:   getHTTPProbe(constants.ReplicationControllerPortName, 10, probeTimeoutSeconds, "meta/version"),
-		ReadinessProbe:  getHTTPProbe(constants.ReplicationControllerPortName, 5, probeTimeoutSeconds, "meta/version"),
+		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, probeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, probeTimeoutSeconds, "meta/version"),
 		Name:            string(constants.ReplCtlName),
 		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Ports: []v1.ContainerPort{
 			{
-				Name:          constants.ReplicationControllerPortName,
-				ContainerPort: constants.ReplicationControllerPort,
+				Name:          constants.HTTPPortName,
+				ContainerPort: constants.HTTPPort,
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
@@ -213,6 +213,50 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
 
 	volumes.addStartVolume(constants.ReplCtlName)
+	volumes.addSecretVolume(constants.ReplDbName)
+	volumes.addSecretVolume(constants.MariadbName)
+
+	setDebug(spec.Replication.Debug, constants.ReplCtlName, &container)
+	return container, volumes.volumeSet
+}
+
+func getReplicationRegistryContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
+	spec := cr.Spec
+
+	var probeTimeoutSeconds int32 = 3
+	volumeMounts := []v1.VolumeMount{
+		getStartVolumeMount(constants.ReplRegistryName),
+		getSecretVolumeMount(constants.ReplDbName),
+		getSecretVolumeMount(constants.MariadbName),
+	}
+
+	var volumes InstanceVolumeSet
+	volumes.make(cr)
+
+	setCorePath(spec.Devel.CorePath, &volumeMounts, &volumes)
+
+	container := v1.Container{
+		Command:         constants.Command,
+		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, probeTimeoutSeconds, "workers"),
+		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, probeTimeoutSeconds, "workers"),
+		Name:            string(constants.ReplRegistryName),
+		Image:           spec.Image,
+		ImagePullPolicy: spec.ImagePullPolicy,
+		Ports: []v1.ContainerPort{
+			{
+				Name:          constants.HTTPPortName,
+				ContainerPort: constants.HTTPPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+		VolumeMounts: volumeMounts,
+	}
+
+	reqLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+
+	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
+
+	volumes.addStartVolume(constants.ReplRegistryName)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
@@ -358,7 +402,7 @@ func getHTTPProbe(portName string, periodSeconds int32, timeoutSeconds int32, pa
 	}
 	return &v1.Probe{
 		Handler:             *handler,
-		InitialDelaySeconds: 10,
+		InitialDelaySeconds: constants.ProbeInitialDelaySeconds,
 		PeriodSeconds:       periodSeconds,
 		TimeoutSeconds:      timeoutSeconds,
 	}

@@ -32,6 +32,11 @@ func GetWorkerServiceName(cr *qservv1beta1.Qserv) string {
 	return GetName(cr, string(constants.Worker))
 }
 
+// GetReplicationRegistryServiceName returns name of Replication registry service
+func GetReplicationRegistryServiceName(cr *qservv1beta1.Qserv) string {
+	return GetName(cr, string(constants.ReplRegistry))
+}
+
 // GetReplCtlServiceName returns name of Replication Con headless service
 func GetReplCtlServiceName(cr *qservv1beta1.Qserv) string {
 	return GetName(cr, string(constants.ReplCtl))

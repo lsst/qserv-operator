@@ -156,6 +156,7 @@ type QservStatus struct {
 	IngestDatabaseReadyFraction        string             `json:"ingestdatabasereadyfraction,omitempty"`
 	ReplicationControllerReadyFraction string             `json:"replicationcontrollerreadyfraction,omitempty"`
 	ReplicationDatabaseReadyFraction   string             `json:"replicationdatabasereadyfraction,omitempty"`
+	ReplicationRegistryReadyFraction   string             `json:"replicationregistryreadyfraction,omitempty"`
 	WorkerReadyFraction                string             `json:"workerreadyfraction,omitempty"`
 	XrootdReadyFraction                string             `json:"xrootdreadyfraction,omitempty"`
 }
@@ -163,13 +164,14 @@ type QservStatus struct {
 // Qserv is the Schema for the qservs API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Czar",type=string,JSONPath=`.status.czarreadyfraction`
-// +kubebuilder:printcolumn:name="Ingest-db",type=string,JSONPath=`.status.ingestdatabasereadyfraction`
-// +kubebuilder:printcolumn:name="Repl-ctl",type=string,JSONPath=`.status.replicationcontrollerreadyfraction`
-// +kubebuilder:printcolumn:name="Repl-db",type=string,JSONPath=`.status.replicationdatabasereadyfraction`
-// +kubebuilder:printcolumn:name="Worker",type=string,JSONPath=`.status.workerreadyfraction`
-// +kubebuilder:printcolumn:name="Xrootd",type=string,JSONPath=`.status.xrootdreadyfraction`
-// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="CZAR",type=string,JSONPath=`.status.czarreadyfraction`
+// +kubebuilder:printcolumn:name="INGEST-DB",type=string,JSONPath=`.status.ingestdatabasereadyfraction`
+// +kubebuilder:printcolumn:name="REPL-CTL",type=string,JSONPath=`.status.replicationcontrollerreadyfraction`
+// +kubebuilder:printcolumn:name="REPL-DB",type=string,JSONPath=`.status.replicationdatabasereadyfraction`
+// +kubebuilder:printcolumn:name="REPL-REGISTRY",type=string,JSONPath=`.status.replicationregistryreadyfraction`
+// +kubebuilder:printcolumn:name="WORKER",type=string,JSONPath=`.status.workerreadyfraction`
+// +kubebuilder:printcolumn:name="XROOTD",type=string,JSONPath=`.status.xrootdreadyfraction`
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 type Qserv struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

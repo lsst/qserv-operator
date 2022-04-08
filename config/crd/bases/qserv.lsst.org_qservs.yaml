@@ -18,25 +18,28 @@ spec:
   versions:
   - additionalPrinterColumns:
     - jsonPath: .status.czarreadyfraction
-      name: Czar
+      name: CZAR
       type: string
     - jsonPath: .status.ingestdatabasereadyfraction
-      name: Ingest-db
+      name: INGEST-DB
       type: string
     - jsonPath: .status.replicationcontrollerreadyfraction
-      name: Repl-ctl
+      name: REPL-CTL
       type: string
     - jsonPath: .status.replicationdatabasereadyfraction
-      name: Repl-db
+      name: REPL-DB
+      type: string
+    - jsonPath: .status.replicationregistryreadyfraction
+      name: REPL-REGISTRY
       type: string
     - jsonPath: .status.workerreadyfraction
-      name: Worker
+      name: WORKER
       type: string
     - jsonPath: .status.xrootdreadyfraction
-      name: Xrootd
+      name: XROOTD
       type: string
     - jsonPath: .metadata.creationTimestamp
-      name: Age
+      name: AGE
       type: date
     name: v1beta1
     schema:
@@ -4664,6 +4667,8 @@ spec:
               replicationcontrollerreadyfraction:
                 type: string
               replicationdatabasereadyfraction:
+                type: string
+              replicationregistryreadyfraction:
                 type: string
               workerreadyfraction:
                 type: string
