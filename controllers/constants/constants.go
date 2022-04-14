@@ -146,13 +146,13 @@ var Command = []string{"/config-start/start.sh"}
 // CommandDebug is a prerequisite for interactive debugging
 var CommandDebug = []string{"sleep", "infinity"}
 
-// ContainerConfigmaps contain names of all containers which require configmaps both named:
+// WithEtcStartConfigmaps contain names of all containers which require configmaps both named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var ContainerConfigmaps = []ContainerName{IngestDbName, MariadbName, ReplDbName}
+var WithEtcStartConfigmaps = []ContainerName{IngestDbName, MariadbName, ReplDbName}
 
-// ContainerWithStartConfigmap contain names of all containers which require configmaps named:
+// WithStartConfigmap contain names of all containers which require configmaps named:
 // '<prefix>-<microservice-name>-start'
-var ContainerWithStartConfigmap = []ContainerName{CmsdRedirectorName, CmsdServerName, ProxyName, ReplCtlName, ReplRegistryName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
+var WithStartConfigmap = []ContainerName{CmsdRedirectorName, CmsdServerName, ProxyName, ReplCtlName, ReplRegistryName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
 
 // WithMariadbImage list container based on Mariadb image
 var WithMariadbImage = []ContainerName{InitDbName, IngestDbName, MariadbName, ReplDbName}

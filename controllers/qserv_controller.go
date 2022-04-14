@@ -119,7 +119,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	}
 
 	objectSpecManagers = append(objectSpecManagers, configmapSpec)
-	for _, containerName := range constants.ContainerConfigmaps {
+	for _, containerName := range constants.WithEtcStartConfigmaps {
 		for _, subdir := range []string{"etc", "start"} {
 			configmapSpec = &specs.ContainerConfigMapSpec{
 				ContainerName: containerName,
@@ -129,7 +129,7 @@ func (r *QservReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		}
 	}
 
-	for _, containerName := range constants.ContainerWithStartConfigmap {
+	for _, containerName := range constants.WithStartConfigmap {
 		configmapSpec = &specs.ContainerConfigMapSpec{
 			ContainerName: containerName,
 			Subdir:        "start",
