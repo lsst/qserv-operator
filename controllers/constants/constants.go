@@ -60,6 +60,7 @@ var QservGID int64 = 1000
 // QservUID qserv user uid
 var QservUID int64 = 1000
 
+// ProbeInitialDelaySeconds default initial delay for all probes
 var ProbeInitialDelaySeconds int32 = 30
 
 // IngestDatabaseReplicas Number of replicas for ingest database
@@ -96,7 +97,7 @@ const (
 	ReplCtlName ContainerName = "repl-ctl"
 	// ReplDbName name for replication database container
 	ReplDbName ContainerName = "repl-db"
-	// ReplRegistry name for replication registry container
+	// ReplRegistryName name for replication registry container
 	ReplRegistryName ContainerName = "repl-registry"
 	// XrootdRedirectorName Name name for xrootd manager container
 	XrootdRedirectorName ContainerName = "xrootd-redirector"
@@ -132,10 +133,10 @@ const (
 	ReplCtl PodClass = PodClass(ReplCtlName)
 	// ReplDb name pods of class Replication database
 	ReplDb PodClass = PodClass(ReplDbName)
-	// Worker name pods of class Replication worker
 	// ReplRegistry name pods of class Replication registry
 	ReplRegistry PodClass = PodClass(ReplRegistryName)
-	Worker       PodClass = "worker"
+	// Worker name pods of class Replication worker
+	Worker PodClass = "worker"
 	// XrootdRedirector name pods of class Xrootd redirector
 	XrootdRedirector PodClass = "xrootd-redirector"
 )

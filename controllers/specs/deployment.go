@@ -6,7 +6,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// StatefulSetSpec provide default procedures for all Qserv Deployment specifications
+// DeploymentSpec provide default procedures for all Qserv Deployment specifications
 type DeploymentSpec struct {
 	qserv     *qservv1beta1.Qserv
 	hasUpdate bool

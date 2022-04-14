@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.1
+        uses: k8s-school/golang-github-actions@v1.1.2
         with:
           run: imports
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.1
+        uses: k8s-school/golang-github-actions@v1.1.2
         with:
           run: errcheck
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.1
+        uses: k8s-school/golang-github-actions@v1.1.2
         with:
           run: lint
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.1
+        uses: k8s-school/golang-github-actions@v1.1.2
         with:
           run: shadow
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -61,7 +61,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.1
+        uses: k8s-school/golang-github-actions@v1.1.2
         with:
           run: staticcheck
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,7 +73,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.1
+        uses: k8s-school/golang-github-actions@v1.1.2
         with:
           run: sec
           token: ${{ secrets.GITHUB_TOKEN }}
