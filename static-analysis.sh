@@ -10,7 +10,7 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 BINPATH="$(go env GOPATH)/bin"
 
-go get -u \
+go install \
 	github.com/kisielk/errcheck \
 	golang.org/x/tools/cmd/goimports \
 	golang.org/x/lint/golint \
