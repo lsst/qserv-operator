@@ -64,16 +64,16 @@ spec:
   #             operator: In
   #             values:
   #             - 'utility'
-  # replication:
-  #   affinity:
-  #     nodeAffinity:
-  #       requiredDuringSchedulingIgnoredDuringExecution:
-  #         nodeSelectorTerms:
-  #         - matchExpressions:
-  #           - key: tier
-  #             operator: In
-  #             values:
-  #             - 'utility'
+  replication:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - czar
   # xrootd:
   #   affinity:
   #     nodeAffinity:
