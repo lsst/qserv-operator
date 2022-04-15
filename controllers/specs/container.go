@@ -237,8 +237,8 @@ func getReplicationRegistryContainer(cr *qservv1beta1.Qserv) (v1.Container, Volu
 
 	container := v1.Container{
 		Command:         constants.Command,
-		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, probeTimeoutSeconds, "workers"),
-		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, probeTimeoutSeconds, "workers"),
+		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, probeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, probeTimeoutSeconds, "meta/version"),
 		Name:            string(constants.ReplRegistryName),
 		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
