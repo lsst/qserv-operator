@@ -67,26 +67,6 @@ jobs:
         run: |
           docker load --input artifacts/qserv-operator-image.tar
           echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
-      - name: Create grype configuration
-        run: |
-          cat <<EOF > $HOME/.grype.yaml
-          ignore:
-            # False positive, see https://github.com/anchore/grype/issues/558
-            - vulnerability: CVE-2015-5237
-              fix-state: unknown
-              package:
-                name: google.golang.org/protobuf
-                version: v1.26.0
-                type: go-module
-                location: "/manager"
-            - vulnerability: CVE-2021-22570
-              fix-state: unknown
-              package:
-                name: google.golang.org/protobuf
-                version: v1.26.0
-                type: go-module
-                location: "/manager"
-          EOF
       - name: Scan operator image
         uses: anchore/scan-action@v3
         id: scan
