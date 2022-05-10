@@ -161,8 +161,8 @@ var WithMariadbImage = []ContainerName{InitDbName, IngestDbName, MariadbName, Re
 // WithQservImage list container based on Qserv image
 var WithQservImage = []ContainerName{CmsdRedirectorName, CmsdServerName, XrootdName, ProxyName, ReplCtlName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
 
-// Databases contains names of all Qserv pods which embed a database container
-var Databases = []PodClass{Czar, Worker, IngestDb}
+// WithSQLConfigmap contains names of all Qserv pods which uses a SQL configmap
+var WithSQLConfigmap = []PodClass{Czar, Worker, IngestDb}
 
 // MicroserviceSecrets contains names of all micro-services which require secrets
 var MicroserviceSecrets = []ContainerName{MariadbName, ReplDbName}

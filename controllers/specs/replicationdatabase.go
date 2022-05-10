@@ -31,11 +31,10 @@ func (c *ReplicationDatabaseSpec) Create() (client.Object, error) {
 	storageClass := cr.Spec.StorageClass
 	storageSize := cr.Spec.StorageCapacity
 
-	initContainer, initVolumes := getInitContainer(cr, constants.ReplDb)
 	mariadbContainer, mariadbVolumes := getMariadbContainer(cr, constants.ReplDb)
 
 	var volumes VolumeSet
-	volumes.make(initVolumes, mariadbVolumes)
+	volumes.make(mariadbVolumes)
 
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -58,9 +57,6 @@ func (c *ReplicationDatabaseSpec) Create() (client.Object, error) {
 				},
 				Spec: v1.PodSpec{
 					Affinity: &cr.Spec.Replication.Affinity,
-					InitContainers: []v1.Container{
-						initContainer,
-					},
 					Containers: []v1.Container{
 						mariadbContainer,
 					},
