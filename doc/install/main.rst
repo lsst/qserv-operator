@@ -11,6 +11,7 @@ For all setups
 -  Access to a Kubernetes v1.19+ cluster via a valid ``KUBECONFIG`` file.
 -  Dynamic volume provisionning need to be available on the Kubernetes cluster (for example `kind <https://kind.sigs.k8s.io/>`__ for or
    GKE).
+- `cert-manager <https://cert-manager.io/docs/installation/>`_
 
 For a development workstation
 -----------------------------

@@ -64,6 +64,8 @@ This procedure is recommended for development platform only.
     RELEASE="2022.1.1-rc1"
     git clone --depth 1 --single-branch -b "$RELEASE" https://github.com/lsst/qserv-operator
     cd qserv-operator
+    # Install pre-requisites
+    ./prereq-install.sh
     # Deploy Qserv operator
     kubectl apply -f manifests/operator.yaml
     # Deploy Qserv
