@@ -33,7 +33,7 @@ For each directory, run the following command:
 ```
 cd <source_directory>
 # RELEASE format is "<YYYY>.<M>.<i>-rc<j>"
-RELEASE="2022.1.1-rc1"
+RELEASE="2022.5.1-rc1"
 ./publish-release.sh "$RELEASE"
 ```
 
@@ -44,7 +44,7 @@ This will automatically push the release tag to the repositories, and push the t
 The above step (i.e. release publishing) must have been completed before doing this one.
 
 ```
-RELEASE="2022.1.1-rc1"
+RELEASE="2022.5.1-rc1"
 OPERATOR_SRC_DIR="$PWD"
 # Clone community-operators and create a branch
 gh repo clone https://github.com/lsst/community-operators.git /tmp/community-operators
@@ -69,7 +69,7 @@ gh repo view --web
 
 If a CI test fail in PR for [community-operators](https://github.com/k8s-operatorhub/community-operators) official repository, it is possible to run it locally on a workstation using:
 ```
-RELEASE="2022.1.1-rc1"
+RELEASE="2022.5.1-rc1"
 OPP_PRODUCTION_TYPE=k8s bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) \
 kiwi operators/qserv-operator/$RELEASE
 ```
