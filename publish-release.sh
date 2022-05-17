@@ -50,8 +50,6 @@ export OP_VERSION="$releasetag"
 
 make yaml yaml-ns-scoped
 $DIR/build.sh
-# Make file below compliant with goimport requirements
-git checkout $DIR/api/v1beta1/zz_generated.deepcopy.go
 
 echo "Update Qserv images in manifests/base/image.yaml"
 sed -ri  "s/^(\s*image: qserv\/.*:).*/\1$releasetag/" $DIR/manifests/base/image.yaml
@@ -68,10 +66,4 @@ sed -ri  "s/(202[0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/$releasetag/" "$sample_file" 
 sed -ri  "s/replaces: qserv-operator\.v([0-9]+\.[0-9]+\.[0-9](-rc[0-9]+)?)/replaces: qserv-operator\.v$previous_version/"  "$csv_file"
 
 git add .
-git commit -m "Release $releasetag" || echo "Nothing to commit"
-git tag -a "$releasetag" -m "Version $releasetag"
-git push --follow-tags
-$DIR/push-image.sh
-
-echo "Publish release to operator hub"
-make bundle
+git commit -m "Prepare release $releasetag" || echo "Nothing to commit"
