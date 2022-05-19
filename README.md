@@ -44,7 +44,7 @@ Once the release CI pass, merge the release branch to `main` branch.
 
 In `main` branch, create the release tag and the image
 ```
-git tag -a "$releasetag" -m "Version $releasetag"
+git tag -a "$RELEASE" -m "Version $RELEASE"
 git push --follow-tags
 
 ./push-image.sh
