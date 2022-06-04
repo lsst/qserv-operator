@@ -26,7 +26,7 @@
 set -euxo pipefail
 
 INGEST_DIR="/tmp/qserv-ingest"
-INGEST_RELEASE="2022.5.2-rc1"
+INGEST_RELEASE="2022.6.1-rc1"
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
 
 echo "Run integration tests for Qserv"
