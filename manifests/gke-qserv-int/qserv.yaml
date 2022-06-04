@@ -12,5 +12,5 @@ spec:
       type: LoadBalancer
       loadBalancerIP: 10.136.1.211
   worker:
-    storage: "2Ti"
+    storage: "10Ti"
     replicas: 5
