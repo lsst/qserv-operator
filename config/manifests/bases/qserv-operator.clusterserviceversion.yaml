@@ -12,11 +12,11 @@ metadata:
           },
           "spec": {
             "czar": {
-              "image": "qserv/qserv:2022.6.1-rc1",
+              "image": "qserv/qserv:2022.6.2-rc1",
               "replicas": 1
             },
             "dashboard": {
-              "image": "qserv/dashboard:2022.6.1-rc1"
+              "image": "qserv/dashboard:2022.6.2-rc1"
             },
             "imagePullPolicy": "IfNotPresent",
             "ingest": {
@@ -24,16 +24,16 @@ metadata:
             },
             "replication": {
               "dbImage": "mariadb:10.2.16",
-              "image": "qserv/qserv:2022.6.1-rc1"
+              "image": "qserv/qserv:2022.6.2-rc1"
             },
             "storage": "1Gi",
             "storageClassName": "standard",
             "worker": {
-              "image": "qserv/qserv:2022.6.1-rc1",
+              "image": "qserv/qserv:2022.6.2-rc1",
               "replicas": 2
             },
             "xrootd": {
-              "image": "qserv/qserv:2022.6.1-rc1",
+              "image": "qserv/qserv:2022.6.2-rc1",
               "replicas": 2
             }
           }
@@ -43,7 +43,7 @@ metadata:
       CR"}}'
     capabilities: Basic Install
     categories: Database
-    containerImage: qserv/qserv-operator:2022.6.1-rc1
+    containerImage: qserv/qserv-operator:2022.6.2-rc1
     description: Create and maintain highly-available Qserv clusters on Kubernetes
     repository: https://github.com/lsst/qserv-operator
     support: Qserv team
@@ -79,12 +79,12 @@ spec:
     ## Usage
     - Create Qserv secrets, using this example script:
     ```
-    RELEASE="2022.6.1-rc1"
+    RELEASE="2022.6.2-rc1"
     kubectl apply -k "https://github.com/lsst/qserv-operator/manifests/secrets?ref=$RELEASE"
     ```
     - Deploy a basic Qserv cluster by creating a new `Qserv` resource in the namespace where the operator is installed.
     ```
-    RELEASE="2022.6.1-rc1"
+    RELEASE="2022.6.2-rc1"
     cat <<EOF > qserv.yaml
     apiVersion: qserv.lsst.org/v1alpha1
     kind: Qserv
@@ -153,5 +153,5 @@ spec:
   provider:
     name: Vera C. Rubin Observatory
     url: https://www.lsst.org/
-  replaces: qserv-operator.v2022.5.2-rc1
+  replaces: qserv-operator.v2022.6.1-rc1
   version: 0.0.0
