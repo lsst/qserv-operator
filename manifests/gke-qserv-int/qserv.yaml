@@ -5,7 +5,7 @@ metadata:
 spec:
   storage: "100Gi"
   czar:
-    storage: "500Gi"
+    storage: "4Ti"
   queryService:
       annotations:
         cloud.google.com/load-balancer-type: Internal
