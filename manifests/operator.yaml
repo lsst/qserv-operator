@@ -4979,7 +4979,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: qserv/qserv-operator:2022.6.3-rc1-dirty
+        image: qserv/qserv-operator:2022.6.3-rc1-1-gb592f57-dirty
         livenessProbe:
           httpGet:
             path: /healthz
