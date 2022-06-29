@@ -26,25 +26,12 @@
 set -euxo pipefail
 
 INGEST_DIR="/tmp/qserv-ingest"
-INGEST_RELEASE="2022.6.2-rc1"
+INGEST_RELEASE="tickets/DM-34521"
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
 
 echo "Run integration tests for Qserv"
 git clone https://github.com/lsst-dm/qserv-ingest "$INGEST_DIR"
-git -C "$INGEST_DIR" checkout "$INGEST_RELEASE" -b ci
+git -C "$INGEST_DIR" checkout "$INGEST_RELEASE"
+git -C "$INGEST_DIR" checkout -b ci
 "$INGEST_DIR"/prereq-install.sh
-kubectl apply -f "$INGEST_DIR"/tests/dataserver.yaml
-POD=$(kubectl get pods -l app=dataserver -o jsonpath='{.items[0].metadata.name}')
-kubectl wait --for=condition=available --timeout=600s deployment dataserver
-sed "s/INGEST_RELEASE=.*/INGEST_RELEASE=$INGEST_RELEASE/" "$INGEST_DIR"/env.example.sh > "$INGEST_DIR"/env.sh
-"$INGEST_DIR"/argo-submit.sh
-argo watch @latest
-PODS_ARGO_FAILED=$(kubectl get pods -l workflows.argoproj.io/completed=true -o jsonpath='{.items[*].metadata.name}' --field-selector=status.phase=Failed)
-for pod in $PODS_ARGO_FAILED
-do
-  echo "pod $pod log:"
-  echo "-----------------------------------------"
-  kubectl logs $pod -c main
-  echo "-----------------------------------------"
-done
-argo wait @latest
+"$INGEST_DIR"/itest/run-tests.sh
