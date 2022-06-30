@@ -313,6 +313,8 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 	var volumes InstanceVolumeSet
 	volumes.make(cr)
 
+	rootUser := int64(0)
+
 	if component == constants.XrootdRedirector {
 		cmsdVolumeMounts = getXrootdVolumeMounts(constants.CmsdRedirectorName)
 		xrootdVolumeMounts = getXrootdVolumeMounts(constants.XrootdRedirectorName)
@@ -333,6 +335,7 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 
 	containers := []v1.Container{
 		{
+			// cmsd
 			Name:            string(cmsdContainerName),
 			Image:           spec.Image,
 			ImagePullPolicy: cr.Spec.ImagePullPolicy,
@@ -348,6 +351,7 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 			VolumeMounts: cmsdVolumeMounts,
 		},
 		{
+			// xrootd
 			Name:            string(xrootdContainerName),
 			Image:           spec.Image,
 			ImagePullPolicy: cr.Spec.ImagePullPolicy,
@@ -361,15 +365,7 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 			Command:        constants.Command,
 			LivenessProbe:  getTCPProbe(constants.XrootdPortName, 10),
 			ReadinessProbe: getTCPProbe(constants.XrootdPortName, 5),
-			SecurityContext: &v1.SecurityContext{
-				Capabilities: &v1.Capabilities{
-					Add: []v1.Capability{
-						v1.Capability("IPC_LOCK"),
-						v1.Capability("SYS_RESOURCE"),
-					},
-				},
-			},
-			VolumeMounts: xrootdVolumeMounts,
+			VolumeMounts:   xrootdVolumeMounts,
 		},
 	}
 
@@ -384,6 +380,16 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 		}
 		containers[0].LivenessProbe = getTCPProbe(constants.CmsdPortName, 10)
 		containers[0].ReadinessProbe = getTCPProbe(constants.CmsdPortName, 5)
+	} else if component == constants.Worker {
+		containers[1].SecurityContext = &v1.SecurityContext{
+			RunAsUser: &rootUser,
+			Capabilities: &v1.Capabilities{
+				Add: []v1.Capability{
+					v1.Capability("IPC_LOCK"),
+					v1.Capability("SYS_RESOURCE"),
+				},
+			},
+		}
 	}
 
 	volumes.addStartVolume(cmsdContainerName)
