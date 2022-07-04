@@ -1,3 +1,4 @@
+
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 ;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 ;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL' ;
@@ -7,12 +8,12 @@ CREATE DATABASE qservIngest;
 USE qservIngest;
 
 -- --------------------------------------------------------------
--- Table `task`
+-- Table `contribfile_queue`
 -- --------------------------------------------------------------
 --
--- The list of chunks to load inside a Qserv database
--- Used as a queue by loader jobs
-CREATE TABLE `chunkfile_queue` (
+-- The list of contributions file to load inside a Qserv database
+-- Used as a queue by ingest jobs
+CREATE TABLE `contribfile_queue` (
 
   `id`                    INTEGER UNSIGNED    NOT NULL AUTO_INCREMENT,
   `chunk_id`              INTEGER UNSIGNED    DEFAULT NULL ,              -- the id of the chunk to load
@@ -31,3 +32,16 @@ CREATE TABLE `chunkfile_queue` (
 )
 ENGINE = InnoDB;
 
+-- --------------------------------------------------------------
+-- Table `mutex`
+-- --------------------------------------------------------------
+--
+-- Used to store the name of the pod which is currently locking contribfiles in the queue
+-- Only store one row
+CREATE TABLE `mutex` (
+  `pod`           VARCHAR(255) DEFAULT NULL,  -- the id of the pod which is currently using the mutex to lock a set of contribution file
+  `latest_move`   DATETIME NOT NULL           -- the latest time when the mutex was acquire/released
+)
+ENGINE = InnoDB;
+
+INSERT `mutex`(`latest_move`) VALUES (NOW());
