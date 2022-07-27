@@ -27,5 +27,6 @@ entrypoint --log-level DEBUG replication-controller \
     --registry-port="{{.HTTPPort}}" \
     --replication-interval=1200 \
     --worker-evict-timeout=3600 \
-    --xrootd-host="{{.XrootdRedirectorDN}}"
+    --xrootd-host="{{.XrootdRedirectorDN}}" \
+    --qserv-sync-force
 
