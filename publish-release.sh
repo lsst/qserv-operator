@@ -49,9 +49,9 @@ fi
 if [ $# -eq 1 ] ; then
   releasetag="$1"
   export OP_VERSION="$1"
-  message="Prepare release"
+  message="Publish release"
 else
-  message="Prepare version"
+  message="Publish version"
 fi
 
 . "$DIR/env.build.sh"
