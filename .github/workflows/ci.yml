@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -51,7 +51,7 @@ jobs:
           path: artifacts
   image-analysis:
     name: Analyze image
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     permissions:
       security-events: write
     needs: build
@@ -83,7 +83,7 @@ jobs:
           sarif_file: ${{ steps.scan.outputs.sarif }}
   e2e:
     name: Run e2e tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - name: Checkout code
@@ -130,7 +130,7 @@ jobs:
         run: ./tests/e2e/integration.sh
   push:
     name: Push qserv-operator image to public registry
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: e2e
     steps:
       - name: Download qserv-operator image
