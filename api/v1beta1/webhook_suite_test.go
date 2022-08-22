@@ -29,6 +29,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"k8s.io/client-go/rest"
+
 	//+kubebuilder:scaffold:imports
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -46,6 +48,7 @@ var k8sClient client.Client
 var testEnv *envtest.Environment
 var ctx context.Context
 var cancel context.CancelFunc
+var cfg *rest.Config
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -69,7 +72,9 @@ var _ = BeforeSuite(func() {
 		},
 	}
 
-	cfg, err := testEnv.Start()
+	var err error
+	cfg, err = testEnv.Start()
+
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 

@@ -400,14 +400,14 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 }
 
 func getHTTPProbe(portName string, periodSeconds int32, timeoutSeconds int32, path string) *v1.Probe {
-	handler := &v1.Handler{
+	handler := &v1.ProbeHandler{
 		HTTPGet: &v1.HTTPGetAction{
 			Path: path,
 			Port: intstr.FromString(portName),
 		},
 	}
 	return &v1.Probe{
-		Handler:             *handler,
+		ProbeHandler:        *handler,
 		InitialDelaySeconds: constants.ProbeInitialDelaySeconds,
 		PeriodSeconds:       periodSeconds,
 		TimeoutSeconds:      timeoutSeconds,
@@ -415,13 +415,13 @@ func getHTTPProbe(portName string, periodSeconds int32, timeoutSeconds int32, pa
 }
 
 func getTCPProbe(portName string, periodSeconds int32) *v1.Probe {
-	handler := &v1.Handler{
+	handler := &v1.ProbeHandler{
 		TCPSocket: &v1.TCPSocketAction{
 			Port: intstr.FromString(portName),
 		},
 	}
 	return &v1.Probe{
-		Handler:             *handler,
+		ProbeHandler:        *handler,
 		InitialDelaySeconds: 10,
 		PeriodSeconds:       periodSeconds,
 	}
