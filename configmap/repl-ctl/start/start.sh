@@ -15,12 +15,14 @@ entrypoint --log-level DEBUG smig-update --repl-connection "{{.ReplicationDataba
 entrypoint --log-level DEBUG replication-controller \
     --db-uri "{{.ReplicationDatabaseURL}}" \
     --db-admin-uri "{{.ReplicationDatabaseRootURL}}" \
-    --qserv-czar-db="{{.CzarDatabaseRootURL}}" \
+    --qserv-czar-db="{{.CzarDatabaseRootURL}}"  \
+    --log-cfg-file "/cm-etc/log.cnf" \
     -- \
     --controller-auto-register-workers=1 \
     --controller-http-server-port="{{.HTTPPort}}" \
     --controller-job-timeout-sec=57600 \
     --controller-request-timeout-sec=57600 \
+    --debug \
     --health-probe-interval=120 \
     --instance-id="{{.QservInstance}}" \
     --registry-host="{{.ReplicationRegistryDN}}" \

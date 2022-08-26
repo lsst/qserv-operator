@@ -12,8 +12,8 @@ set -exo pipefail
 entrypoint --log-level DEBUG replication-registry \
     --db-uri "{{.ReplicationDatabaseURL}}" \
     --db-admin-uri "{{.ReplicationDatabaseRootURL}}" \
+    --log-cfg-file "/cm-etc/log.cnf" \
     -- \
     --instance-id="{{.QservInstance}}" \
-    --registry-port="{{.HTTPPort}}" \
-    --debug
+    --registry-port="{{.HTTPPort}}"
 

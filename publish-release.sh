@@ -7,7 +7,7 @@
 
 set -exuo pipefail
 
-minimal=false
+release=true
 OP_VERSION=""
 releasetag=""
 
@@ -35,7 +35,7 @@ EOD
 while getopts hm c ; do
     case $c in
       h) usage ; exit 0 ;;
-      m) minimal=true ;;
+      m) release=false ;;
       \?) usage ; exit 2 ;;
     esac
 done
@@ -67,7 +67,7 @@ $DIR/build.sh
 $DIR/push-image.sh
 make yaml yaml-ns-scoped
 
-if [ $minimal = false ]; then
+if [ "$release" = true ]; then
 
   echo "Update Qserv images in manifests/base/image.yaml"
   sed -ri  "s/^(\s*image: qserv\/.*:).*/\1$releasetag/" $DIR/manifests/base/image.yaml
@@ -87,3 +87,9 @@ fi
 
 git add .
 git commit -m "$message $VERSION" || echo "Nothing to commit"
+
+if [ "$release" = true ]; then
+  git tag -a "$releasetag" -m "Version $releasetag"
+  git push --follow-tags
+fi
+

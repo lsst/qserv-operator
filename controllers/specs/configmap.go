@@ -74,17 +74,25 @@ func applyTemplate(path string, tmplData *templateData) (string, error) {
 func scanDir(root string, reqLogger logr.Logger, tmplData *templateData) map[string]string {
 	files := make(map[string]string)
 	reqLogger.Info(fmt.Sprintf("Walk through %s", root))
-	err := filepath.Walk(root,
-		func(path string, info os.FileInfo, err error) error {
-			if !info.IsDir() {
-				reqLogger.Info(fmt.Sprintf("Scan %s", path))
-				files[info.Name()], _ = applyTemplate(path, tmplData)
-			}
-			return nil
-		})
+	fileinfo, err := os.Stat(root)
+	if os.IsNotExist(err) {
+		reqLogger.V(0).Info("Path does not exist", "path", root)
+	} else if !fileinfo.IsDir() {
+		err = fmt.Errorf("path is not a directory: %s", root)
+	} else {
+		err = filepath.Walk(root,
+			func(path string, info os.FileInfo, err error) error {
+				if !info.IsDir() {
+					reqLogger.V(5).Info("Scan path", "path", path)
+					files[info.Name()], _ = applyTemplate(path, tmplData)
+				}
+				return nil
+			})
+	}
 	if err != nil {
 		reqLogger.Error(err, fmt.Sprintf("Cannot walk path: %s", root))
 	}
+
 	return files
 }
 

@@ -55,7 +55,6 @@ Update Qserv configuration by updating its related k8s configmaps.
 
 .. code:: shell
 
-
        # List configmaps
        $ kubectl get configmaps -l app=qserv,instance="$INSTANCE"
 
@@ -68,13 +67,28 @@ Update Qserv configuration by updating its related k8s configmaps.
        # A Qserv re-install will reset the configmap, so eventually, backup the configmap locally
        $ kubectl get cm "$INSTANCE"-repl-ctl-etc -o yaml > "$INSTANCE".bck.yaml
 
+Configure log level
+===================
+
+The above technique can be used to configure logging level for `xrootd` and `cmsd servers`,
+`replication worker` and `replication controller` and `czar proxy`.
+
+For example, for `cmsd server`:
+
+.. code:: shell
+
+       kubectl edit cm qserv-cmsd-server-etc
+       # Then update log.cnf
+       # And restart Qserv worker pods
+       kubectl delete pods app=qserv,component=worker
+
 Launch commands directly on Qserv nodes
 =======================================
 
 Check if pod worker-0 can connect to replication database and dump it configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: sh
+.. code:: shell
 
     $ kubectl exec -it "$INSTANCE"-worker-0 -c repl-wrk -- mysql -h "$INSTANCE"-repl-db -u qsreplica -e "SELECT * FROM qservReplica.config;"
     +------------+---------------------------------+-----------------------------+
@@ -96,7 +110,7 @@ Check if pod worker-0 can connect to replication database and dump it configurat
 Delete a qserv instance and related storage
 ===========================================
 
-.. code:: sh
+.. code:: shell
 
     # Delete all qserv instances in current namespace
     kubectl delete qservs.qserv.lsst.org --all

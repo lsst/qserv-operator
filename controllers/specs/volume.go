@@ -7,6 +7,7 @@ import (
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
+	"golang.org/x/exp/maps"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -110,6 +111,11 @@ func (vs VolumeSet) toSlice() []v1.Volume {
 	return volumes
 }
 
+func (vs VolumeSet) getNames() []string {
+	names := maps.Keys(vs)
+	return names
+}
+
 func (ivs *InstanceVolumeSet) addEtcVolume(containerName constants.ContainerName) {
 	suffix := fmt.Sprintf("%s-etc", containerName)
 	ivs.addConfigMapVolume(suffix)
@@ -121,8 +127,12 @@ func (ivs *InstanceVolumeSet) addStartVolume(containerName constants.ContainerNa
 }
 
 func (ivs *InstanceVolumeSet) addEtcStartVolumes(containerName constants.ContainerName) {
-	ivs.addEtcVolume(containerName)
-	ivs.addStartVolume(containerName)
+	if util.HasValue(string(containerName), constants.WithEtcStartConfigmaps) {
+		ivs.addStartVolume(containerName)
+		ivs.addEtcVolume(containerName)
+	} else if util.HasValue(string(containerName), constants.WithStartConfigmap) {
+		ivs.addStartVolume(containerName)
+	}
 }
 
 func getAdminPathMount() v1.VolumeMount {
@@ -146,8 +156,8 @@ func getDataVolumeMount() v1.VolumeMount {
 	}
 }
 
-func getMysqlCnfVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
-	volumeName := fmt.Sprintf("config-%s-etc", microservice)
+func getMysqlEtcVolumeMount(container constants.ContainerName) v1.VolumeMount {
+	volumeName := fmt.Sprintf("config-%s-etc", container)
 	return v1.VolumeMount{
 		Name:      volumeName,
 		MountPath: "/etc/mysql/my.cnf",
@@ -162,9 +172,14 @@ func getSecretVolumeMount(containerName constants.ContainerName) v1.VolumeMount 
 		ReadOnly:  true}
 }
 
+func getEtcVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
+	volumeName := fmt.Sprintf("config-%s-etc", microservice)
+	return v1.VolumeMount{Name: volumeName, MountPath: constants.ConfigmapPathEtc}
+}
+
 func getStartVolumeMount(microservice constants.ContainerName) v1.VolumeMount {
 	volumeName := fmt.Sprintf("config-%s-start", microservice)
-	return v1.VolumeMount{Name: volumeName, MountPath: "/config-start"}
+	return v1.VolumeMount{Name: volumeName, MountPath: constants.ConfigmapPathStart}
 }
 
 func getTmpVolumeMount() v1.VolumeMount {
@@ -174,15 +189,34 @@ func getTmpVolumeMount() v1.VolumeMount {
 		ReadOnly:  false,
 	}
 }
-func getXrootdVolumeMounts(microservice constants.ContainerName) []v1.VolumeMount {
+func getXrootdVolumeMounts(containerName constants.ContainerName) []v1.VolumeMount {
 	volumeMounts := []v1.VolumeMount{
 		getAdminPathMount(),
-		getStartVolumeMount(microservice),
 	}
 
+	volumeMounts = appendEtcStartVolumeMounts(volumeMounts, containerName)
+
 	// xrootd/cmsd workers only
-	if microservice == constants.CmsdServerName || microservice == constants.XrootdServerName {
+	if containerName == constants.CmsdServerName || containerName == constants.XrootdServerName {
 		volumeMounts = append(volumeMounts, getDataVolumeMount())
 	}
 	return volumeMounts
+}
+
+func appendEtcStartVolumeMounts(volumeMounts []v1.VolumeMount, containerName constants.ContainerName) []v1.VolumeMount {
+	if util.HasValue(string(containerName), constants.WithEtcStartConfigmaps) {
+		volumeMounts = append(volumeMounts, getStartVolumeMount(containerName))
+		volumeMounts = append(volumeMounts, getEtcVolumeMount(containerName))
+	} else if util.HasValue(string(containerName), constants.WithStartConfigmap) {
+		volumeMounts = append(volumeMounts, getStartVolumeMount(containerName))
+	}
+	return volumeMounts
+}
+
+func getNames(volumeMounts []v1.VolumeMount) []string {
+	names := []string{}
+	for _, v := range volumeMounts {
+		names = append(names, v.Name)
+	}
+	return names
 }
