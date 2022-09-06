@@ -1,0 +1,16 @@
+apiVersion: qserv.lsst.org/v1beta1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storage: "100Gi"
+  czar:
+    storageClassName: null
+    proxyResources:
+      requests:
+        cpu: null
+  worker:
+    replicas: 2
+    replicationResources:
+      limits:
+        cpu: null

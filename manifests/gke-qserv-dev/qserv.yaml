@@ -4,10 +4,10 @@ metadata:
   name: qserv
 spec:
   storageClassName: "qserv"
-  storage: "200Gi"
+  storage: "1Ti"
   czar:
     storageClassName: "czar"
-    storage: "1Ti"
+    storage: "3Ti"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -27,7 +27,7 @@ spec:
       #type: LoadBalancer
       type: ClusterIP
   worker:
-    storage: "3Ti"
+    storage: "6Ti"
     affinity:
       podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

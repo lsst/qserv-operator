@@ -1,6 +1,7 @@
 
 QSERV_OPERATOR_SRC_DIR="~/src/qserv-operator"
 QSERV_INGEST_SRC_DIR="~/src/qserv-ingest"
+QSERV_INGEST_SRC_DIR="~/src/gcp-qserv"
 
 alias cdo="cd $QSERV_OPERATOR_SRC_DIR"
 alias cdi="cd $QSERV_INGEST_SRC_DIR"
@@ -18,6 +19,10 @@ alias gkrq="delete-qserv && kubectl apply -k $QSERV_OPERATOR_SRC_DIR/manifests/g
 alias rbo="cdo && ./build.sh -k && ./push-image.sh -k && \
            kubectl delete deployment,pod -n qserv-operator-system --all && \
            ./deploy.sh && krq"
+
+# Aliases for gcp
+#################
+alias rmstor="$QSERV_INGEST_SRC_DIR/delete-released-pv.sh ; $QSERV_INGEST_SRC_DIR/delete-unused-gke-disks.sh"
 
 # Aliases for qserv-ingest
 ##########################
