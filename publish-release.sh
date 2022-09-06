@@ -7,6 +7,7 @@
 
 set -exuo pipefail
 
+minimal=false
 OP_VERSION=""
 releasetag=""
 
@@ -33,9 +34,9 @@ EOD
 # get the options
 while getopts hm c ; do
     case $c in
-	    h) usage ; exit 0 ;;
-            m) minimal=true ;;
-	    \?) usage ; exit 2 ;;
+      h) usage ; exit 0 ;;
+      m) minimal=true ;;
+      \?) usage ; exit 2 ;;
     esac
 done
 shift `expr $OPTIND - 1`
@@ -52,6 +53,12 @@ if [ $# -eq 1 ] ; then
   message="Publish release"
 else
   message="Publish version"
+fi
+
+if [[ "$releasetag" =~ '/' || "$releasetag" =~ '\' ]]
+then
+  >&2 echo "ERROR: Found '\' or '/' in release tag $releasetag"
+  exit 1
 fi
 
 . "$DIR/env.build.sh"
