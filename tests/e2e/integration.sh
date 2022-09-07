@@ -26,12 +26,11 @@
 set -euxo pipefail
 
 INGEST_DIR="/tmp/qserv-ingest"
-INGEST_RELEASE="tickets/DM-35399"
+INGEST_VERSION="main"
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
 
 echo "Run integration tests for Qserv"
-git clone https://github.com/lsst-dm/qserv-ingest "$INGEST_DIR"
-git -C "$INGEST_DIR" checkout "$INGEST_RELEASE"
+git clone https://github.com/lsst-dm/qserv-ingest.git  --branch "$INGEST_VERSION" --single-branch "$INGEST_DIR"
 git -C "$INGEST_DIR" checkout -b ci
 "$INGEST_DIR"/prereq-install.sh
 "$INGEST_DIR"/itest/run-tests.sh
