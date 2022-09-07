@@ -26,11 +26,22 @@
 set -euxo pipefail
 
 INGEST_DIR="/tmp/qserv-ingest"
-INGEST_VERSION="main"
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REPO_URL="https://github.com/lsst-dm/qserv-ingest.git"
+
+# Retrieve same qserv-ingest branch if it exists, else use qserv-ingest main branch
+if git ls-remote --exit-code --heads "$REPO_URL" "$BRANCH"
+then
+    INGEST_VERSION="$BRANCH"
+else
+    INGEST_VERSION="main"
+fi
+
 INSTANCE=$(kubectl get qservs.qserv.lsst.org -o=jsonpath='{.items[0].metadata.name}')
 
 echo "Run integration tests for Qserv"
-git clone https://github.com/lsst-dm/qserv-ingest.git  --branch "$INGEST_VERSION" --single-branch "$INGEST_DIR"
+git clone "$REPO_URL"  --branch "$INGEST_VERSION" --single-branch "$INGEST_DIR"
 git -C "$INGEST_DIR" checkout -b ci
 "$INGEST_DIR"/prereq-install.sh
 "$INGEST_DIR"/itest/run-tests.sh
