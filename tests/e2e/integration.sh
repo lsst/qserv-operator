@@ -27,7 +27,8 @@ set -euxo pipefail
 
 INGEST_DIR="/tmp/qserv-ingest"
 
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+BRANCH=${GHA_BRANCH_NAME:-$GIT_BRANCH}
 REPO_URL="https://github.com/lsst-dm/qserv-ingest.git"
 
 # Retrieve same qserv-ingest branch if it exists, else use qserv-ingest main branch
