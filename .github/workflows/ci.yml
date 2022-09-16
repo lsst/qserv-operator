@@ -85,6 +85,8 @@ jobs:
     name: Run e2e tests
     runs-on: ubuntu-22.04
     needs: build
+    env:
+      GHA_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
