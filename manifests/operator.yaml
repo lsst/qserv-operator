@@ -2908,7 +2908,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: qserv/qserv-operator:2022.9.1-rc1-3-g7be7878
+        image: qserv/qserv-operator:2022.9.1-rc1-1-g9426a26
         livenessProbe:
           httpGet:
             path: /healthz
