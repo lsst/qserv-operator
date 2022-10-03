@@ -17,7 +17,7 @@ const (
 
 	ConfigmapPathEtc   = "/cm-etc"
 	ConfigmapPathStart = "/cm-start"
-	ConfigmapPathSql   = "/cm-sql"
+	ConfigmapPathSQL   = "/cm-sql"
 
 	DataVolumeClaimTemplateName = QservName + "-data"
 

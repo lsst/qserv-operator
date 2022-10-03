@@ -22,7 +22,7 @@ jobs:
           sudo apt-get purge golang-go
       - uses: actions/setup-go@v3
         with:
-          go-version: '^1.17.8'
+          go-version: '^1.19.1'
       - run: go version
       - name: Install go dependencies
         run: |

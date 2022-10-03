@@ -61,7 +61,7 @@ func getInitContainer(cr *qservv1beta1.Qserv, component constants.PodClass) (v1.
 		getStartVolumeMount(constants.InitDbName),
 		getSecretVolumeMount(constants.MariadbName),
 		{
-			MountPath: filepath.Join(constants.ConfigmapPathSql, componentName),
+			MountPath: filepath.Join(constants.ConfigmapPathSQL, componentName),
 			Name:      util.GetConfigVolumeName(sqlConfigSuffix),
 			ReadOnly:  true,
 		},
