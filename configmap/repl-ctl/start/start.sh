@@ -15,7 +15,7 @@ entrypoint --log-level DEBUG smig-update --repl-connection "{{.ReplicationDataba
 entrypoint --log-level DEBUG replication-controller \
     --db-uri "{{.ReplicationDatabaseURL}}" \
     --db-admin-uri "{{.ReplicationDatabaseRootURL}}" \
-    --qserv-czar-db="{{.CzarDatabaseRootURL}}"  \
+    --qserv-czar-db="{{.CzarDatabaseRootURL}}" \
     --log-cfg-file "/cm-etc/log.cnf" \
     -- \
     --controller-auto-register-workers=1 \
