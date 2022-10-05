@@ -13,11 +13,14 @@
 
 set -ex
 
+PASSWORD=CHANGEME
+
 # Hack to upgrade database schema
 # FIXME improve it
-entrypoint --log-level DEBUG smig-update --czar-connection mysql://root:CHANGEME@localhost:3306
+entrypoint --log-level DEBUG smig-update --czar-connection mysql://root:$PASSWORD@localhost:3306
 
 entrypoint --log-level DEBUG proxy \
-  --db-uri 'mysql://qsmaster@127.0.0.1:3306?socket={{.MariadbSocket}}' \
-  --db-admin-uri 'mysql://root:CHANGEME@127.0.0.1:3306?socket={{.MariadbSocket}}' \
-  --xrootd-manager qserv-xrootd-redirector
+  --db-uri "mysql://qsmaster@127.0.0.1:3306?socket={{.MariadbSocket}}" \
+  --db-admin-uri "mysql://root:$PASSWORD@127.0.0.1:3306?socket={{.MariadbSocket}}" \
+  --xrootd-manager qserv-xrootd-redirector \
+  --log-cfg-file /cm-etc/log.cnf

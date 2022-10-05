@@ -16,7 +16,7 @@ set -euxo pipefail
 MYSQL_INGEST_PASSWORD=''
 MYSQL_REPLICA_PASSWORD=''
 MYSQL_MONITOR_PASSWORD=''
-SQL_DIR="/config-sql"
+SQL_DIR="/cm-sql"
 
 # Used for Qserv czar and worker databases
 

@@ -15,6 +15,10 @@ const (
 
 	CzarDatabase = "qservMeta"
 
+	ConfigmapPathEtc   = "/cm-etc"
+	ConfigmapPathStart = "/cm-start"
+	ConfigmapPathSQL   = "/cm-sql"
+
 	DataVolumeClaimTemplateName = QservName + "-data"
 
 	Localhost = "127.0.0.1"
@@ -142,18 +146,18 @@ const (
 )
 
 // Command contain the default command used to launch a container
-var Command = []string{"/config-start/start.sh"}
+var Command = []string{ConfigmapPathStart + "/start.sh"}
 
 // CommandDebug is a prerequisite for interactive debugging
 var CommandDebug = []string{"sleep", "infinity"}
 
 // WithEtcStartConfigmaps contain names of all containers which require configmaps both named:
 // '<prefix>-<microservice-name>-etc' and '<prefix>-<microservice-name>-start'
-var WithEtcStartConfigmaps = []ContainerName{IngestDbName, MariadbName, ReplDbName}
+var WithEtcStartConfigmaps = []ContainerName{CmsdServerName, IngestDbName, MariadbName, ProxyName, ReplCtlName, ReplDbName, ReplRegistryName, ReplWrkName, XrootdServerName}
 
 // WithStartConfigmap contain names of all containers which require configmaps named:
 // '<prefix>-<microservice-name>-start'
-var WithStartConfigmap = []ContainerName{CmsdRedirectorName, CmsdServerName, ProxyName, ReplCtlName, ReplRegistryName, ReplWrkName, XrootdServerName, XrootdRedirectorName}
+var WithStartConfigmap = []ContainerName{CmsdRedirectorName, XrootdRedirectorName}
 
 // WithMariadbImage list container based on Mariadb image
 var WithMariadbImage = []ContainerName{InitDbName, IngestDbName, MariadbName, ReplDbName}

@@ -55,12 +55,24 @@ func getInitContainer(cr *qservv1beta1.Qserv, component constants.PodClass) (v1.
 
 	dbContainerName := constants.GetDbContainerName(component)
 
+	volumeMounts := []v1.VolumeMount{
+		getDataVolumeMount(),
+		getMysqlEtcVolumeMount(dbContainerName),
+		getStartVolumeMount(constants.InitDbName),
+		getSecretVolumeMount(constants.MariadbName),
+		{
+			MountPath: filepath.Join(constants.ConfigmapPathSQL, componentName),
+			Name:      util.GetConfigVolumeName(sqlConfigSuffix),
+			ReadOnly:  true,
+		},
+	}
+
 	container := v1.Container{
 		Name:            string(constants.InitDbName),
 		Image:           cr.Spec.DbImage,
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
 		Command: []string{
-			"/config-start/initdb.sh",
+			constants.ConfigmapPathStart + "/initdb.sh",
 		},
 		Env: []v1.EnvVar{
 			{
@@ -68,18 +80,7 @@ func getInitContainer(cr *qservv1beta1.Qserv, component constants.PodClass) (v1.
 				Value: componentName,
 			},
 		},
-		VolumeMounts: []v1.VolumeMount{
-			getDataVolumeMount(),
-			getMysqlCnfVolumeMount(dbContainerName),
-			// db startup script and root passwords are shared
-			getStartVolumeMount(constants.InitDbName),
-			getSecretVolumeMount(constants.MariadbName),
-			{
-				MountPath: filepath.Join("/", "config-sql", componentName),
-				Name:      util.GetConfigVolumeName(sqlConfigSuffix),
-				ReadOnly:  true,
-			},
-		},
+		VolumeMounts: volumeMounts,
 	}
 
 	var volumes InstanceVolumeSet
@@ -104,6 +105,14 @@ func getMariadbContainer(cr *qservv1beta1.Qserv, pod constants.PodClass) (v1.Con
 
 	mariadbPortName := string(constants.MariadbName)
 
+	volumeMounts := []v1.VolumeMount{
+		getDataVolumeMount(),
+		getMysqlEtcVolumeMount(dbContainerName),
+		getTmpVolumeMount(),
+	}
+
+	volumeMounts = appendEtcStartVolumeMounts(volumeMounts, dbContainerName)
+
 	// Volumes
 	var volumes InstanceVolumeSet
 	volumes.make(cr)
@@ -126,12 +135,7 @@ func getMariadbContainer(cr *qservv1beta1.Qserv, pod constants.PodClass) (v1.Con
 			},
 		},
 		ReadinessProbe: getTCPProbe(constants.MariadbPortName, 5),
-		VolumeMounts: []v1.VolumeMount{
-			getDataVolumeMount(),
-			getMysqlCnfVolumeMount(dbContainerName),
-			getStartVolumeMount(dbContainerName),
-			getTmpVolumeMount(),
-		},
+		VolumeMounts:   volumeMounts,
 	}
 
 	return container, volumes.volumeSet
@@ -144,8 +148,9 @@ func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 		// Used for mysql socket access
 		// TODO move mysql socket in emptyDir?
 		getDataVolumeMount(),
-		getStartVolumeMount(constants.ProxyName),
 	}
+
+	volumeMounts = appendEtcStartVolumeMounts(volumeMounts, constants.ProxyName)
 
 	// Volumes
 	var volumes InstanceVolumeSet
@@ -171,7 +176,7 @@ func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 		VolumeMounts:   volumeMounts,
 	}
 
-	volumes.addStartVolume(constants.ProxyName)
+	volumes.addEtcStartVolumes(constants.ProxyName)
 
 	return container, volumes.volumeSet
 }
@@ -181,10 +186,11 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	var probeTimeoutSeconds int32 = 3
 	volumeMounts := []v1.VolumeMount{
-		getStartVolumeMount(constants.ReplCtlName),
 		getSecretVolumeMount(constants.ReplDbName),
 		getSecretVolumeMount(constants.MariadbName),
 	}
+
+	volumeMounts = appendEtcStartVolumeMounts(volumeMounts, constants.ReplCtlName)
 
 	var volumes InstanceVolumeSet
 	volumes.make(cr)
@@ -212,7 +218,8 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
 
-	volumes.addStartVolume(constants.ReplCtlName)
+	volumes.addEtcStartVolumes(constants.ReplCtlName)
+
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
@@ -225,10 +232,11 @@ func getReplicationRegistryContainer(cr *qservv1beta1.Qserv) (v1.Container, Volu
 
 	var probeTimeoutSeconds int32 = 3
 	volumeMounts := []v1.VolumeMount{
-		getStartVolumeMount(constants.ReplRegistryName),
 		getSecretVolumeMount(constants.ReplDbName),
 		getSecretVolumeMount(constants.MariadbName),
 	}
+
+	volumeMounts = appendEtcStartVolumeMounts(volumeMounts, constants.ReplRegistryName)
 
 	var volumes InstanceVolumeSet
 	volumes.make(cr)
@@ -256,7 +264,7 @@ func getReplicationRegistryContainer(cr *qservv1beta1.Qserv) (v1.Container, Volu
 
 	reqLogger.Info(fmt.Sprintf("Debug level for replication controller: %s", spec.Replication.Debug))
 
-	volumes.addStartVolume(constants.ReplRegistryName)
+	volumes.addEtcStartVolumes(constants.ReplRegistryName)
 	volumes.addSecretVolume(constants.ReplDbName)
 	volumes.addSecretVolume(constants.MariadbName)
 
@@ -269,10 +277,11 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	volumeMounts := []v1.VolumeMount{
 		getDataVolumeMount(),
-		getStartVolumeMount(constants.ReplWrkName),
 		getSecretVolumeMount(constants.MariadbName),
 		getSecretVolumeMount(constants.ReplDbName),
 	}
+
+	volumeMounts = appendEtcStartVolumeMounts(volumeMounts, constants.ReplWrkName)
 
 	var volumes InstanceVolumeSet
 	volumes.make(cr)
@@ -292,7 +301,7 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		VolumeMounts: volumeMounts,
 	}
 
-	volumes.addStartVolume(constants.ReplWrkName)
+	volumes.addEtcStartVolumes(constants.ReplWrkName)
 	volumes.addSecretVolume(constants.MariadbName)
 	volumes.addSecretVolume(constants.ReplDbName)
 
@@ -392,8 +401,8 @@ func getXrootdContainers(cr *qservv1beta1.Qserv, component constants.PodClass) (
 		}
 	}
 
-	volumes.addStartVolume(cmsdContainerName)
-	volumes.addStartVolume(xrootdContainerName)
+	volumes.addEtcStartVolumes(cmsdContainerName)
+	volumes.addEtcStartVolumes(xrootdContainerName)
 	volumes.addEmptyDirVolume(constants.XrootdAdminPathVolumeName)
 
 	return containers, volumes.volumeSet

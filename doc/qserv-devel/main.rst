@@ -75,7 +75,7 @@ This demo rely on a Kubernetes cluster based on kind and the `qserv-operator`:
    kubectl exec -it qserv-dev-repl-ctl-0 -- bash
    bash-4.2$ ps -ef
    UID        PID  PPID  C STIME TTY          TIME CMD
-   qserv        1     0  0 11:30 ?        00:00:00 /bin/sh /config-start/start.sh
+   qserv        1     0  0 11:30 ?        00:00:00 /bin/sh /cm-start/start.sh
    qserv        9     1  0 11:30 ?        00:00:00 qserv-replica-master-http --worker-evict-timeout=3600 --health-probe-interval=120 --replication-interval=1200 --config=mysql://qsreplica:@qserv-dev-repl-db:3306/qservReplica --qserv-db-password=CHANGEME
    qserv      100     0  0 11:38 pts/0    00:00:00 bash
    qserv      112   100  0 11:38 pts/0    00:00:00 ps -ef
@@ -115,21 +115,21 @@ Open a shell in the `debugger` container and list Pod's full processes list:
    [root@qserv-worker-0 /]# ps -ef
    UID          PID    PPID  C STIME TTY          TIME CMD
    65535          1       0  0 13:06 ?        00:00:00 /pause
-   root          20       0  0 13:06 ?        00:00:00 /bin/sh /config-start/start.sh
+   root          20       0  0 13:06 ?        00:00:00 /bin/sh /cm-start/start.sh
    1000          28      20  0 13:06 ?        00:00:02 mysqld
    1000          60       0  0 13:06 ?        00:00:00 sleep infinity
-   root          67       0  0 13:06 ?        00:00:00 /bin/sh /config-start/start.sh
-   root          74      67  0 13:06 ?        00:00:00 su qserv -c sh /config-start/wmgr.sh
-   1000          75      74  0 13:06 ?        00:00:00 sh /config-start/wmgr.sh
+   root          67       0  0 13:06 ?        00:00:00 /bin/sh /cm-start/start.sh
+   root          74      67  0 13:06 ?        00:00:00 su qserv -c sh /cm-start/wmgr.sh
+   1000          75      74  0 13:06 ?        00:00:00 sh /cm-start/wmgr.sh
    1000          82      75  0 13:06 ?        00:00:00 python /qserv/stack/stack/miniconda3-py37_4.8.2-1eb92eb/Linux64/qserv/2021.7.1-rc1+2c8521dd9c/bin/qservWmg
-   root          84       0  0 13:06 ?        00:00:00 /bin/sh /config-start/start.sh -S cmsd
-   root          92      84  0 13:06 ?        00:00:00 su qserv -c /config-start/xrd.sh -S cmsd
-   1000          93      92  0 13:06 ?        00:00:00 /bin/sh /config-start/xrd.sh -S cmsd
-   1000          99      93  0 13:06 ?        00:00:00 cmsd -c /config-etc/xrootd.cf -n worker -I v4 -l @libXrdSsiLog.so -+xrdssi /config-etc/xrdssi.cf
-   root         221       0  0 13:06 ?        00:00:00 /bin/sh /config-start/start.sh
-   root         232     221  0 13:06 ?        00:00:00 su qserv -c /config-start/xrd.sh -S xrootd
-   1000         233     232  0 13:06 ?        00:00:00 /bin/sh /config-start/xrd.sh -S xrootd
-   1000         238     233  0 13:06 ?        00:00:00 xrootd -c /config-etc/xrootd.cf -n worker -I v4 -l @libXrdSsiLog.so -+xrdssi /config-etc/xrdssi.cf
+   root          84       0  0 13:06 ?        00:00:00 /bin/sh /cm-start/start.sh -S cmsd
+   root          92      84  0 13:06 ?        00:00:00 su qserv -c /cm-start/xrd.sh -S cmsd
+   1000          93      92  0 13:06 ?        00:00:00 /bin/sh /cm-start/xrd.sh -S cmsd
+   1000          99      93  0 13:06 ?        00:00:00 cmsd -c /cm-etc/xrootd.cf -n worker -I v4 -l @libXrdSsiLog.so -+xrdssi /cm-etc/xrdssi.cf
+   root         221       0  0 13:06 ?        00:00:00 /bin/sh /cm-start/start.sh
+   root         232     221  0 13:06 ?        00:00:00 su qserv -c /cm-start/xrd.sh -S xrootd
+   1000         233     232  0 13:06 ?        00:00:00 /bin/sh /cm-start/xrd.sh -S xrootd
+   1000         238     233  0 13:06 ?        00:00:00 xrootd -c /cm-etc/xrootd.cf -n worker -I v4 -l @libXrdSsiLog.so -+xrdssi /cm-etc/xrdssi.cf
    root         403       0  0 13:06 pts/0    00:00:00 /usr/bin/bash
    root         689       0  0 13:19 pts/1    00:00:00 bash
    root         761     689  0 13:22 pts/1    00:00:00 ps -ef

@@ -2,7 +2,7 @@ package specs
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -69,9 +69,15 @@ func TestApplyTemplate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			files, err := ioutil.ReadDir(".")
+			dir, err := os.Open(".")
 			if err != nil {
-				t.Errorf("%s", err)
+				fmt.Println(err)
+				return
+			}
+			files, err := dir.Readdir(0)
+			if err != nil {
+				fmt.Println(err)
+				return
 			}
 			for _, f := range files {
 				fmt.Println(f.Name())

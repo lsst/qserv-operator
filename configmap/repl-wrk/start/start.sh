@@ -18,6 +18,7 @@ entrypoint --log-level DEBUG smig-update --worker-connection "{{.WorkerDatabaseL
 entrypoint worker-repl \
   --db-admin-uri "{{.WorkerDatabaseLocalRootURL}}" \
   --repl-connection "{{.ReplicationDatabaseURL}}" \
+  --log-cfg-file "/cm-etc/log.cnf" \
   -- \
   --registry-host="{{.ReplicationRegistryDN}}" \
   --registry-port="{{.HTTPPort}}" \

@@ -19,4 +19,5 @@ entrypoint --log-level DEBUG worker-xrootd \
           --vnid-config "@/usr/local/lib64/libreplica.so {{.WorkerDatabaseLocalURL}} 0 0" \
           --cmsd-manager-name "{{.XrootdRedirectorDN}}" \
           --cmsd-manager-count "{{.XrootdRedirectorReplicas}}" \
-          --mysql-monitor-password CHANGEME_MONITOR'
+          --mysql-monitor-password "CHANGEME_MONITOR" \
+          --log-cfg-file "/cm-etc/log.cnf"'

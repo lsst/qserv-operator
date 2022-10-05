@@ -30,6 +30,7 @@ func GetValue(value string, defaultValue string) string {
 }
 
 // HasValue return true if value is in slice, else return false
+// FIXME: See assert.Contains for better implementation
 func HasValue(value string, slice []constants.ContainerName) bool {
 	for _, v := range slice {
 		if value == string(v) {

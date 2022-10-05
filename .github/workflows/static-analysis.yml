@@ -1,7 +1,7 @@
 # Static Checks Workflow
 ---
 name: "Static code analysis"
-on: 
+on:
   pull_request:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.2
+        uses: k8s-school/golang-github-actions@v1.1.3
         with:
           run: imports
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.2
+        uses: k8s-school/golang-github-actions@v1.1.3
         with:
           run: errcheck
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.2
+        uses: k8s-school/golang-github-actions@v1.1.3
         with:
           run: lint
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.2
+        uses: k8s-school/golang-github-actions@v1.1.3
         with:
           run: shadow
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -61,7 +61,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: check
-        uses: k8s-school/golang-github-actions@v1.1.2
+        uses: k8s-school/golang-github-actions@v1.1.3
         with:
           run: staticcheck
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -72,9 +72,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: check
-        uses: k8s-school/golang-github-actions@v1.1.2
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
         with:
-          run: sec
-          token: ${{ secrets.GITHUB_TOKEN }}
-          flags: "-exclude=G104"
+          # we let the report trigger content trigger a failure using the GitHub Security features.
+          args: '-exclude=G104 -no-fail -fmt sarif -out results.sarif ./...'
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          # Path to SARIF file relative to the root of the repository
+          sarif_file: results.sarif
