@@ -8,7 +8,7 @@ Build Qserv-operator and run Qserv multi-node integration tests (using a fixed Q
 
 | CI       | Status                                                                                                                                                           | Image build  | e2e tests | Documentation generation        | Static code analysis  | Image security scan |
 |----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-----------|---------------------------------|-----------------------|---------------------|
-| Gihub    | [![Qserv CI](https://github.com/lsst/qserv-operator/workflows/CI/badge.svg?branch=master)](https://github.com/lsst/qserv-operator/actions?query=workflow%3A"CI") | Yes          | No        | https://qserv-operator.lsst.io/ | Yes                   | Yes                 |
+| Gihub    | [![Qserv CI](https://github.com/lsst/qserv-operator/workflows/CI/badge.svg?branch=main)](https://github.com/lsst/qserv-operator/actions?query=workflow%3A"CI") | Yes          | Yes        | https://qserv-operator.lsst.io/ | Yes                   | Yes                 |
 
 ## Documentation
 
