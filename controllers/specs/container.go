@@ -184,7 +184,6 @@ func getProxyContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
-	var probeTimeoutSeconds int32 = 3
 	volumeMounts := []v1.VolumeMount{
 		getSecretVolumeMount(constants.ReplDbName),
 		getSecretVolumeMount(constants.MariadbName),
@@ -199,8 +198,8 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 
 	container := v1.Container{
 		Command:         constants.Command,
-		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, probeTimeoutSeconds, "meta/version"),
-		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, probeTimeoutSeconds, "meta/version"),
+		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, constants.ProbeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, constants.ProbeTimeoutSeconds, "meta/version"),
 		Name:            string(constants.ReplCtlName),
 		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
@@ -230,7 +229,6 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 func getReplicationRegistryContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet) {
 	spec := cr.Spec
 
-	var probeTimeoutSeconds int32 = 3
 	volumeMounts := []v1.VolumeMount{
 		getSecretVolumeMount(constants.ReplDbName),
 		getSecretVolumeMount(constants.MariadbName),
@@ -245,8 +243,8 @@ func getReplicationRegistryContainer(cr *qservv1beta1.Qserv) (v1.Container, Volu
 
 	container := v1.Container{
 		Command:         constants.Command,
-		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, probeTimeoutSeconds, "meta/version"),
-		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, probeTimeoutSeconds, "meta/version"),
+		LivenessProbe:   getHTTPProbe(constants.HTTPPortName, 10, constants.ProbeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.HTTPPortName, 5, constants.ProbeTimeoutSeconds, "meta/version"),
 		Name:            string(constants.ReplRegistryName),
 		Image:           spec.Image,
 		ImagePullPolicy: spec.ImagePullPolicy,
@@ -294,7 +292,16 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Resources:       cr.Spec.Worker.ReplicationResources,
 		Command:         constants.Command,
-		// TODO add ports
+		LivenessProbe:   getHTTPProbe(constants.WorkerHttpLoaderPortName, 10, constants.ProbeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.WorkerHttpLoaderPortName, 5, constants.ProbeTimeoutSeconds, "meta/version"),
+		// TODO add ports, see chapter 3 of https://confluence.lsstcorp.org/pages/viewpage.action?pageId=178595668
+		Ports: []v1.ContainerPort{
+			{
+				Name:          constants.WorkerHttpLoaderPortName,
+				ContainerPort: constants.WorkerHttpLoaderPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
 		SecurityContext: &v1.SecurityContext{
 			RunAsUser: &constants.QservUID,
 		},

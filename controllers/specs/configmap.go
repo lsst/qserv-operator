@@ -33,6 +33,8 @@ type templateData struct {
 	WmgrPort                           uint
 	WorkerDatabaseLocalRootURL         string
 	WorkerDatabaseLocalURL             string
+	WorkerIngestNumRetries             uint
+	WorkerIngestMaxRetries             uint
 	WorkerDN                           string
 	WorkerReplicas                     uint
 	XrootdRedirectorDN                 string
@@ -124,6 +126,8 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 		WorkerDN:                           util.GetWorkerServiceName(r),
 		WorkerDatabaseLocalRootURL:         util.WorkerDatabaseLocalRootURL,
 		WorkerDatabaseLocalURL:             util.WorkerDatabaseLocalURL,
+		WorkerIngestNumRetries:             constants.WorkerIngestNumRetries,
+		WorkerIngestMaxRetries:             constants.WorkerIngestMaxRetries,
 		WorkerReplicas:                     uint(r.Spec.Worker.Replicas),
 		XrootdRedirectorDN:                 util.GetXrootdRedirectorServiceName(r),
 		XrootdRedirectorReplicas:           uint(r.Spec.Xrootd.Replicas),

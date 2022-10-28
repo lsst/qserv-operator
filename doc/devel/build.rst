@@ -16,7 +16,7 @@ Prerequisites
 Build
 ~~~~~
 
-`qserv-operator` is based on *operator-sdk v1.9.0*
+`qserv-operator` is based on *operator-sdk v1.22.2*
 
 .. code:: sh
 
