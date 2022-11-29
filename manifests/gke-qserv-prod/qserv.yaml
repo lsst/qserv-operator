@@ -5,7 +5,7 @@ metadata:
 spec:
   storage: "100Gi"
   czar:
-    storage: "2Ti"
+    storage: "4Ti"
   queryService:
       loadBalancerIP: 10.140.1.211
       annotations:
