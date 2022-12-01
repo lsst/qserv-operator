@@ -14,3 +14,24 @@ spec:
   worker:
     storage: "10Ti"
     replicas: 5
+  ingest:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
+  xrootd:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
+

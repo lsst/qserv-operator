@@ -5,7 +5,7 @@ metadata:
 spec:
   storage: "100Gi"
   czar:
-    storage: "2Ti"
+    storage: "4Ti"
   queryService:
       loadBalancerIP: 10.140.1.211
       annotations:
@@ -14,3 +14,24 @@ spec:
   worker:
     storage: "10Ti"
     replicas: 5
+  ingest:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
+  xrootd:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
+
