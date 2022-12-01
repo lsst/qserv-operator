@@ -3,7 +3,7 @@ kind: Qserv
 metadata:
   name: qserv
 spec:
-  image: qserv/lite-qserv:2022.9.1-rc1-13-g1d4e8ffa1
-  dbImage: qserv/lite-mariadb:2022.9.1-rc1
+  image: qserv/lite-qserv:2022.12.1-rc2
+  dbImage: qserv/lite-mariadb:2022.12.1-rc2
   devel:
     debuggerImage: k8sschool/debugtools:1.0.0
