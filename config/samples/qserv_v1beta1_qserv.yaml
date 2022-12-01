@@ -4,19 +4,19 @@ metadata:
   name: example-qserv
 spec:
   czar:
-    image: qserv/lite-qserv:2022.9.1-rc1
+    image: qserv/lite-qserv:
     replicas: 1
   imagePullPolicy: IfNotPresent
   ingest:
-    dbImage: qserv/lite-mariadb:2022.9.1-rc1
+    dbImage: qserv/lite-mariadb:
   replication:
-    dbImage: qserv/lite-mariadb:2022.9.1-rc1
-    image: qserv/lite-qserv:2022.9.1-rc1
+    dbImage: qserv/lite-mariadb:
+    image: qserv/lite-qserv:
   storage: 1Gi
   storageClassName: standard
   worker:
-    image: qserv/lite-qserv:2022.9.1-rc1
+    image: qserv/lite-qserv:
     replicas: 2
   xrootd:
-    image: qserv/lite-qserv:2022.9.1-rc1
+    image: qserv/lite-qserv:
     replicas: 2
