@@ -2733,7 +2733,6 @@ spec:
                 default: 10Gi
                 type: string
               storageClassName:
-                default: standard
                 description: Common settings
                 type: string
               tolerations:

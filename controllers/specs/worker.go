@@ -32,7 +32,7 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 
 	replicas := cr.Spec.Worker.Replicas
 
-	storageClass := util.GetValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
+	storageClass := util.GetPtrValue(cr.Spec.Worker.StorageClass, cr.Spec.StorageClass)
 	storageSize := util.GetValue(cr.Spec.Worker.StorageCapacity, cr.Spec.StorageCapacity)
 
 	initContainer, initVolumes := getInitContainer(cr, constants.Worker)
@@ -88,7 +88,7 @@ func (c *WorkerSpec) Create() (client.Object, error) {
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
-						StorageClassName: &storageClass,
+						StorageClassName: storageClass,
 						Resources: v1.ResourceRequirements{
 							Requests: v1.ResourceList{
 								"storage": resource.MustParse(storageSize),

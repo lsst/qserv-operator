@@ -21,6 +21,15 @@ func IterateCount(count uint) []int {
 	return items
 }
 
+// GetPtrValue return value if not nil
+// else set *value to *defaultValue if defaultValue is not nil
+func GetPtrValue(value *string, defaultValue *string) *string {
+	if value == nil && defaultValue != nil {
+		*value = *defaultValue
+	}
+	return value
+}
+
 // GetValue return value if not empty, else return defaultValue
 func GetValue(value string, defaultValue string) string {
 	if value == "" {

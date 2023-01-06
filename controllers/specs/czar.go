@@ -29,7 +29,7 @@ func (c *CzarSpec) Create() (client.Object, error) {
 
 	log.Info("Create czar specification")
 
-	storageClass := util.GetValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
+	storageClass := util.GetPtrValue(cr.Spec.Czar.StorageClass, cr.Spec.StorageClass)
 	storageSize := util.GetValue(cr.Spec.Czar.StorageCapacity, cr.Spec.StorageCapacity)
 
 	initContainer, initVolumes := getInitContainer(cr, constants.Czar)
@@ -80,7 +80,7 @@ func (c *CzarSpec) Create() (client.Object, error) {
 					},
 					Spec: v1.PersistentVolumeClaimSpec{
 						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
-						StorageClassName: &storageClass,
+						StorageClassName: storageClass,
 						Resources: v1.ResourceRequirements{
 							Requests: v1.ResourceList{
 								"storage": resource.MustParse(storageSize),

@@ -32,8 +32,7 @@ type QservSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Common settings
-	// +kubebuilder:default:="standard"
-	StorageClass string `json:"storageClassName,omitempty"`
+	StorageClass *string `json:"storageClassName,omitempty"`
 	// +kubebuilder:default:="10Gi"
 	StorageCapacity string `json:"storage,omitempty"`
 
@@ -85,8 +84,8 @@ type CzarSettings struct {
 	Replicas       int32                   `json:"replicas,omitempty"`
 	ProxyResources v1.ResourceRequirements `json:"proxyResources,omitempty"`
 
-	StorageClass    string `json:"storageClassName,omitempty"`
-	StorageCapacity string `json:"storage,omitempty"`
+	StorageClass    *string `json:"storageClassName,omitempty"`
+	StorageCapacity string  `json:"storage,omitempty"`
 }
 
 // DevelSettings defines the specification for development/debug environment
@@ -130,7 +129,7 @@ type WorkerSettings struct {
 	Replicas             int32                   `json:"replicas,omitempty"`
 	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`
 
-	StorageClass string `json:"storageClassName,omitempty"`
+	StorageClass *string `json:"storageClassName,omitempty"`
 	// +kubebuilder:validation:Optional
 	StorageCapacity string `json:"storage,omitempty"`
 }
