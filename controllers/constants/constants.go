@@ -63,8 +63,8 @@ const (
 	WorkerIngestMaxRetries = 10
 
 	// TODO set this port in replication worker configmap script and use 8080 instead of default
-	WorkerHttpLoaderPort     = 25004
-	WorkerHttpLoaderPortName = "httpworker"
+	WorkerHTTPLoaderPort     = 25004
+	WorkerHTTPLoaderPortName = "httpworker"
 )
 
 // QservGID qserv user gid

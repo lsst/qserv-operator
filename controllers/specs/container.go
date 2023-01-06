@@ -292,13 +292,13 @@ func getReplicationWrkContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 		ImagePullPolicy: spec.ImagePullPolicy,
 		Resources:       cr.Spec.Worker.ReplicationResources,
 		Command:         constants.Command,
-		LivenessProbe:   getHTTPProbe(constants.WorkerHttpLoaderPortName, 10, constants.ProbeTimeoutSeconds, "meta/version"),
-		ReadinessProbe:  getHTTPProbe(constants.WorkerHttpLoaderPortName, 5, constants.ProbeTimeoutSeconds, "meta/version"),
+		LivenessProbe:   getHTTPProbe(constants.WorkerHTTPLoaderPortName, 10, constants.ProbeTimeoutSeconds, "meta/version"),
+		ReadinessProbe:  getHTTPProbe(constants.WorkerHTTPLoaderPortName, 5, constants.ProbeTimeoutSeconds, "meta/version"),
 		// TODO add ports, see chapter 3 of https://confluence.lsstcorp.org/pages/viewpage.action?pageId=178595668
 		Ports: []v1.ContainerPort{
 			{
-				Name:          constants.WorkerHttpLoaderPortName,
-				ContainerPort: constants.WorkerHttpLoaderPort,
+				Name:          constants.WorkerHTTPLoaderPortName,
+				ContainerPort: constants.WorkerHTTPLoaderPort,
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
