@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: qserv/qserv-operator
-  newTag: 2022.12.1-rc2-1-g400077d
+  newTag: 2022.12.1-rc2-3-gc09bd5a
