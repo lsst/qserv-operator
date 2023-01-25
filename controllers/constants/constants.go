@@ -34,8 +34,9 @@ const (
 	MariadbRootPassword = "${MYSQL_ROOT_PASSWORD}"
 	MariadbSocket       = "/qserv/data/mysql/mysql.sock"
 
-	ProxyPort     = 4040
-	ProxyPortName = string(ProxyName)
+	ProbeTimeoutSeconds = 2
+	ProxyPort           = 4040
+	ProxyPortName       = string(ProxyName)
 
 	QservName = "qserv"
 	DotQserv  = "dot-qserv"
@@ -56,6 +57,14 @@ const (
 	ReplicationWorkerThreadFactor   = 2
 
 	WorkerDatabase = "qservw_worker"
+
+	// See https://confluence.lsstcorp.org/display/DM/5.+Automatic+retries+for+the+failed+contribution+requests
+	WorkerIngestNumRetries = 2
+	WorkerIngestMaxRetries = 10
+
+	// TODO set this port in replication worker configmap script and use 8080 instead of default
+	WorkerHTTPLoaderPort     = 25004
+	WorkerHTTPLoaderPortName = "httpworker"
 )
 
 // QservGID qserv user gid

@@ -20,7 +20,9 @@ entrypoint worker-repl \
   --repl-connection "{{.ReplicationDatabaseURL}}" \
   --log-cfg-file "/cm-etc/log.cnf" \
   -- \
+  --worker-ingest-num-retries={{.WorkerIngestNumRetries}} \
+  --worker-ingest-max-retries={{.WorkerIngestMaxRetries}} \
   --registry-host="{{.ReplicationRegistryDN}}" \
-  --registry-port="{{.HTTPPort}}" \
+  --registry-port={{.HTTPPort}} \
   --instance-id="{{.QservInstance}}" \
-  --debug \
+  --debug
