@@ -33,7 +33,7 @@ Validate the integration of `qserv-operator` with the release in CI (i.e. GHA), 
 ```
 cd <project_directory>
 # RELEASE format is "<YYYY>.<M>.<i>-rc<j>"
-RELEASE="2023.2.1-rc2"
+RELEASE="2023.4.1-rc1"
 git checkout -b $RELEASE
 # Script below edit `qserv` image name in `manifests/image.yaml`, and prepare operatorHub packaging
 ./publish-release.sh "$RELEASE"
@@ -58,7 +58,7 @@ The above step (i.e. release publishing) must have been completed before doing t
 
 ```
 make bundle
-RELEASE="2023.2.1-rc2"
+RELEASE="2023.4.1-rc1"
 OPERATOR_SRC_DIR="$PWD"
 # Clone community-operators and create a branch
 gh repo clone https://github.com/lsst/community-operators.git /tmp/community-operators
@@ -83,7 +83,7 @@ gh repo view --web
 
 If a CI test fail in PR for [community-operators](https://github.com/k8s-operatorhub/community-operators) official repository, it is possible to run it locally on a workstation using:
 ```
-RELEASE="2023.2.1-rc2"
+RELEASE="2023.4.1-rc1"
 OPP_PRODUCTION_TYPE=k8s bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) \
 kiwi operators/qserv-operator/$RELEASE
 ```
