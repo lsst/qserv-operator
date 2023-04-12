@@ -57,7 +57,7 @@ Deploy Qserv in four lines
 
 This procedure is recommended for development platform only.
 
-`go-lang` is a pre-requisite.
+`golang <https://go.dev/>`__ and `git-lfs <https://git-lfs.com>`__ are pre-requisites.
 
 .. code:: bash
 
