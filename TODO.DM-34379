@@ -1,4 +1,0 @@
-- Add probes for registry
-- manage cleanly R-I keys
-- Add issue to operator-sdk for go 1.17 1.18 (see Makefile updates)
-- Add issue to Github Action with system go (remove it) on SO
