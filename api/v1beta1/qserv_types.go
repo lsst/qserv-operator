@@ -121,6 +121,9 @@ type QueryServiceSettings struct {
 type ReplicationSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
 	Debug    string      `json:"debug,omitempty"`
+
+	StorageClass    string `json:"storageClassName,omitempty"`
+	StorageCapacity string `json:"storage,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster

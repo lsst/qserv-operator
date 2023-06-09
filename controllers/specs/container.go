@@ -185,6 +185,7 @@ func getReplicationCtlContainer(cr *qservv1beta1.Qserv) (v1.Container, VolumeSet
 	spec := cr.Spec
 
 	volumeMounts := []v1.VolumeMount{
+		getDataVolumeMount(),
 		getSecretVolumeMount(constants.ReplDbName),
 		getSecretVolumeMount(constants.MariadbName),
 	}
