@@ -1,3 +1,10 @@
+* TODO Adapt controllers/memcached_controller_test.go.TODO
+* TODO.DM-34379
+- Add probes for registry
+- manage cleanly R-I keys
+- Add issue to operator-sdk for go 1.17 1.18 (see Makefile updates)
+- Add issue to Github Action with system go (remove it) on SO
+* TODO-lite
 set xrootd mlock ulimit in: http://www.softpanorama.org/HPC/Networking/MPI/Troubleshooting/ulimit_locked_memory_limit.shtml
 https://elixir.bootlin.com/linux/latest/source/tools/testing/selftests/vm/mlock-random-test.c
 

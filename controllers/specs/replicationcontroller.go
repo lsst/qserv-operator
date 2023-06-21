@@ -5,6 +5,7 @@ import (
 	"github.com/lsst/qserv-operator/controllers/util"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -24,6 +25,9 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 	name := c.GetName()
 	cr := c.qserv
 	namespace := cr.Namespace
+
+	storageClass := util.GetValue(cr.Spec.Replication.StorageClass, cr.Spec.StorageClass)
+	storageSize := util.GetValue(cr.Spec.Replication.StorageCapacity, cr.Spec.StorageCapacity)
 
 	labels := util.GetComponentLabels(constants.ReplCtl, cr.Name)
 
@@ -60,6 +64,22 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 						replCtlContainer,
 					},
 					Volumes: volumes.toSlice(),
+				},
+			},
+			VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: constants.DataVolumeClaimTemplateName,
+					},
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						StorageClassName: &storageClass,
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								"storage": resource.MustParse(storageSize),
+							},
+						},
+					},
 				},
 			},
 		},
