@@ -23,6 +23,7 @@ entrypoint --log-level DEBUG replication-controller \
     --controller-job-timeout-sec=57600 \
     --controller-request-timeout-sec=57600 \
     --debug \
+    --do-not-create-folders \
     --health-probe-interval=120 \
     --instance-id="{{.QservInstance}}" \
     --registry-host="{{.ReplicationRegistryDN}}" \
