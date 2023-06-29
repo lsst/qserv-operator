@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: qserv/qserv-operator
-  newTag: 2023.6.1-rc1
+  newTag: 2023.6.1-rc1-1-g23b5a4e-dirty

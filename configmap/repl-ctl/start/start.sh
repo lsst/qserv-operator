@@ -12,6 +12,8 @@ set -exo pipefail
 # FIXME improve it
 entrypoint --log-level DEBUG smig-update --repl-connection "{{.ReplicationDatabaseURL}}"
 
+mkdir -p /qserv/data/ingest
+
 entrypoint --log-level DEBUG replication-controller \
     --db-uri "{{.ReplicationDatabaseURL}}" \
     --db-admin-uri "{{.ReplicationDatabaseRootURL}}" \
