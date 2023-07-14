@@ -5,6 +5,11 @@ metadata:
 spec:
   storageClassName: "qserv"
   storage: "1Ti"
+  queryService:
+      annotations:
+        cloud.google.com/load-balancer-type: Internal
+      type: LoadBalancer
+      loadBalancerIP: 10.134.1.211
   czar:
     storageClassName: "czar"
     storage: "3Ti"
@@ -20,14 +25,9 @@ spec:
     proxyResources:
       requests:
         cpu: 24
-  queryService:
-      #annotations:
-      #  cloud.google.com/load-balancer-type: Internal
-      #loadBalancerIP: 10.134.1.211
-      #type: LoadBalancer
-      type: ClusterIP
   worker:
     storage: "6Ti"
+    replicas: 10
     affinity:
       podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -50,20 +50,19 @@ spec:
               operator: In
               values:
               - worker
-    replicas: 10
     replicationResources:
       limits:
         cpu: 14
-  # ingest:
-  #   affinity:
-  #     nodeAffinity:
-  #       requiredDuringSchedulingIgnoredDuringExecution:
-  #         nodeSelectorTerms:
-  #         - matchExpressions:
-  #           - key: tier
-  #             operator: In
-  #             values:
-  #             - 'utility'
+  ingest:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
   replication:
     affinity:
       nodeAffinity:
@@ -74,13 +73,13 @@ spec:
               operator: In
               values:
               - czar
-  # xrootd:
-  #   affinity:
-  #     nodeAffinity:
-  #       requiredDuringSchedulingIgnoredDuringExecution:
-  #         nodeSelectorTerms:
-  #         - matchExpressions:
-  #           - key: tier
-  #             operator: In
-  #             values:
-  #             - 'utility'
+  xrootd:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
