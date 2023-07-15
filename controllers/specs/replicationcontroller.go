@@ -63,6 +63,9 @@ func (c *ReplicationControllerSpec) Create() (client.Object, error) {
 					Containers: []v1.Container{
 						replCtlContainer,
 					},
+					SecurityContext: &v1.PodSecurityContext{
+						FSGroup: &constants.QservGID,
+					},
 					Volumes: volumes.toSlice(),
 				},
 			},
