@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/go-logr/logr"
+	"github.com/lsst/qserv-operator/api/v1beta1"
 	qservv1beta1 "github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/lsst/qserv-operator/controllers/constants"
 	"github.com/lsst/qserv-operator/controllers/util"
@@ -28,6 +29,7 @@ type templateData struct {
 	ReplicationDatabaseRootURL         string
 	ReplicationRegistryDN              string
 	ReplicationLoaderProcessingThreads uint
+	ResultsProtocol                    v1beta1.ResultsProtocolType
 	SocketQservUser                    string
 	SocketRootUser                     string
 	WmgrPort                           uint
@@ -121,6 +123,7 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 		ReplicationDatabaseURL:             util.GetReplicationDatabaseURL(r),
 		ReplicationDatabaseRootURL:         util.GetReplicationDatabaseRootURL(r),
 		ReplicationRegistryDN:              util.GetReplicationRegistryServiceName(r),
+		ResultsProtocol:                    r.Spec.Worker.ResultsProtocol,
 		SocketQservUser:                    util.SocketQservUser,
 		SocketRootUser:                     util.SocketRootUser,
 		WorkerDN:                           util.GetWorkerServiceName(r),

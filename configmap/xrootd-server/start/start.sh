@@ -20,4 +20,5 @@ entrypoint --log-level DEBUG worker-xrootd \
           --cmsd-manager-name "{{.XrootdRedirectorDN}}" \
           --cmsd-manager-count "{{.XrootdRedirectorReplicas}}" \
           --mysql-monitor-password "CHANGEME_MONITOR" \
-          --log-cfg-file "/cm-etc/log.cnf"'
+          --log-cfg-file "/cm-etc/log.cnf"
+          --results-protocol "{{.ResultsProtocol}}"'
