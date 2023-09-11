@@ -125,7 +125,7 @@ jobs:
           export OP_IMAGE="${{ env.OP_IMAGE }}"
           ./deploy.sh
       - name: Deploy Qserv
-        run: kubectl apply -k manifests/base
+        run: kubectl apply -k manifests/results_protocol_xrootd/
       - name: Wait for Qserv to start
         run: ./tests/tools/wait-qserv-ready.sh -v
       - name: Run E2E Tests
