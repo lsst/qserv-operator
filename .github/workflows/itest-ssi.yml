@@ -1,4 +1,4 @@
-name: "Qserv e2e workflow for ssi results protocol"
+name: "Qserv e2e workflow for HTTP results protocol"
 on:
   push:
 

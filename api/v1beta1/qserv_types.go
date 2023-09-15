@@ -197,9 +197,12 @@ type QservList struct {
 type ResultsProtocolType string
 
 const (
-	ResultsProtocolTypeSSI    ResultsProtocolType = "SSI"
-	ResultsProtocolTypeXrootd ResultsProtocolType = "XROOTD"
-	ResultsProtocolTypeHTTP   ResultsProtocolType = "HTTP"
+	// ResultsProtocolTypeSSI defines the value for SSI protocol type
+	ResultsProtocolTypeSSI ResultsProtocolType = "SSI"
+	// ResultsProtocolTypeXrootd defines the value for XROOT protocol type
+	ResultsProtocolTypeXrootd ResultsProtocolType = "XROOT"
+	// ResultsProtocolTypeHTTP defines the value for HTTP protocol type
+	ResultsProtocolTypeHTTP ResultsProtocolType = "HTTP"
 )
 
 func init() {
