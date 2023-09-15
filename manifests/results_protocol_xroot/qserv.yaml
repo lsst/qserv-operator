@@ -4,4 +4,4 @@ metadata:
   name: qserv
 spec:
   worker:
-    resultsProtocol: XROOTD 
+    resultsProtocol: XROOT
