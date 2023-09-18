@@ -193,7 +193,7 @@ type QservList struct {
 }
 
 // ResultsProtocolType defines the type of protocol used to retrieve results from workers
-// Allowed options are [SSI|XROOTD|HTTP]
+// Allowed options are [SSI|XROOT|HTTP]
 type ResultsProtocolType string
 
 const (
