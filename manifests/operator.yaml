@@ -2096,13 +2096,17 @@ spec:
                         description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
+                  resultsProtocol:
+                    default: SSI
+                    description: ResultsProtocol defines the protocol used to retrieve results from workers
+                    type: string
                   storage:
                     type: string
                   storageClassName:
                     type: string
                 type: object
               xrootd:
-                description: Xrootd defines the settings for worker cluster
+                description: Xrootd defines the settings for xrootd redirectors cluster
                 properties:
                   affinity:
                     description: Affinity is a group of affinity scheduling rules.
@@ -2942,7 +2946,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: qserv/qserv-operator:2023.7.1-rc3
+        image: qserv/qserv-operator:2023.7.1-rc3-6-gb8e56f1
         livenessProbe:
           httpGet:
             path: /healthz

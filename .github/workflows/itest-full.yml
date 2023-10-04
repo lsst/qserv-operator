@@ -1,0 +1,21 @@
+name: "Qserv e2e workflow for all results protocols (http, ssi, xroot)"
+on:
+  schedule:
+    # At 05:00 UTC on every day-of-week from Monday through Friday.
+    - cron:  '0 5 * * 1-5'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+  e2e-matrix:
+    strategy:
+      max-parallel: 1
+      matrix:
+        results_protocol: [results_protocol_xroot, results_protocol_ssi, results_protocol_http]
+    uses: ./.github/workflows/itest.yml
+    needs: build
+    with:
+      results_protocol: ${{ matrix.results_protocol }}

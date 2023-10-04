@@ -1,10 +1,11 @@
 
 QSERV_OPERATOR_SRC_DIR="~/src/qserv-operator"
 QSERV_INGEST_SRC_DIR="~/src/qserv-ingest"
-QSERV_INGEST_SRC_DIR="~/src/gcp-qserv"
+QSERV_GCP_SRC_DIR="~/src/gcp-qserv"
 
 alias cdo="cd $QSERV_OPERATOR_SRC_DIR"
 alias cdi="cd $QSERV_INGEST_SRC_DIR"
+alias cdgcp="cd $QSERV_GCP_SRC_DIR"
 
 # Aliases for qserv-operator
 ############################

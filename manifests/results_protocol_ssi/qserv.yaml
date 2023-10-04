@@ -2,3 +2,6 @@ apiVersion: qserv.lsst.org/v1beta1
 kind: Qserv
 metadata:
   name: qserv
+spec:
+  worker:
+    resultsProtocol: SSI

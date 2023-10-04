@@ -3714,13 +3714,18 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
+                  resultsProtocol:
+                    default: SSI
+                    description: ResultsProtocol defines the protocol used to retrieve
+                      results from workers
+                    type: string
                   storage:
                     type: string
                   storageClassName:
                     type: string
                 type: object
               xrootd:
-                description: Xrootd defines the settings for worker cluster
+                description: Xrootd defines the settings for xrootd redirectors cluster
                 properties:
                   affinity:
                     description: Affinity is a group of affinity scheduling rules.

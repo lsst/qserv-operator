@@ -68,8 +68,8 @@ type QservSpec struct {
 	// Worker defines the settings for worker cluster
 	Worker WorkerSettings `json:"worker,omitempty"`
 
-	// Xrootd defines the settings for worker cluster
-	Xrootd XrootdSettings `json:"xrootd,omitempty"`
+	// Xrootd defines the settings for xrootd redirectors cluster
+	Xrootd XrootdRedirectorSettings `json:"xrootd,omitempty"`
 
 	// NetworkPolicies secures the cluster network using Network Policies.
 	// Ensure the Kubernetes cluster has enabled Network plugin.
@@ -95,7 +95,6 @@ type DevelSettings struct {
 	CorePath string `json:"corePath,omitempty"`
 	// +kubebuilder:validation:Required
 	DebuggerImage string `json:"debuggerImage"`
-
 	// EnableDebugger allows to share process namespace between containers in a Pod
 	// and adds a debug container to the  pod
 	// See https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
@@ -119,11 +118,10 @@ type QueryServiceSettings struct {
 
 // ReplicationSettings defines the specification of the replication framework
 type ReplicationSettings struct {
-	Affinity v1.Affinity `json:"affinity,omitempty"`
-	Debug    string      `json:"debug,omitempty"`
-
-	StorageClass    string `json:"storageClassName,omitempty"`
-	StorageCapacity string `json:"storage,omitempty"`
+	Affinity        v1.Affinity `json:"affinity,omitempty"`
+	Debug           string      `json:"debug,omitempty"`
+	StorageClass    string      `json:"storageClassName,omitempty"`
+	StorageCapacity string      `json:"storage,omitempty"`
 }
 
 // WorkerSettings defines the specification of the worker cluster
@@ -133,13 +131,16 @@ type WorkerSettings struct {
 	Replicas             int32                   `json:"replicas,omitempty"`
 	ReplicationResources v1.ResourceRequirements `json:"replicationResources,omitempty"`
 
-	StorageClass string `json:"storageClassName,omitempty"`
+	// ResultsProtocol defines the protocol used to retrieve results from workers
+	// +kubebuilder:default:="SSI"
+	ResultsProtocol ResultsProtocolType `json:"resultsProtocol,omitempty"`
+	StorageClass    string              `json:"storageClassName,omitempty"`
 	// +kubebuilder:validation:Optional
 	StorageCapacity string `json:"storage,omitempty"`
 }
 
-// XrootdSettings defines the specification of the xrootd redirectors cluster
-type XrootdSettings struct {
+// XrootdRedirectorSettings defines the specification of the xrootd redirectors cluster
+type XrootdRedirectorSettings struct {
 	Affinity v1.Affinity `json:"affinity,omitempty"`
 	// +kubebuilder:default:=1
 	Replicas int32 `json:"replicas,omitempty"`
@@ -190,6 +191,19 @@ type QservList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Qserv `json:"items"`
 }
+
+// ResultsProtocolType defines the type of protocol used to retrieve results from workers
+// Allowed options are [SSI|XROOT|HTTP]
+type ResultsProtocolType string
+
+const (
+	// ResultsProtocolTypeSSI defines the value for SSI protocol type
+	ResultsProtocolTypeSSI ResultsProtocolType = "SSI"
+	// ResultsProtocolTypeXrootd defines the value for XROOT protocol type
+	ResultsProtocolTypeXrootd ResultsProtocolType = "XROOT"
+	// ResultsProtocolTypeHTTP defines the value for HTTP protocol type
+	ResultsProtocolTypeHTTP ResultsProtocolType = "HTTP"
+)
 
 func init() {
 	SchemeBuilder.Register(&Qserv{}, &QservList{})

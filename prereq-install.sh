@@ -6,9 +6,9 @@
 
 set -euxo pipefail
 
-VERSION="v1.6.1"
+VERSION="v1.13.1"
 echo "Install cert-manager $VERSION"
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/$VERSION/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/$VERSION/cert-manager.yaml
 kubectl wait --for=condition=available -n cert-manager --timeout=600s deployment -l app.kubernetes.io/instance=cert-manager
 
 VERSION="4.5.5"
