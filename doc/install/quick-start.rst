@@ -61,7 +61,7 @@ This procedure is recommended for development platform only.
 
 .. code:: bash
 
-    RELEASE="2023.7.1-rc3"
+    RELEASE="2023.10.1-rc1"
     git clone --depth 1 --single-branch -b "$RELEASE" https://github.com/lsst/qserv-operator
     cd qserv-operator
     # Install pre-requisites
