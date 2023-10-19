@@ -19,3 +19,9 @@ jobs:
     needs: build
     with:
       results_protocol: ${{ matrix.results_protocol }}
+  push:
+    name: Push qserv-operator image to public registry
+    uses: ./.github/workflows/push.yml
+    needs: build
+    secrets: inherit
+
