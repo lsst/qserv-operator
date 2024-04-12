@@ -5040,7 +5040,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: qserv/qserv-operator:2024.3.1-rc2
+        image: qserv/qserv-operator:2024.4.1-rc1
         livenessProbe:
           httpGet:
             path: /healthz
