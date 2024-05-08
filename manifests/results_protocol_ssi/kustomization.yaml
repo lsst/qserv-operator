@@ -1,5 +1,0 @@
-bases:
-- ../base
-patchesStrategicMerge:
-- qserv.yaml
-

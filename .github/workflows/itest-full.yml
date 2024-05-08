@@ -14,7 +14,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        results_protocol: [results_protocol_xroot, results_protocol_ssi, results_protocol_http]
+        results_protocol: [results_protocol_xroot, results_protocol_http]
     uses: ./.github/workflows/itest.yml
     needs: build
     with:
