@@ -3775,7 +3775,7 @@ spec:
                         type: object
                     type: object
                   resultsProtocol:
-                    default: SSI
+                    default: HTTP
                     description: ResultsProtocol defines the protocol used to retrieve
                       results from workers
                     type: string

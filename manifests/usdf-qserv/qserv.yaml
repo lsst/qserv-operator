@@ -1,0 +1,90 @@
+apiVersion: qserv.lsst.org/v1beta1
+kind: Qserv
+metadata:
+  name: qserv
+spec:
+  storageClassName: "rubin-qserv-storage"
+  storage: "1Ti"
+  tolerations:
+    - effect: NoSchedule
+      key: key
+      operator: Equal
+      value: qserv
+  queryService:
+      annotations:
+          metallb.universe.tf/address-pool: sdf-services
+          type: LoadBalancer
+          loadBalancerIP: 10.107.187.124
+  czar:
+    storageClassName: "rubin-qserv-storage"
+    storage: "3Ti"
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - czar
+    proxyResources:
+      requests:
+        cpu: 32
+  worker:
+    storage: "10Ti"
+    replicas: 28
+    affinity:
+      podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "component"
+                    operator: In
+                    values:
+                    - worker
+                  - key: "app"
+                    operator: In
+                    values:
+                    - qserv
+              topologyKey: "kubernetes.io/hostname"
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - worker
+    replicationResources:
+      limits:
+        cpu: 16
+  ingest:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
+  replication:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - czar
+  xrootd:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+              - 'utility'
