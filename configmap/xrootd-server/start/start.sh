@@ -21,6 +21,6 @@ entrypoint --log-level DEBUG worker-xrootd \
           --mysql-monitor-password "CHANGEME_MONITOR" \
           --log-cfg-file "/cm-etc/log.cnf" \
           --results-protocol "{{.ResultsProtocol}}" \
-          --instance-id="{{.QservInstance}}" \
+          --repl-instance-id="{{.QservInstance}}" \
           --registry-host="{{.ReplicationRegistryDN}}" \
           --registry-port="{{.HTTPPort}}"'

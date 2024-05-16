@@ -24,6 +24,6 @@ entrypoint --log-level DEBUG proxy \
   --db-admin-uri "mysql://root:$PASSWORD@127.0.0.1:3306?socket={{.MariadbSocket}}" \
   --xrootd-manager qserv-xrootd-redirector \
   --log-cfg-file /cm-etc/log.cnf \
-  --instance-id="{{.QservInstance}}" \
+  --repl-instance-id="{{.QservInstance}}" \
   --registry-host="{{.ReplicationRegistryDN}}" \
   --registry-port="{{.HTTPPort}}"
