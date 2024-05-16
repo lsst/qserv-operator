@@ -5047,7 +5047,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: qserv/qserv-operator:2024.5.1-rc2
+        image: qserv/qserv-operator:2024.5.1-rc3
         livenessProbe:
           httpGet:
             path: /healthz
