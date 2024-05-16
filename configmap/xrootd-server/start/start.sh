@@ -22,5 +22,5 @@ entrypoint --log-level DEBUG worker-xrootd \
           --log-cfg-file "/cm-etc/log.cnf" \
           --results-protocol "{{.ResultsProtocol}}" \
           --repl-instance-id="{{.QservInstance}}" \
-          --registry-host="{{.ReplicationRegistryDN}}" \
-          --registry-port="{{.HTTPPort}}"'
+          --repl-registry-host="{{.ReplicationRegistryDN}}" \
+          --repl-registry-port="{{.HTTPPort}}"'

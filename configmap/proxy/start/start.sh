@@ -25,5 +25,5 @@ entrypoint --log-level DEBUG proxy \
   --xrootd-manager qserv-xrootd-redirector \
   --log-cfg-file /cm-etc/log.cnf \
   --repl-instance-id="{{.QservInstance}}" \
-  --registry-host="{{.ReplicationRegistryDN}}" \
-  --registry-port="{{.HTTPPort}}"
+  --repl-registry-host="{{.ReplicationRegistryDN}}" \
+  --repl-registry-port="{{.HTTPPort}}"
