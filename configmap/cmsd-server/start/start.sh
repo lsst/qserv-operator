@@ -13,5 +13,5 @@ entrypoint --log-level DEBUG worker-cmsd \
           --cmsd-manager-name {{.XrootdRedirectorDN}} \
           --log-cfg-file "/cm-etc/log.cnf" \
           --repl-instance-id="{{.QservInstance}}" \
-          --registry-host="{{.ReplicationRegistryDN}}" \
-          --registry-port="{{.HTTPPort}}"
+          --repl-registry-host="{{.ReplicationRegistryDN}}" \
+          --repl-registry-port="{{.HTTPPort}}"
