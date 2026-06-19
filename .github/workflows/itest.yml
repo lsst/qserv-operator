@@ -1,0 +1,62 @@
+name: "Reusable workflow for qserv-operator e2e tests"
+
+on:
+  workflow_call:
+    inputs:
+      results_protocol:
+        required: true
+        type: string
+
+env:
+  RESULTS_PROTOCOL: ${{ inputs.results_protocol }}
+
+jobs:
+  e2e:
+    name: Run e2e tests
+    runs-on: ubuntu-22.04
+    env:
+      GHA_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: apparmor
+        run: |
+          set -x
+          sudo apt-get remove mysql-server --purge
+          sudo apt-get install apparmor-profiles
+          sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.19.2'
+      - run: go version
+      - name: Install go dependencies
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+      - name: Download qserv-operator image
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-artifact
+          path: artifacts
+      - name: Create k8s/kind cluster
+        run: |
+          go install github.com/k8s-school/k8s-toolbox@v1.0.0-rc1
+          k8s-toolbox create -s
+      - name: Load container image inside kind
+        run: |
+          kind load image-archive artifacts/qserv-operator-image.tar
+          echo "OP_IMAGE=$(cat artifacts/qserv-operator-image-tag)" >> $GITHUB_ENV
+      - run: |
+          kubectl get nodes
+      - name: Install pre-requisites (cert-manager, kustomize)
+        run: ./prereq-install.sh
+      - name: Deploy operator
+        run: |
+          export OP_IMAGE="${{ env.OP_IMAGE }}"
+          ./deploy.sh
+      - name: Deploy Qserv
+        run: kubectl apply -k manifests/"${{ env.RESULTS_PROTOCOL }}"
+      - name: Wait for Qserv to start
+        run: ./tests/tools/wait-qserv-ready.sh -v
+      - name: Run E2E Tests
+        run: ./tests/e2e/integration.sh
+
