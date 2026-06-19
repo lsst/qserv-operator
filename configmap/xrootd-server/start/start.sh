@@ -18,6 +18,9 @@ entrypoint --log-level DEBUG worker-xrootd \
           --db-admin-uri "{{.SocketRootUser}}" \
           --vnid-config "@/usr/local/lib64/libreplica.so {{.WorkerDatabaseLocalURL}} 0 0" \
           --cmsd-manager-name "{{.XrootdRedirectorDN}}" \
-          --cmsd-manager-count "{{.XrootdRedirectorReplicas}}" \
           --mysql-monitor-password "CHANGEME_MONITOR" \
-          --log-cfg-file "/cm-etc/log.cnf"'
+          --log-cfg-file "/cm-etc/log.cnf" \
+          --results-protocol "{{.ResultsProtocol}}" \
+          --repl-instance-id="{{.QservInstance}}" \
+          --repl-registry-host="{{.ReplicationRegistryDN}}" \
+          --repl-registry-port="{{.HTTPPort}}"'

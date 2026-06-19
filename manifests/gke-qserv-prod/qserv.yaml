@@ -4,34 +4,13 @@ metadata:
   name: qserv
 spec:
   storage: "100Gi"
-  czar:
-    storage: "4Ti"
   queryService:
       loadBalancerIP: 10.140.1.211
-      annotations:
-        cloud.google.com/load-balancer-type: Internal
-      type: LoadBalancer
+  czar:
+    storage: "4Ti"
   worker:
     storage: "10Ti"
     replicas: 5
   ingest:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: tier
-              operator: In
-              values:
-              - 'utility'
+  replication:
   xrootd:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: tier
-              operator: In
-              values:
-              - 'utility'
-

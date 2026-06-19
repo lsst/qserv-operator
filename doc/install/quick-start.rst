@@ -57,11 +57,11 @@ Deploy Qserv in four lines
 
 This procedure is recommended for development platform only.
 
-`go-lang` is a pre-requisite.
+`golang <https://go.dev/>`__ and `git-lfs <https://git-lfs.com>`__ are pre-requisites.
 
 .. code:: bash
 
-    RELEASE="2023.1.1-rc2"
+    RELEASE="2024.5.1-rc5"
     git clone --depth 1 --single-branch -b "$RELEASE" https://github.com/lsst/qserv-operator
     cd qserv-operator
     # Install pre-requisites
