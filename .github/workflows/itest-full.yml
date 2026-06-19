@@ -22,6 +22,6 @@ jobs:
   push:
     name: Push qserv-operator image to public registry
     uses: ./.github/workflows/push.yml
-    needs: build
+    needs: e2e-matrix
     secrets: inherit
 
