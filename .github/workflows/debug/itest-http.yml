@@ -1,0 +1,17 @@
+name: "Qserv e2e workflow for HTTP results protocol"
+on:
+  push:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+  e2e:
+    uses: ./.github/workflows/itest.yml
+    needs: build
+    with:
+      results_protocol: "results_protocol_http"
+  push:
+    name: Push qserv-operator image to public registry
+    uses: ./.github/workflows/push.yml
+    needs: e2e
+    secrets: inherit

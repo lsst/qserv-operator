@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lsst/qserv-operator/api/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -61,9 +62,11 @@ func TestApplyTemplate(t *testing.T) {
 			"Existing template",
 			args{
 				"example.tpl",
-				templateData{QstatusMysqldHost: "Value"},
+				templateData{QstatusMysqldHost: "Value",
+					ResultsProtocol: v1beta1.ResultsProtocolTypeHTTP,
+				},
 			},
-			"Test field: Value\n",
+			"Test field: Value\nTest field2: HTTP\n",
 		},
 	}
 	for _, tt := range tests {

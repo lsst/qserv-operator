@@ -11,5 +11,7 @@ entrypoint --log-level DEBUG worker-cmsd \
           --db-uri {{.SocketQservUser}} \
           --vnid-config "@/usr/local/lib64/libreplica.so {{.WorkerDatabaseLocalURL}} 0 0" \
           --cmsd-manager-name {{.XrootdRedirectorDN}} \
-          --cmsd-manager-count {{.XrootdRedirectorReplicas}} \
-          --log-cfg-file "/cm-etc/log.cnf"
+          --log-cfg-file "/cm-etc/log.cnf" \
+          --repl-instance-id="{{.QservInstance}}" \
+          --repl-registry-host="{{.ReplicationRegistryDN}}" \
+          --repl-registry-port="{{.HTTPPort}}"

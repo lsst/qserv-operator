@@ -28,6 +28,7 @@ type templateData struct {
 	ReplicationDatabaseRootURL         string
 	ReplicationRegistryDN              string
 	ReplicationLoaderProcessingThreads uint
+	ResultsProtocol                    qservv1beta1.ResultsProtocolType
 	SocketQservUser                    string
 	SocketRootUser                     string
 	WmgrPort                           uint
@@ -121,6 +122,7 @@ func generateTemplateData(r *qservv1beta1.Qserv) templateData {
 		ReplicationDatabaseURL:             util.GetReplicationDatabaseURL(r),
 		ReplicationDatabaseRootURL:         util.GetReplicationDatabaseRootURL(r),
 		ReplicationRegistryDN:              util.GetReplicationRegistryServiceName(r),
+		ResultsProtocol:                    r.Spec.Worker.ResultsProtocol,
 		SocketQservUser:                    util.SocketQservUser,
 		SocketRootUser:                     util.SocketRootUser,
 		WorkerDN:                           util.GetWorkerServiceName(r),
